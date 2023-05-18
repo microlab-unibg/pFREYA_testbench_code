@@ -1,13 +1,17 @@
 from tkinter import *
 from tkinter import ttk
+from tkinter import messagebox
 from serial import *
 
 import json
 
+import serial
+
 from utilities.clock_structure import ClockStructure
 
 # === CONSTANTS ===
-# The constants have been moved to the config file
+# The other constants have been moved to the config file
+FPGA_COM_DEF = "XILINX"
 
 # === GUI FUNCTIONS ===
 def load_config():
@@ -22,6 +26,19 @@ def save_config(gui):
     with open("pFREYA_tester_config.json", "w") as f:
         json_obj = gui.to_json()
         f.write(json.dumps(json_obj, indent=4))
+
+def connect_fpga():
+    ports = serial.tools.list_ports.comports()
+    # search port
+    fpga_com = ""
+    for port, desc, hwid in sorted(ports):
+        if (FPGA_COM_DEF in desc):
+            fpga_com = port
+            return True
+    
+    # if no port was available
+    messagebox.showinfo(message = "No FPGA was detected...")
+    return False
 
 def show_about():
     about_root = Tk()
