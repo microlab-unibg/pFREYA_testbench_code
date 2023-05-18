@@ -18,6 +18,7 @@
 // 
 //////////////////////////////////////////////////////////////////////////////////
 
+`include "pFREYA_defs.sv"
 
 module pFREYA_IF(
         output logic dac_sdin, dac_sync_n, dac_sck,
