@@ -36,9 +36,15 @@ module pFREYA_IF(
         input  logic ck, reset
     );
 
-    // state machine
-    (* syn_encoding = "one-hot" *) enum logic [24:0] {
-        SLOW_CTRL, SEND_DATA
+    // state machine code
+    (* syn_encoding = "one-hot" *) enum logic [7:0] {
+        RESET,
+        CMD_EVAL,
+        CMD_ERR,
+        READ_REG_DATA,
+        READ_DATA,
+        DATA_END,
+        SEND_DATA
     } state, next;
 
     // internal
@@ -112,12 +118,103 @@ module pFREYA_IF(
         end
     end
 
-    // state machine defs
-    always_comb begin : state_machine
+    // state machine control
+    always_comb begin : state_machine_ctrl
         case (state)
-            SLOW_CTRL:
-            default: 
+            RESET:
+                if (uart_valid)
+                    next = CMD_EVAL;
+                else
+                    next = RESET;
+            CMD_EVAL:
+                case (cmd)
+                    // if the command is a set one, next read which signal to set
+                    `SET_CK_CMD,
+                    `SET_DELAY_CMD,
+                    `SET_PERIOD_CMD,
+                    `SET_WIDTH_CMD,
+                    `SET_SLOW_CTRL_CMD,
+                    `SET_DAC_LVL_CMD,
+                    `SET_PIXEL_CMD:
+                        next = READ_DATA;
+                    
+                    default:
+                        next = CMD_ERR;
+                endcase
+                cmd_available <= '0;
+            CMD_ERR:
+                next <= CMD_ERR;
+            READ_DATA:
+                if (uart_valid)
+                    next = END_DATA;
+                else
+                    next = READ_DATA;
+            default:
+                next <= CMD_ERR;
         endcase
     end
+
+    always_ff @(posedge clk, posedge reset) begin: state_machine_next
+        if (reset)
+            state <= RESET;
+        else
+            state <= next;
+    end
+
+    always_ff @(posedge clk, posedge reset) begin: state_machine_set_output
+        if (reset)
+            reset_all();
+        else begin
+            case (state)
+                RESET:
+                    reset_reg();
+                CMD_EVAL:
+                    // dont really know TODO
+                READ_DATA:
+                    if (uart_valid) begin
+                        case (cmd_code)
+                            `SET_CK_CMD:
+                                set_ck(signal_code, data);
+                            `SET_DELAY_CMD,
+                            `SET_PERIOD_CMD,
+                            `SET_WIDTH_CMD:
+                                set_signals(cmd_code, signal_code); // yet to be def
+                        endcase
+                    end
+            endcase
+        end
+    end
+
+    // function to reset all the signals and registers
+    function reset_all();
+        slow_ctrl_counter <= '0;
+        slow_ctrl_divider <= '0;
+        adc_counter <= '0;
+        adc_divider <= '0;
+        ser_counter <= '0;
+        ser_divider <= '0;
+    endfunction
+
+    // function to reset all the registers
+    function reset_reg();
+    
+    endfunction
+
+    function set_ck(signal_code);
+        case (signal_code)
+            `SLOW_CTRL_CK_CODE:
+                slow_ctrl_divider <= data;
+            `SEL_ROW_CK_CODE:
+                sel_row_ck_divider <= data;
+            `SEL_COL_CK_CODE:
+                sel_col_ck_divider <= data;
+            `ADC_CK_CODE:
+                adc_ck_divider <= data;
+            `INJ_DAC_CK_CODE:
+                inj_dac_ck_divider <= data;
+            `SER_CK_CODE:
+                ser_ck_divider <= data;
+        endcase
+    endfunction
 
 endmodule
