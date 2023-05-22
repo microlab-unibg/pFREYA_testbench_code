@@ -105,7 +105,6 @@
       </File>
       <File Path="$PSRCDIR/sources_1/new/pFREYA_DAQ.v">
         <FileInfo>
-          <Attr Name="AutoDisabled" Val="1"/>
           <Attr Name="UsedIn" Val="synthesis"/>
           <Attr Name="UsedIn" Val="implementation"/>
           <Attr Name="UsedIn" Val="simulation"/>
@@ -113,7 +112,7 @@
       </File>
       <Config>
         <Option Name="DesignMode" Val="RTL"/>
-        <Option Name="TopModule" Val="pFREYA_defs"/>
+        <Option Name="TopModule" Val="pFREYA_DAQ"/>
         <Option Name="TopAutoSet" Val="TRUE"/>
       </Config>
     </FileSet>
@@ -162,7 +161,6 @@
     <FileSet Name="axi_uartlite_IP" Type="BlockSrcs" RelSrcDir="$PSRCDIR/axi_uartlite_IP" RelGenDir="$PGENDIR/axi_uartlite_IP">
       <File Path="$PSRCDIR/sources_1/ip/axi_uartlite_IP/axi_uartlite_IP.xci">
         <FileInfo>
-          <Attr Name="AutoDisabled" Val="1"/>
           <Attr Name="UsedIn" Val="synthesis"/>
           <Attr Name="UsedIn" Val="implementation"/>
           <Attr Name="UsedIn" Val="simulation"/>
@@ -204,9 +202,7 @@
     </Run>
     <Run Id="axi_uartlite_IP_synth_1" Type="Ft3:Synth" SrcSet="axi_uartlite_IP" Part="xcku5p-ffvb676-2-e" ConstrsSet="axi_uartlite_IP" Description="Vivado Synthesis Defaults" AutoIncrementalCheckpoint="false" WriteIncrSynthDcp="false" Dir="$PRUNDIR/axi_uartlite_IP_synth_1" IncludeInArchive="true" IsChild="false" AutoIncrementalDir="$PSRCDIR/utils_1/imports/axi_uartlite_IP_synth_1" AutoRQSDir="$PSRCDIR/utils_1/imports/axi_uartlite_IP_synth_1">
       <Strategy Version="1" Minor="2">
-        <StratHandle Name="Vivado Synthesis Defaults" Flow="Vivado Synthesis 2022">
-          <Desc>Vivado Synthesis Defaults</Desc>
-        </StratHandle>
+        <StratHandle Name="Vivado Synthesis Defaults" Flow="Vivado Synthesis 2022"/>
         <Step Id="synth_design"/>
       </Strategy>
       <GeneratedRun Dir="$PRUNDIR" File="gen_run.xml"/>
@@ -233,9 +229,7 @@
     </Run>
     <Run Id="axi_uartlite_IP_impl_1" Type="Ft2:EntireDesign" Part="xcku5p-ffvb676-2-e" ConstrsSet="axi_uartlite_IP" Description="Default settings for Implementation." AutoIncrementalCheckpoint="false" WriteIncrSynthDcp="false" SynthRun="axi_uartlite_IP_synth_1" IncludeInArchive="false" IsChild="false" GenFullBitstream="true" AutoIncrementalDir="$PSRCDIR/utils_1/imports/axi_uartlite_IP_impl_1" AutoRQSDir="$PSRCDIR/utils_1/imports/axi_uartlite_IP_impl_1">
       <Strategy Version="1" Minor="2">
-        <StratHandle Name="Vivado Implementation Defaults" Flow="Vivado Implementation 2022">
-          <Desc>Default settings for Implementation.</Desc>
-        </StratHandle>
+        <StratHandle Name="Vivado Implementation Defaults" Flow="Vivado Implementation 2022"/>
         <Step Id="init_design"/>
         <Step Id="opt_design"/>
         <Step Id="power_opt_design"/>

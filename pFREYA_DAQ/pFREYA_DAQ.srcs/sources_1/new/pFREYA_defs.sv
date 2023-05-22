@@ -79,5 +79,5 @@
     `define CMD_PADDING            2'b00
     endpackage
 
-    import GAPS_defs::*;
+    import pFREYA_defs::*;
 `endif
