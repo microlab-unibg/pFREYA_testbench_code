@@ -149,6 +149,8 @@ module pFREYA_IF(
                     next = END_DATA;
                 else
                     next = READ_DATA;
+            END_DATA:
+                
             default:
                 next <= CMD_ERR;
         endcase
@@ -174,13 +176,16 @@ module pFREYA_IF(
                     if (uart_valid) begin
                         case (cmd_code)
                             `SET_CK_CMD:
-                                set_ck(signal_code, data);
-                            `SET_DELAY_CMD,
-                            `SET_PERIOD_CMD,
+                                set_ck_divider(signal_code, data);
+                            `SET_DELAY_CMD:
+                                set_fast_signal_delay(signal_code, data);
+                            `SET_PERIOD_CMD:
+                                set_fast_signal_period(signal_code, data);
                             `SET_WIDTH_CMD:
-                                set_signals(cmd_code, signal_code); // yet to be def
+                                set_fast_signal_width(signal_code, data);
                         endcase
                     end
+                
             endcase
         end
     end
@@ -200,7 +205,7 @@ module pFREYA_IF(
     
     endfunction
 
-    function set_ck(signal_code);
+    function set_ck_divider(signal_code, data);
         case (signal_code)
             `SLOW_CTRL_CK_CODE:
                 slow_ctrl_divider <= data;
@@ -214,6 +219,69 @@ module pFREYA_IF(
                 inj_dac_ck_divider <= data;
             `SER_CK_CODE:
                 ser_ck_divider <= data;
+        endcase
+    endfunction
+
+    function set_fast_signal_delay(signal_code, data);
+        case (signal_code)
+            `SLOW_CTRL_RESET_N_CODE:
+                slow_ctrl_reset_n_code_delay <= data;
+            `SEL_INIT_N_CODE:
+                slow_ctrl_reset_n_code_delay <= data;
+            `CSA_RESET_N_CODE:
+                csa_reset_n_code_delay <= data;
+            `SH_INF_CODE:
+                sh_inf_code_delay <= data;
+            `SH_SUP_CODE:
+                sh_sup_code_delay <= data;
+            `ADC_START_CODE:
+                adc_start_code_delay <= data;
+            `SER_RESET_N_CODE:
+                ser_reset_n_code_delay <= data;
+            'SER_READ_CODE:
+                ser_read_code_delay <= data;
+        endcase
+    endfunction
+    
+    function set_fast_signal_period(signal_code, data);
+        case (signal_code)
+            `SLOW_CTRL_RESET_N_CODE:
+                slow_ctrl_reset_n_code_period <= data;
+            `SEL_INIT_N_CODE:
+                slow_ctrl_reset_n_code_period <= data;
+            `CSA_RESET_N_CODE:
+                csa_reset_n_code_period <= data;
+            `SH_INF_CODE:
+                sh_inf_code_period <= data;
+            `SH_SUP_CODE:
+                sh_sup_code_period <= data;
+            `ADC_START_CODE:
+                adc_start_code_period <= data;
+            `SER_RESET_N_CODE:
+                ser_reset_n_code_period <= data;
+            'SER_READ_CODE:
+                ser_read_code_period <= data;
+        endcase
+    endfunction
+
+    function set_fast_signal_width(signal_code, data);
+        case (signal_code)
+            `SLOW_CTRL_RESET_N_CODE:
+                slow_ctrl_reset_n_code_width <= data;
+            `SEL_INIT_N_CODE:
+                slow_ctrl_reset_n_code_width <= data;
+            `CSA_RESET_N_CODE:
+                csa_reset_n_code_width <= data;
+            `SH_INF_CODE:
+                sh_inf_code_width <= data;
+            `SH_SUP_CODE:
+                sh_sup_code_width <= data;
+            `ADC_START_CODE:
+                adc_start_code_width <= data;
+            `SER_RESET_N_CODE:
+                ser_reset_n_code_width <= data;
+            'SER_READ_CODE:
+                ser_read_code_width <= data;
         endcase
     endfunction
 
