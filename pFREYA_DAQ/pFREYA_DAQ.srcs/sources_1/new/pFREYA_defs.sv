@@ -56,6 +56,7 @@
     `define SET_SLOW_CTRL_CMD  4'b0100   // for slow ctrl
     `define SET_DAC_LVL_CMD    4'b0101   // for injection
     `define SET_PIXEL_CMD      4'b0110   // for pixel selection
+    `define SEND_SLOW_CTRL_CMD 4'b0111   // for sending the slow ctrl to the asic
 
     // Clock map
     `define SLOW_CTRL_CK_CODE 3'b000

@@ -39,10 +39,11 @@ module pFREYA_IF(
     // state machine code
     (* syn_encoding = "one-hot" *) enum logic [7:0] {
         RESET,
+        IDLE,
         CMD_EVAL,
         CMD_ERR,
-        READ_REG_DATA,
-        READ_DATA,
+        CMD_READ_DATA,
+        CMD_SEND_DATA,
         DATA_END,
         SEND_DATA
     } state, next;
@@ -123,34 +124,50 @@ module pFREYA_IF(
         case (state)
             RESET:
                 if (uart_valid)
+                    // if there is something on UART evaluate it starting from command
                     next = CMD_EVAL;
                 else
-                    next = RESET;
+                    // if not keep doing what you were doing
+                    next = IDLE;
             CMD_EVAL:
-                case (cmd)
-                    // if the command is a set one, next read which signal to set
-                    `SET_CK_CMD,
-                    `SET_DELAY_CMD,
-                    `SET_PERIOD_CMD,
-                    `SET_WIDTH_CMD,
-                    `SET_SLOW_CTRL_CMD,
-                    `SET_DAC_LVL_CMD,
-                    `SET_PIXEL_CMD:
-                        next = READ_DATA;
-                    
-                    default:
-                        next = CMD_ERR;
-                endcase
-                cmd_available <= '0;
-            CMD_ERR:
-                next <= CMD_ERR;
-            READ_DATA:
-                if (uart_valid)
-                    next = END_DATA;
+                if (cmd_available) begin
+                    case (cmd_code)
+                        // if the command is a known one, next read which signal to set
+                        `SET_CK_CMD,
+                        `SET_DELAY_CMD,
+                        `SET_PERIOD_CMD,
+                        `SET_WIDTH_CMD,
+                        `SET_SLOW_CTRL_CMD,
+                        `SET_DAC_LVL_CMD,
+                        `SET_PIXEL_CMD:
+                            next = CMD_READ_DATA;
+                        // if the command is not known error
+                        default:
+                            next = CMD_ERR;
+                    endcase
+                end
                 else
-                    next = READ_DATA;
-            END_DATA:
-                
+                    // if no command is available recheck
+                    next = CMD_EVAL;
+            CMD_ERR:
+                // it just stays here
+                // TODO change
+                next <= CMD_ERR;
+            CMD_READ_DATA:
+                if (data_available)
+                    // if data has been read wait for new command
+                    next = IDLE;
+                else
+                    // if data is not fully read continue
+                    next = CMD_READ_DATA;
+            CMD_SEND_SLOW_CTRL:
+                if (slow_ctrl_packet_available)
+                    if (slow_ctrl_packet_sent)
+                        next = CMD_EVAL;
+                    else
+                        next = CMD_SEND_SLOW_CTRL;
+                else
+                    next = IDLE;
             default:
                 next <= CMD_ERR;
         endcase
@@ -169,23 +186,26 @@ module pFREYA_IF(
         else begin
             case (state)
                 RESET:
-                    reset_reg();
+                    reset_all();
                 CMD_EVAL:
-                    // dont really know TODO
-                READ_DATA:
-                    if (uart_valid) begin
-                        case (cmd_code)
-                            `SET_CK_CMD:
-                                set_ck_divider(signal_code, data);
-                            `SET_DELAY_CMD:
-                                set_fast_signal_delay(signal_code, data);
-                            `SET_PERIOD_CMD:
-                                set_fast_signal_period(signal_code, data);
-                            `SET_WIDTH_CMD:
-                                set_fast_signal_width(signal_code, data);
-                        endcase
-                    end
-                
+                    cmd_code <= data[CMD_START_POS:CMD_END_POS];
+                    cmd_available <= 1'b1;
+                CMD_READ_DATA:
+                    case (cmd_code)
+                        `SET_CK_CMD:
+                            set_ck_divider(signal_code, data);
+                        `SET_DELAY_CMD:
+                            set_fast_signal_delay(signal_code, data);
+                        `SET_PERIOD_CMD:
+                            set_fast_signal_period(signal_code, data);
+                        `SET_WIDTH_CMD:
+                            set_fast_signal_width(signal_code, data);
+                        `SET_SLOW_CTRL_CMD:
+                            set_slow_ctrl(data);
+                    endcase
+                    data_available <= 1'b1;
+                    cmd_available <= 1'b0;
+                CMD_
             endcase
         end
     end
@@ -283,6 +303,11 @@ module pFREYA_IF(
             'SER_READ_CODE:
                 ser_read_code_width <= data;
         endcase
+    endfunction
+
+    function set_slow_ctrl(data);
+        slow_ctrl_packet <= data;
+        slow_ctrl_packet_available <= 1'b1;
     endfunction
 
 endmodule

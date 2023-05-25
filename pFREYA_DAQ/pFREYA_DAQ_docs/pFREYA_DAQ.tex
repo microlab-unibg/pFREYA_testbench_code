@@ -155,11 +155,11 @@
 			\node[state, initial, accepting] (RESET) {RESET};
 			\node[state, below left of=RESET] (CMD_EVAL) {CMD\_EVAL};
 			\node[state, below left of=CMD_EVAL] (CMD_ERR) {CMD\_ERR};
-			\node[state, below right of=CMD_EVAL] (READ_DATA) {READ\_DATA};
+			\node[state, below right of=CMD_EVAL] (CMD_READ_DATA) {CMD\_READ\_DATA};
 	
 			\draw (RESET) edge[loop above] node[label=above:!uart\_valid]{} (RESET);
 			\draw (RESET) edge[below, bend right] node[label=left:uart\_valid]{} (CMD_EVAL);
-			\draw (CMD_EVAL) edge[below, bend left] node[label=right:cmd valid]{} (READ_DATA);
+			\draw (CMD_EVAL) edge[below, bend left] node[label=right:cmd valid]{} (CMD_READ_DATA);
 			\draw (CMD_EVAL) edge[below, bend right] node[label=left:cmd invalid]{} (CMD_ERR);
 			\draw (CMD_ERR) edge[loop left] node[label=left:true]{} (CMD_ERR);
 		\end{tikzpicture}
