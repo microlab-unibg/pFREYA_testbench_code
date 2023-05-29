@@ -36,11 +36,12 @@
     } slow_ctrl_pack;
 
     // Slow ctrl default values
-    `define CSA_MODE_N_DEF 2'b10
-    `define INJ_EN_N_DEF   1'b0
-    `define SHAP_MODE_DEF  1'b10
-    `define CH_EN_DEF      1'b1
-    `define INJ_MODE_N_DEF 1'b0
+    `define SLOW_CTRL_PACKET_LENGTH '7 * '8 * '2
+    `define CSA_MODE_N_DEF          2'b10
+    `define INJ_EN_N_DEF            1'b0
+    `define SHAP_MODE_DEF           2'b10
+    `define CH_EN_DEF               1'b1
+    `define INJ_MODE_N_DEF          1'b0
 
     // UART command properties
     `define CMD_START_POS    7

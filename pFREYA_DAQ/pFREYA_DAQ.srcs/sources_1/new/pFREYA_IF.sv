@@ -123,16 +123,12 @@ module pFREYA_IF(
     always_comb begin : state_machine_ctrl
         case (state)
             RESET:
-                if (uart_valid)
-                    // if there is something on UART evaluate it starting from command
-                    next = CMD_EVAL;
-                else
-                    // if not keep doing what you were doing
-                    next = IDLE;
+                next = CMD_EVAL;
             CMD_EVAL:
-                if (cmd_available) begin
+                if (uart_valid & cmd_available) begin
                     case (cmd_code)
-                        // if the command is a known one, next read which signal to set
+                        // if the command is a known one
+                        // next read which signal to set
                         `SET_CK_CMD,
                         `SET_DELAY_CMD,
                         `SET_PERIOD_CMD,
@@ -141,13 +137,15 @@ module pFREYA_IF(
                         `SET_DAC_LVL_CMD,
                         `SET_PIXEL_CMD:
                             next = CMD_READ_DATA;
+                        // next send slow control
+                        `SEND_SLOW_CTRL_CMD:
+                            next = SEND_SLOW_CTRL;
                         // if the command is not known error
                         default:
                             next = CMD_ERR;
                     endcase
-                end
-                else
-                    // if no command is available recheck
+                end else
+                    // if no comms or command is available recheck
                     next = CMD_EVAL;
             CMD_ERR:
                 // it just stays here
@@ -156,18 +154,15 @@ module pFREYA_IF(
             CMD_READ_DATA:
                 if (data_available)
                     // if data has been read wait for new command
-                    next = IDLE;
+                    next = CMD_EVAL;
                 else
                     // if data is not fully read continue
                     next = CMD_READ_DATA;
-            CMD_SEND_SLOW_CTRL:
-                if (slow_ctrl_packet_available)
-                    if (slow_ctrl_packet_sent)
-                        next = CMD_EVAL;
-                    else
-                        next = CMD_SEND_SLOW_CTRL;
+            SEND_SLOW_CTRL:
+                if (slow_ctrl_packet_available & ~slow_ctrl_packet_sent)
+                    next = SEND_SLOW_CTRL;
                 else
-                    next = IDLE;
+                    next = CMD_EVAL;
             default:
                 next <= CMD_ERR;
         endcase
@@ -188,9 +183,13 @@ module pFREYA_IF(
                 RESET:
                     reset_all();
                 CMD_EVAL:
-                    cmd_code <= data[CMD_START_POS:CMD_END_POS];
-                    cmd_available <= 1'b1;
+                    keep_reg();
+                    if (uart_valid) begin
+                        cmd_code <= data[CMD_START_POS:CMD_END_POS];
+                        cmd_available <= 1'b1;
+                    end
                 CMD_READ_DATA:
+                    keep_reg();
                     case (cmd_code)
                         `SET_CK_CMD:
                             set_ck_divider(signal_code, data);
@@ -205,8 +204,26 @@ module pFREYA_IF(
                     endcase
                     data_available <= 1'b1;
                     cmd_available <= 1'b0;
-                CMD_
+                SEND_SLOW_CTRL:
+                    if (slow_ctrl_packet_sent)
+                        slow_ctrl_reset_n <= 1'b0;
+                    else
+                        slow_ctrl_reset_n <= 1'b1;
             endcase
+        end
+    end
+
+    // if slow ctrl is posedge then data need to be transmitted
+    always_ff @(posedge slow_ctrl_ck) begin: slow_ctrl_data_send
+        if (slow_ctrl_reset_n) begin
+            if (slow_ctrl_packet_index ~= `SLOW_CTRL_PACKET_LENGTH) begin
+                slow_ctrl_in <= slow_ctrl_packet[slow_ctrl_index];
+                slow_ctrl_packet_index <= slow_ctrl_packet_index + 1'b1;
+            end else begin
+                // if everything was transmitted, reset index
+                slow_ctrl_packet_index <= 1'b0;
+                slow_ctrl_packet_sent <= 1'b1;
+            end
         end
     end
 
@@ -220,9 +237,14 @@ module pFREYA_IF(
         ser_divider <= '0;
     endfunction
 
-    // function to reset all the registers
-    function reset_reg();
-    
+    // function to keep data as it was the previous step
+    function keep_reg();
+        slow_ctrl_counter <= slow_ctrl_counter;
+        slow_ctrl_divider <= slow_ctrl_divider;
+        adc_counter <= adc_counter;
+        adc_divider <= adc_divider;
+        ser_counter <= ser_divider;
+        ser_counter <= ser_counter;
     endfunction
 
     function set_ck_divider(signal_code, data);
@@ -307,6 +329,7 @@ module pFREYA_IF(
 
     function set_slow_ctrl(data);
         slow_ctrl_packet <= data;
+        slow_ctrl_index <= '0;
         slow_ctrl_packet_available <= 1'b1;
     endfunction
 

@@ -113,7 +113,7 @@
 
 \pagestyle{fancy}
 \fancyhf{}
-\fancyhead[LE,RO]{Activities of the second Ph.D. year}
+\fancyhead[LE,RO]{pFREYA DAQ documentation}
 \fancyhead[RE,LO]{\leftmark}
 \fancyfoot[LE,RO]{P. Lazzaroni}
 \fancyfoot[CE,CO]{Page \thepage\ of \pageref{LastPage}}
@@ -148,20 +148,26 @@
 	\clearpage
 	
 	\section{State machine}
-	This section illustrate the state machine on the FPGA.
+	This section illustrates the state machine on the FPGA.
 	\begin{figure}[h]
+		\centering
 		\begin{tikzpicture}
-			\centering
+			\tikzstyle{every node}=[font=\small]
 			\node[state, initial, accepting] (RESET) {RESET};
-			\node[state, below left of=RESET] (CMD_EVAL) {CMD\_EVAL};
-			\node[state, below left of=CMD_EVAL] (CMD_ERR) {CMD\_ERR};
-			\node[state, below right of=CMD_EVAL] (CMD_READ_DATA) {CMD\_READ\_DATA};
+			\node[state, below of=RESET] (CMD_EVAL) {CMD\_EVAL};
+			\node[state, below left=1.5cm and 2cm of CMD_EVAL] (CMD_ERR) {CMD\_ERR};
+			\node[state, below=3cm of CMD_EVAL, align=center] (CMD_READ_DATA) {CMD\_READ\\\_DATA};
+			\node[state, below right=1.5cm and 3.5cm of CMD_EVAL, align=center] (SEND_SLOW_CTRL) {SEND\_SLOW\\\_CTRL};
 	
-			\draw (RESET) edge[loop above] node[label=above:!uart\_valid]{} (RESET);
-			\draw (RESET) edge[below, bend right] node[label=left:uart\_valid]{} (CMD_EVAL);
-			\draw (CMD_EVAL) edge[below, bend left] node[label=right:cmd valid]{} (CMD_READ_DATA);
-			\draw (CMD_EVAL) edge[below, bend right] node[label=left:cmd invalid]{} (CMD_ERR);
-			\draw (CMD_ERR) edge[loop left] node[label=left:true]{} (CMD_ERR);
+			\draw (RESET) edge[below] node[label=left:true]{} (CMD_EVAL);
+			\draw (CMD_EVAL) edge[below] node[below=1cm, label={[align=center]uart\_vaild AND\\cmd\_available AND\\SET\_*}]{} (CMD_READ_DATA);
+			\draw (CMD_EVAL) edge[loop left] node[above=0.2cm, label={[align=center]!uart\_available OR\\!cmd\_available}]{} (CMD_EVAL);
+			\draw (CMD_EVAL) edge[below] node[below left=0.5cm and 0.7cm, label={[align=center]uart\_vaild AND\\cmd\_available AND\\cmd\_code ???}]{} (CMD_ERR);
+			\draw (CMD_ERR) edge[loop left] node[label=above:true]{} (CMD_ERR);
+			\draw (CMD_EVAL) edge[below] node[below left=0.5cm and 0cm, label={[align=center]uart\_vaild AND\\cmd\_available AND\\\footnotesize SEND\_SLOW\_CTRL\_CMD}]{} (SEND_SLOW_CTRL);
+			\draw (CMD_READ_DATA) edge[loop left] node[above=0.3cm, label=!data\_available]{} (CMD_READ_DATA);
+			\draw (SEND_SLOW_CTRL) edge[right, bend right] node[above right=0.2cm and 0.4cm, label={[align=center]!slow\_ctrl\_packet\_available AND\\slow\_ctrl\_packet\_sent}]{} (CMD_EVAL);
+			\draw (SEND_SLOW_CTRL) edge[loop below] node[below=0.8cm, label={[align=center]slow\_ctrl\_packet\_available OR\\!slow\_ctrl\_packet\_sent}]{} (SEND_SLOW_CTRL);
 		\end{tikzpicture}
 	\end{figure}
 
