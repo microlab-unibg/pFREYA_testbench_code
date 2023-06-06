@@ -268,7 +268,7 @@ ttk.Label(ck_lframe, text="Serialiser clock:").grid(column=0, row=row_idx, stick
 ttk.Entry(ck_lframe, textvariable=gui.ser_ck, width=6).grid(column=1, row=row_idx, padx=5)
 ttk.Label(ck_lframe, text="kHz").grid(column=2, row=row_idx)
 row_idx += 1
-ttk.Button(ck_lframe, text="Send clocks").grid(column=1, columnspan=2, row=row_idx, pady=[10,0], sticky=SE)
+ttk.Button(ck_lframe, text="Set clocks").grid(column=1, columnspan=2, row=row_idx, pady=[10,0], sticky=SE)
 
 # Slow ctrl configuration
 sc_lframe = ttk.Labelframe(main_frame, text="Slow control configuration", padding=10, width=200, height=100)
@@ -289,7 +289,9 @@ row_idx += 1
 ttk.Label(sc_lframe, text="INJ_MODE_N:").grid(column=0, row=row_idx, sticky=E)
 ttk.Entry(sc_lframe, textvariable=gui.inj_mode_n, width=1).grid(column=1, row=row_idx, padx=5)
 row_idx += 1
-ttk.Button(sc_lframe, text="Send slow ctrl").grid(column=1, columnspan=2, row=row_idx, pady=[10,0], sticky=SE)
+ttk.Button(sc_lframe, text="Set slow ctrl").grid(column=1, columnspan=2, row=row_idx, pady=[10,0], sticky=SE)
+row_idx += 1
+ttk.Button(sc_lframe, text="Send slow ctrl").grid(column=1, columnspan=2, row=row_idx, pady=[0,0], sticky=SE)
 
 # Test setup configuration
 ts_lframe = ttk.Labelframe(main_frame, text="Test setup configuration", padding=10, width=200, height=100)
@@ -313,7 +315,7 @@ row_idx += 1
 ttk.Label(ps_lframe, text="Column (from right):").grid(column=0, row=row_idx, sticky=E)
 ttk.Entry(ps_lframe, textvariable=gui.pixel_col, width=1).grid(column=1, row=row_idx, padx=5)
 row_idx += 1
-ttk.Button(ps_lframe, text="Send pixel sel").grid(column=1, columnspan=2, row=row_idx, pady=[10,0], sticky=SE)
+ttk.Button(ps_lframe, text="Set pixel sel").grid(column=1, columnspan=2, row=row_idx, pady=[10,0], sticky=SE)
 
 # ASIC power up control
 asic_lframe = ttk.Labelframe(main_frame, text="ASIC power up control", padding=10, width=200, height=100)
@@ -321,39 +323,15 @@ asic_lframe.grid(column=0, row=2, columnspan=5, padx=5, sticky=NSEW)
 row_idx = 0
 ttk.Label(asic_lframe, text="Slow control reset (_N in the ASIC)", width=30).grid(column=0, columnspan=3, row=row_idx, sticky=W)
 row_idx += 1
-col_idx = 0
-ttk.Label(asic_lframe, text="Delay").grid(column=col_idx, row=row_idx, sticky=E)
-ttk.Entry(asic_lframe, textvariable=gui.slow_ctrl_reset_n["delay"], width=6).grid(column=col_idx+1, row=row_idx, padx=5)
-ttk.Label(asic_lframe, text="ns").grid(column=col_idx+2, row=row_idx, padx=[0,20])
-col_idx += 3
-ttk.Label(asic_lframe, text="Period").grid(column=col_idx, row=row_idx, sticky=E)
-ttk.Entry(asic_lframe, textvariable=gui.slow_ctrl_reset_n["period"], width=6).grid(column=col_idx+1, row=row_idx, padx=5)
-ttk.Label(asic_lframe, text="ns").grid(column=col_idx+2, row=row_idx, padx=[0,20])
-col_idx += 3
-ttk.Label(asic_lframe, text="Width").grid(column=col_idx, row=row_idx, sticky=E)
-ttk.Entry(asic_lframe, textvariable=gui.slow_ctrl_reset_n["width"], width=6).grid(column=col_idx+1, row=row_idx, padx=5)
-ttk.Label(asic_lframe, text="ns").grid(column=col_idx+2, row=row_idx, padx=[0,20])
-col_idx += 3
+ttk.Label(asic_lframe, text="Set by FPGA based on slow ctrl packet").grid(column=1, columnspan=5, row=row_idx, sticky=W)
 
 row_idx += 1
 ttk.Label(asic_lframe, text="Select init (_N in the ASIC)", width=30).grid(column=0, columnspan=3, row=row_idx, sticky=W)
 row_idx += 1
-col_idx = 0
-ttk.Label(asic_lframe, text="Delay").grid(column=col_idx, row=row_idx, sticky=E)
-ttk.Entry(asic_lframe, textvariable=gui.sel_init_n["delay"], width=6).grid(column=col_idx+1, row=row_idx, padx=5)
-ttk.Label(asic_lframe, text="ns").grid(column=col_idx+2, row=row_idx, padx=[0,20])
-col_idx += 3
-ttk.Label(asic_lframe, text="Period").grid(column=col_idx, row=row_idx, sticky=E)
-ttk.Entry(asic_lframe, textvariable=gui.sel_init_n["period"], width=6).grid(column=col_idx+1, row=row_idx, padx=5)
-ttk.Label(asic_lframe, text="ns").grid(column=col_idx+2, row=row_idx, padx=[0,20])
-col_idx += 3
-ttk.Label(asic_lframe, text="Width").grid(column=col_idx, row=row_idx, sticky=E)
-ttk.Entry(asic_lframe, textvariable=gui.sel_init_n["width"], width=6).grid(column=col_idx+1, row=row_idx, padx=5)
-ttk.Label(asic_lframe, text="ns").grid(column=col_idx+2, row=row_idx, padx=[0,20])
-col_idx += 3
+ttk.Label(asic_lframe, text="Set by FPGA based on number of row and col packet").grid(column=1, columnspan=5, row=row_idx, sticky=W)
 
-row_idx += 1
-ttk.Button(asic_lframe, text="Send ASIC power up config").grid(column=6, columnspan=2, row=row_idx, pady=[10,0], sticky=SE)
+# row_idx += 1
+# ttk.Button(asic_lframe, text="Send ASIC power up config").grid(column=6, columnspan=2, row=row_idx, pady=[10,0], sticky=SE)
 
 # ASIC transient control
 asic_lframe = ttk.Labelframe(main_frame, text="ASIC transient control", padding=10, width=200, height=100)
