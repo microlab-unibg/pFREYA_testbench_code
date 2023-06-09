@@ -21,10 +21,41 @@
 `ifndef DEFS
     `define DEFS
 
-    package pFREYA_defs
+    package pFREYA_defs;
+
     // Slow ctrl sizes
     parameter N_CSA_MODE  = 2;  // N of CSA mode bits
     parameter N_SHAP_MODE = 2;  // N of SHAP mode bits
+
+    // CK counter sizes
+    parameter SLOW_CNT_N = 8;
+    parameter SEL_CNT_N  = 8;
+    parameter ADC_CNT_N  = 8;
+    parameter INJ_CNT_N  = 8;
+    parameter SER_CNT_N  = 8;
+
+    // Slow ctrl default values
+    parameter SLOW_CTRL_PACKET_LENGTH = 7 * 8 * 2;
+
+    // fast ctrl feature sizes
+    parameter FAST_CTRL_N = 8;
+
+    // pixel selection sizes
+    parameter PIXEL_ROW_N = 1;
+    parameter PIXEL_COL_N = 3;
+
+    // UART command properties
+    parameter UART_PACKET_SIZE = 8;
+    // CMD packet is |CMD_CODE(4)|SIGNAL_CODE(3)|PADDING(1)|
+    parameter CMD_CODE_SIZE    = 4;
+    parameter CMD_START_POS    = 7;
+    parameter CMD_END_POS      = 4;
+    parameter SIGNAL_START_POS = 3;
+    parameter SIGNAL_END_POS   = 1;
+    // DATA packet is |DATA(8)|
+    parameter DATA_SIZE        = 8;
+    parameter DATA_START_POS   = 7;
+    parameter DATA_END_POS     = 0;
 
     // Slow ctrl packet
     typedef struct packed {
@@ -35,30 +66,7 @@
         logic inj_mode_n;
     } slow_ctrl_pack;
 
-    // CK counter sizes
-    `define SLOW_CNT_N '8
-    `define SEL_CNT_N  '8
-    `define ADC_CNT_N  '8
-    `define INJ_CNT_N  '8
-    `define SER_CNT_N  '8
-
-    // Slow ctrl default values
-    `define SLOW_CTRL_PACKET_LENGTH '7 * '8 * '2
-    `define CSA_MODE_N_DEF          2'b10
-    `define INJ_EN_N_DEF            1'b0
-    `define SHAP_MODE_DEF           2'b10
-    `define CH_EN_DEF               1'b1
-    `define INJ_MODE_N_DEF          1'b0
-
-    // UART command properties
-    `define CMD_START_POS    7
-    `define CMD_END_POS      5
-    `define SIGNAL_START_POS 4
-    `define SIGNAL_END_POS   2
-
     // UART commands
-    `define UART_PACKET_SIZE   '8
-    `define CMD_SIZE           '4
     `define SET_CK_CMD         4'b0000   // for general CK (calls for clock map)
     `define SET_DELAY_CMD      4'b0001   // for fast ctrl (call for fast control map)
     `define SET_PERIOD_CMD     4'b0010   // for fast ctrl
@@ -68,6 +76,13 @@
     `define SET_PIXEL_CMD      4'b0110   // for pixel selection
     `define SEND_SLOW_CTRL_CMD 4'b0111   // for sending the slow ctrl to the asic
     `define SEND_PIXEL_SEL_CMD 4'b1000   // for sending the pixel selection to the asic
+
+    // Slow control default values
+    `define CSA_MODE_N_DEF 2'b10
+    `define INJ_EN_N_DEF   1'b0
+    `define SHAP_MODE_DEF  2'b10
+    `define CH_EN_DEF      1'b1
+    `define INJ_MODE_N_DEF 1'b0
 
     // Clock map
     `define SLOW_CTRL_CK_CODE 3'b000
@@ -85,7 +100,7 @@
     `define SER_READ_CODE          3'b101
 
     // cmd padding
-    `define CMD_PADDING            2'b00
+    `define CMD_PADDING            1'b0
     endpackage
 
     import pFREYA_defs::*;

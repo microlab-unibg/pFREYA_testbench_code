@@ -21,21 +21,21 @@
 
 module pFREYA_DAQ(
         // ASIC signals
-        output logic dac_sdin, dac_sync_n, dac_sck,
-        inout  logic sel_init_n,
-        output logic sel_ckcol, sel_ckrow,
-        input  logic ser_out,
-        inout  logic ser_read, ser_reset_n,
-        output logic ser_ck,
-        output logic inj_stb,
-        output logic csa_reset_n,
-        output logic adc_ck, adc_start,
-        output logic sh_phi1d_sup, sh_phi1d_inf,
-        output logic slow_ctrl_in, slow_ctrl_reset_n, slow_ctrl_ck,
+        output dac_sdin, dac_sync_n, dac_sck,
+        output sel_init_n,
+        output sel_ckcol, sel_ckrow,
+        input  ser_out,
+        output ser_read, ser_reset_n,
+        output ser_ck,
+        output inj_stb,
+        output csa_reset_n,
+        output adc_ck, adc_start,
+        output sh_phi1d_sup, sh_phi1d_inf,
+        output slow_ctrl_in, slow_ctrl_reset_n, slow_ctrl_ck,
         // Internal signals
-        input  logic btn_reset
+        input  btn_reset,
         // UART signals
-        input  logic uart_clk
+        input  uart_clk
     );
 
     // UART Lite interface
