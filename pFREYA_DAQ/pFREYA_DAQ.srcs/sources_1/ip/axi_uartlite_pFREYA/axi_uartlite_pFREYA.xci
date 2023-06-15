@@ -1,18 +1,18 @@
 {
   "schema": "xilinx.com:schema:json_instance:1.0",
   "ip_inst": {
-    "xci_name": "axi_uartlite_IP",
+    "xci_name": "axi_uartlite_pFREYA",
     "component_reference": "xilinx.com:ip:axi_uartlite:2.0",
     "ip_revision": "31",
-    "gen_directory": "../../../../pFREYA_DAQ.gen/sources_1/ip/axi_uartlite_IP",
+    "gen_directory": "../../../../pFREYA_DAQ.gen/sources_1/ip/axi_uartlite_pFREYA",
     "parameters": {
       "component_parameters": {
         "C_DATA_BITS": [ { "value": "8", "resolve_type": "user", "format": "long", "usage": "all" } ],
         "C_BAUDRATE": [ { "value": "115200", "value_src": "user", "resolve_type": "user", "format": "long", "usage": "all" } ],
         "C_S_AXI_ACLK_FREQ_HZ": [ { "value": "100000000", "resolve_type": "user", "format": "long", "usage": "all" } ],
         "C_S_AXI_ACLK_FREQ_HZ_d": [ { "value": "100", "resolve_type": "user", "format": "float", "usage": "all" } ],
-        "Component_Name": [ { "value": "axi_uartlite_IP", "resolve_type": "user", "usage": "all" } ],
-        "PARITY": [ { "value": "No_Parity", "resolve_type": "user", "usage": "all" } ],
+        "Component_Name": [ { "value": "axi_uartlite_pFREYA", "resolve_type": "user", "usage": "all" } ],
+        "PARITY": [ { "value": "No_Parity", "value_src": "user", "resolve_type": "user", "usage": "all" } ],
         "C_USE_PARITY": [ { "value": "0", "resolve_type": "user", "format": "long", "usage": "all" } ],
         "C_ODD_PARITY": [ { "value": "0", "resolve_type": "user", "format": "long", "usage": "all" } ],
         "USE_BOARD_FLOW": [ { "value": "false", "resolve_type": "user", "format": "bool", "usage": "all" } ],
@@ -47,7 +47,7 @@
         "IPCONTEXT": [ { "value": "IP_Flow" } ],
         "IPREVISION": [ { "value": "31" } ],
         "MANAGED": [ { "value": "TRUE" } ],
-        "OUTPUTDIR": [ { "value": "../../../../pFREYA_DAQ.gen/sources_1/ip/axi_uartlite_IP" } ],
+        "OUTPUTDIR": [ { "value": "../../../../pFREYA_DAQ.gen/sources_1/ip/axi_uartlite_pFREYA" } ],
         "SELECTEDSIMMODEL": [ { "value": "" } ],
         "SHAREDDIR": [ { "value": "." } ],
         "SWVERSION": [ { "value": "2022.2.2" } ],

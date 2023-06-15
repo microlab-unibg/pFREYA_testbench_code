@@ -36,6 +36,7 @@
 
     // Slow ctrl default values
     parameter SLOW_CTRL_PACKET_LENGTH = 7 * 8 * 2;
+    parameter SLOW_CTRL_IDX_N = 7;
 
     // fast ctrl feature sizes
     parameter FAST_CTRL_N = 8;

@@ -69,7 +69,7 @@ module pFREYA_IF(
     // control logic
     logic uart_valid, cmd_available, data_available, slow_ctrl_packet_available, slow_ctrl_packet_sent, sel_available, sel_sent, pixel_available, sel_ckcol_sent, sel_ckrow_sent;
     // data
-    logic slow_ctrl_packet_index;
+    logic [FAST_CTRL_N-1:0] slow_ctrl_packet_index;
     logic [UART_PACKET_SIZE-1:0] slow_ctrl_packet, pixel_row, pixel_col, data;
     logic [CMD_CODE_SIZE-1:0] cmd_code;
     logic [DATA_SIZE-1:0] signal_code;
