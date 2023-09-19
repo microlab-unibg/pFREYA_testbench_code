@@ -70,8 +70,8 @@
     // UART commands
     `define SET_CK_CMD         4'b0000   // for general CK (calls for clock map)
     `define SET_DELAY_CMD      4'b0001   // for fast ctrl (call for fast control map)
-    `define SET_PERIOD_CMD     4'b0010   // for fast ctrl
-    `define SET_WIDTH_CMD      4'b0011   // for fast ctrl
+    `define SET_HIGH_CMD     4'b0010   // for fast ctrl
+    `define SET_LOW_CMD      4'b0011   // for fast ctrl
     `define SET_SLOW_CTRL_CMD  4'b0100   // for slow ctrl
     `define SET_DAC_LVL_CMD    4'b0101   // for injection
     `define SET_PIXEL_CMD      4'b0110   // for pixel selection
