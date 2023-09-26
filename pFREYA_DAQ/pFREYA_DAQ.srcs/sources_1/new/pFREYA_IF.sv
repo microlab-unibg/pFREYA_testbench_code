@@ -245,7 +245,7 @@ module pFREYA_IF(
 
     // what to do on each state
     always_ff @(posedge ck, posedge reset) begin: state_machine_set_output
-        if (reset)
+        if (reset) begin
             // reset all registers
             slow_ctrl_counter <= '0;
             slow_ctrl_divider <= '0;
@@ -253,9 +253,10 @@ module pFREYA_IF(
             adc_divider <= '0;
             ser_counter <= '0;
             ser_divider <= '0;
+        end
         else begin
             case (state)
-                RESET:
+                RESET: begin
                     // reset all registers
                     slow_ctrl_counter <= '0;
                     slow_ctrl_divider <= '0;
@@ -263,14 +264,8 @@ module pFREYA_IF(
                     adc_divider <= '0;
                     ser_counter <= '0;
                     ser_divider <= '0;
+                end
                 CMD_EVAL: begin
-                    // keep unused register values
-                    slow_ctrl_counter <= slow_ctrl_counter;
-                    slow_ctrl_divider <= slow_ctrl_divider;
-                    adc_counter <= adc_counter;
-                    adc_divider <= adc_divider;
-                    ser_counter <= ser_divider;
-                    ser_counter <= ser_counter;
                     // evaluate command if available
                     if (uart_valid) begin
                         cmd <= data[CMD_START_POS:CMD_END_POS];
@@ -280,414 +275,82 @@ module pFREYA_IF(
                 CMD_SET: begin
                     // command to set signals specified by signal code
                     signal <= data[SIGNAL_START_POS:SIGNAL_END_POS];
-                    // keep every signal flag
-                    csa_reset_n_flag <= csa_reset_n_flag;
-                    sh_inf_flag <= sh_inf_flag;
-                    sh_sup_flag <= sh_sup_flag;
-                    adc_start_flag <= adc_start_flag;
-                    ser_reset_n_flag <= ser_reset_n_flag;
-                    ser_read_flag <= ser_read_flag;
                     // update cmd and data availability
                     data_available <= 1'b1;
                     cmd_available <= 1'b0;
                     case (cmd)
                         `SET_CK_CMD:
-                            // keep wahtever is not a divider
-                            slow_ctrl_counter <= slow_ctrl_counter;
-                            adc_counter <= adc_counter;
-                            ser_counter <= ser_counter;
-                            sel_counter <= sel_counter;
-                            inj_counter <= inj_counter;
-                            csa_reset_n_counter <= csa_reset_n_counter;
-                            csa_reset_n_delay_divider <= csa_reset_n_delay_divider;
-                            csa_reset_n_HIGH_divider <= csa_reset_n_HIGH_divider;
-                            csa_reset_n_LOW_divider <= csa_reset_n_LOW_divider;
-                            sh_inf_counter <= sh_inf_counter;
-                            sh_inf_delay_divider <= sh_inf_delay_divider;
-                            sh_inf_HIGH_divider <= sh_inf_HIGH_divider;
-                            sh_inf_LOW_divider <= sh_inf_LOW_divider;
-                            sh_sup_counter <= sh_sup_counter;
-                            sh_sup_delay_divider <= sh_sup_delay_divider;
-                            sh_sup_HIGH_divider <= sh_sup_HIGH_divider;
-                            sh_sup_LOW_divider <= sh_sup_LOW_divider;
-                            adc_start_counter <= adc_start_counter;
-                            adc_start_delay_divider <= adc_start_delay_divider;
-                            adc_start_HIGH_divider <= adc_start_HIGH_divider;
-                            adc_start_LOW_divider <= adc_start_LOW_divider;
-                            ser_reset_n_counter <= ser_reset_n_counter;
-                            ser_reset_n_delay_divider <= ser_reset_n_delay_divider;
-                            ser_reset_n_HIGH_divider <= ser_reset_n_HIGH_divider;
-                            ser_reset_n_LOW_divider <= ser_reset_n_LOW_divider;
-                            ser_read_counter <= ser_read_counter;
-                            ser_read_delay_divider <= ser_read_delay_divider;
-                            ser_read_HIGH_divider <= ser_read_HIGH_divider;
-                            ser_read_LOW_divider <= ser_read_LOW_divider;
-                            slow_ctrl_packet <= slow_ctrl_packet;
-                            slow_ctrl_packet_index <= slow_ctrl_packet_index;
-                            slow_ctrl_packet_available <= slow_ctrl_packet_available;
-                            pixel_row <= pixel_row;
-                            pixel_col <= pixel_col;
-                            pixel_available <= pixel_available;
                             // set clocks divider
                             case (signal)
-                                `SLOW_CTRL_CK:
+                                `SLOW_CTRL_CK_CODE:
                                     slow_ctrl_divider <= data;
-                                    adc_divider <= adc_divider;
-                                    ser_divider <= ser_divider;
-                                    sel_divider <= sel_divider;
-                                    inj_divider <= inj_divider;
-                                `SEL_CK:
-                                    slow_ctrl_divider <= slow_ctrl_divider;
-                                    adc_divider <= adc_divider;
-                                    ser_divider <= ser_divider;
+                                `SEL_CK_CODE:
                                     sel_divider <= data;
-                                    inj_divider <= inj_divider;
-                                `ADC_CK:
-                                    slow_ctrl_divider <= slow_ctrl_divider;
+                                `ADC_CK_CODE:
                                     adc_divider <= data;
-                                    ser_divider <= ser_divider;
-                                    sel_divider <= sel_divider;
-                                    inj_divider <= inj_divider;
-                                `INJ_DAC_CK:
-                                    slow_ctrl_divider <= slow_ctrl_divider;
-                                    adc_divider <= adc_divider;
-                                    ser_divider <= ser_divider;
-                                    sel_divider <= sel_divider;
+                                `INJ_DAC_CK_CODE:
                                     inj_divider <= data;
-                                `SER_CK:
-                                    slow_ctrl_divider <= slow_ctrl_divider;
-                                    adc_divider <= adc_divider;
+                                `SER_CK_CODE:
                                     ser_divider <= data;
-                                    sel_divider <= sel_divider;
-                                    inj_divider <= inj_divider;
                             endcase
                         `SET_DELAY_CMD:
-                            // keep everything that is not a delay divider
-                            slow_ctrl_counter <= slow_ctrl_counter;
-                            slow_ctrl_divider <= slow_ctrl_divider;
-                            adc_counter <= adc_counter;
-                            adc_divider <= adc_divider;
-                            ser_counter <= ser_counter;
-                            ser_divider <= ser_divider;
-                            sel_counter <= sel_counter;
-                            sel_divider <= sel_divider;
-                            inj_counter <= inj_counter;
-                            inj_divider <= inj_divider;
-                            csa_reset_n_counter <= csa_reset_n_counter;
-                            csa_reset_n_HIGH_divider <= csa_reset_n_HIGH_divider;
-                            csa_reset_n_LOW_divider <= csa_reset_n_LOW_divider;
-                            sh_inf_counter <= sh_inf_counter;
-                            sh_inf_HIGH_divider <= sh_inf_HIGH_divider;
-                            sh_inf_LOW_divider <= sh_inf_LOW_divider;
-                            sh_sup_counter <= sh_sup_counter;
-                            sh_sup_HIGH_divider <= sh_sup_HIGH_divider;
-                            sh_sup_LOW_divider <= sh_sup_LOW_divider;
-                            adc_start_counter <= adc_start_counter;
-                            adc_start_HIGH_divider <= adc_start_HIGH_divider;
-                            adc_start_LOW_divider <= adc_start_LOW_divider;
-                            ser_reset_n_counter <= ser_reset_n_counter;
-                            ser_reset_n_HIGH_divider <= ser_reset_n_HIGH_divider;
-                            ser_reset_n_LOW_divider <= ser_reset_n_LOW_divider;
-                            ser_read_counter <= ser_read_counter;
-                            ser_read_HIGH_divider <= ser_read_HIGH_divider;
-                            ser_read_LOW_divider <= ser_read_LOW_divider;
-                            slow_ctrl_packet <= slow_ctrl_packet;
-                            slow_ctrl_packet_index <= slow_ctrl_packet_index;
-                            slow_ctrl_packet_available <= slow_ctrl_packet_available;
-                            pixel_row <= pixel_row;
-                            pixel_col <= pixel_col;
-                            pixel_available <= pixel_available;
                             // set delay divider
                             case (signal)
-                                `CSA_RESET_N:
+                                `CSA_RESET_N_CODE:
                                     csa_reset_n_delay_divider <= data;
-                                    sh_inf_delay_divider <= sh_inf_delay_divider;
-                                    sh_sup_delay_divider <= sh_sup_delay_divider;
-                                    adc_start_delay_divider <= adc_start_delay_divider;
-                                    ser_reset_n_delay_divider <= ser_reset_n_delay_divider;
-                                    ser_read_delay_divider <= ser_read_delay_divider;
-                                `SH_INF:
-                                    csa_reset_n_delay_divider <= csa_reset_n_delay_divider;
+                                `SH_INF_CODE:
                                     sh_inf_delay_divider <= data;
-                                    sh_sup_delay_divider <= sh_sup_delay_divider;
-                                    adc_start_delay_divider <= adc_start_delay_divider;
-                                    ser_reset_n_delay_divider <= ser_reset_n_delay_divider;
-                                    ser_read_delay_divider <= ser_read_delay_divider;
-                                `SH_SUP:
-                                    csa_reset_n_delay_divider <= csa_reset_n_delay_divider;
-                                    sh_inf_delay_divider <= sh_inf_delay_divider;
+                                `SH_SUP_CODE:
                                     sh_sup_delay_divider <= data;
-                                    adc_start_delay_divider <= adc_start_delay_divider;
-                                    ser_reset_n_delay_divider <= ser_reset_n_delay_divider;
-                                    ser_read_delay_divider <= ser_read_delay_divider;
-                                `ADC_START:
-                                    csa_reset_n_delay_divider <= csa_reset_n_delay_divider;
-                                    sh_inf_delay_divider <= sh_inf_delay_divider;
-                                    sh_sup_delay_divider <= sh_sup_delay_divider;
+                                `ADC_START_CODE:
                                     adc_start_delay_divider <= data;
-                                    ser_reset_n_delay_divider <= ser_reset_n_delay_divider;
-                                    ser_read_delay_divider <= ser_read_delay_divider;
-                                `SER_RESET_N:
-                                    csa_reset_n_delay_divider <= csa_reset_n_delay_divider;
-                                    sh_inf_delay_divider <= sh_inf_delay_divider;
-                                    sh_sup_delay_divider <= sh_sup_delay_divider;
-                                    adc_start_delay_divider <= adc_start_delay_divider;
+                                `SER_RESET_N_CODE:
                                     ser_reset_n_delay_divider <= data;
-                                    ser_read_delay_divider <= ser_read_delay_divider;
-                                `SER_READ:
-                                    csa_reset_n_delay_divider <= csa_reset_n_delay_divider;
-                                    sh_inf_delay_divider <= sh_inf_delay_divider;
-                                    sh_sup_delay_divider <= sh_sup_delay_divider;
-                                    adc_start_delay_divider <= adc_start_delay_divider;
-                                    ser_reset_n_delay_divider <= ser_reset_n_delay_divider;
+                                `SER_READ_CODE:
                                     ser_read_delay_divider <= data;
                             endcase
                         `SET_HIGH_CMD:
-                            // keep everything that is not a HIGH divider
-                            slow_ctrl_counter <= slow_ctrl_counter;
-                            slow_ctrl_divider <= slow_ctrl_divider;
-                            adc_counter <= adc_counter;
-                            adc_divider <= adc_divider;
-                            ser_counter <= ser_counter;
-                            ser_divider <= ser_divider;
-                            sel_counter <= sel_counter;
-                            sel_divider <= sel_divider;
-                            inj_counter <= inj_counter;
-                            inj_divider <= inj_divider;
-                            csa_reset_n_counter <= csa_reset_n_counter;
-                            csa_reset_n_delay_divider <= csa_reset_n_delay_divider;
-                            csa_reset_n_LOW_divider <= csa_reset_n_LOW_divider;
-                            sh_inf_counter <= sh_inf_counter;
-                            sh_inf_delay_divider <= sh_inf_delay_divider;
-                            sh_inf_LOW_divider <= sh_inf_LOW_divider;
-                            sh_sup_counter <= sh_sup_counter;
-                            sh_sup_delay_divider <= sh_sup_delay_divider;
-                            sh_sup_LOW_divider <= sh_sup_LOW_divider;
-                            adc_start_counter <= adc_start_counter;
-                            adc_start_delay_divider <= adc_start_delay_divider;
-                            adc_start_LOW_divider <= adc_start_LOW_divider;
-                            ser_reset_n_counter <= ser_reset_n_counter;
-                            ser_reset_n_delay_divider <= ser_reset_n_delay_divider;
-                            ser_reset_n_LOW_divider <= ser_reset_n_LOW_divider;
-                            ser_read_counter <= ser_read_counter;
-                            ser_read_delay_divider <= ser_read_delay_divider;
-                            ser_read_LOW_divider <= ser_read_LOW_divider;
-                            slow_ctrl_packet <= slow_ctrl_packet;
-                            slow_ctrl_packet_index <= slow_ctrl_packet_index;
-                            slow_ctrl_packet_available <= slow_ctrl_packet_available;
-                            pixel_row <= pixel_row;
-                            pixel_col <= pixel_col;
-                            pixel_available <= pixel_available;
                             // set HIGH divider
                             case (signal)
-                                `CSA_RESET_N:
+                                `CSA_RESET_N_CODE:
                                     csa_reset_n_HIGH_divider <= data;
-                                    sh_inf_HIGH_divider <= sh_inf_HIGH_divider;
-                                    sh_sup_HIGH_divider <= sh_sup_HIGH_divider;
-                                    adc_start_HIGH_divider <= adc_start_HIGH_divider;
-                                    ser_reset_n_HIGH_divider <= ser_reset_n_HIGH_divider;
-                                    ser_read_HIGH_divider <= ser_read_HIGH_divider;
-                                `SH_INF:
-                                    csa_reset_n_HIGH_divider <= csa_reset_n_HIGH_divider;
+                                `SH_INF_CODE:
                                     sh_inf_HIGH_divider <= data;
-                                    sh_sup_HIGH_divider <= sh_sup_HIGH_divider;
-                                    adc_start_HIGH_divider <= adc_start_HIGH_divider;
-                                    ser_reset_n_HIGH_divider <= ser_reset_n_HIGH_divider;
-                                    ser_read_HIGH_divider <= ser_read_HIGH_divider;
-                                `SH_SUP:
-                                    csa_reset_n_HIGH_divider <= csa_reset_n_HIGH_divider;
-                                    sh_inf_HIGH_divider <= sh_inf_HIGH_divider;
+                                `SH_SUP_CODE:
                                     sh_sup_HIGH_divider <= data;
-                                    adc_start_HIGH_divider <= adc_start_HIGH_divider;
-                                    ser_reset_n_HIGH_divider <= ser_reset_n_HIGH_divider;
-                                    ser_read_HIGH_divider <= ser_read_HIGH_divider;
-                                `ADC_START:
-                                    csa_reset_n_HIGH_divider <= csa_reset_n_HIGH_divider;
-                                    sh_inf_HIGH_divider <= sh_inf_HIGH_divider;
-                                    sh_sup_HIGH_divider <= sh_sup_HIGH_divider;
+                                `ADC_START_CODE:
                                     adc_start_HIGH_divider <= data;
-                                    ser_reset_n_HIGH_divider <= ser_reset_n_HIGH_divider;
-                                    ser_read_HIGH_divider <= ser_read_HIGH_divider;
-                                `SER_RESET_N:
-                                    csa_reset_n_HIGH_divider <= csa_reset_n_HIGH_divider;
-                                    sh_inf_HIGH_divider <= sh_inf_HIGH_divider;
-                                    sh_sup_HIGH_divider <= sh_sup_HIGH_divider;
-                                    adc_start_HIGH_divider <= adc_start_HIGH_divider;
+                                `SER_RESET_N_CODE:
                                     ser_reset_n_HIGH_divider <= data;
-                                    ser_read_HIGH_divider <= ser_read_HIGH_divider;
-                                `SER_READ:
-                                    csa_reset_n_HIGH_divider <= csa_reset_n_HIGH_divider;
-                                    sh_inf_HIGH_divider <= sh_inf_HIGH_divider;
-                                    sh_sup_HIGH_divider <= sh_sup_HIGH_divider;
-                                    adc_start_HIGH_divider <= adc_start_HIGH_divider;
-                                    ser_reset_n_HIGH_divider <= ser_reset_n_HIGH_divider;
+                                `SER_READ_CODE:
                                     ser_read_HIGH_divider <= data;
                             endcase
                         `SET_LOW_CMD:
-                            // keep everything that is not a LOW divider
-                            slow_ctrl_counter <= slow_ctrl_counter;
-                            slow_ctrl_divider <= slow_ctrl_divider;
-                            adc_counter <= adc_counter;
-                            adc_divider <= adc_divider;
-                            ser_counter <= ser_counter;
-                            ser_divider <= ser_divider;
-                            sel_counter <= sel_counter;
-                            sel_divider <= sel_divider;
-                            inj_counter <= inj_counter;
-                            inj_divider <= inj_divider;
-                            csa_reset_n_counter <= csa_reset_n_counter;
-                            csa_reset_n_delay_divider <= csa_reset_n_delay_divider;
-                            csa_reset_n_HIGH_divider <= csa_reset_n_HIGH_divider;
-                            sh_inf_counter <= sh_inf_counter;
-                            sh_inf_delay_divider <= sh_inf_delay_divider;
-                            sh_inf_HIGH_divider <= sh_inf_HIGH_divider;
-                            sh_sup_counter <= sh_sup_counter;
-                            sh_sup_delay_divider <= sh_sup_delay_divider;
-                            sh_sup_HIGH_divider <= sh_sup_HIGH_divider;
-                            adc_start_counter <= adc_start_counter;
-                            adc_start_delay_divider <= adc_start_delay_divider;
-                            adc_start_HIGH_divider <= adc_start_HIGH_divider;
-                            ser_reset_n_counter <= ser_reset_n_counter;
-                            ser_reset_n_delay_divider <= ser_reset_n_delay_divider;
-                            ser_reset_n_HIGH_divider <= ser_reset_n_HIGH_divider;
-                            ser_read_counter <= ser_read_counter;
-                            ser_read_delay_divider <= ser_read_delay_divider;
-                            ser_read_HIGH_divider <= ser_read_HIGH_divider;
-                            slow_ctrl_packet <= slow_ctrl_packet;
-                            slow_ctrl_packet_index <= slow_ctrl_packet_index;
-                            slow_ctrl_packet_available <= slow_ctrl_packet_available;
-                            pixel_row <= pixel_row;
-                            pixel_col <= pixel_col;
-                            pixel_available <= pixel_available;
+                            // set HIGH divider
                             case (signal)
-                                `CSA_RESET_N:
+                                `CSA_RESET_N_CODE:
                                     csa_reset_n_LOW_divider <= data;
-                                    sh_inf_LOW_divider <= sh_inf_LOW_divider;
-                                    sh_sup_LOW_divider <= sh_sup_LOW_divider;
-                                    adc_start_LOW_divider <= adc_start_LOW_divider;
-                                    ser_reset_n_LOW_divider <= ser_reset_n_LOW_divider;
-                                    ser_read_LOW_divider <= ser_read_LOW_divider;
-                                `SH_INF:
-                                    csa_reset_n_LOW_divider <= csa_reset_n_LOW_divider;
+                                `SH_INF_CODE:
                                     sh_inf_LOW_divider <= data;
-                                    sh_sup_LOW_divider <= sh_sup_LOW_divider;
-                                    adc_start_LOW_divider <= adc_start_LOW_divider;
-                                    ser_reset_n_LOW_divider <= ser_reset_n_LOW_divider;
-                                    ser_read_LOW_divider <= ser_read_LOW_divider;
-                                `SH_SUP:
-                                    csa_reset_n_LOW_divider <= csa_reset_n_LOW_divider;
-                                    sh_inf_LOW_divider <= sh_inf_LOW_divider;
+                                `SH_SUP_CODE:
                                     sh_sup_LOW_divider <= data;
-                                    adc_start_LOW_divider <= adc_start_LOW_divider;
-                                    ser_reset_n_LOW_divider <= ser_reset_n_LOW_divider;
-                                    ser_read_LOW_divider <= ser_read_LOW_divider;
-                                `ADC_START:
-                                    csa_reset_n_LOW_divider <= csa_reset_n_LOW_divider;
-                                    sh_inf_LOW_divider <= sh_inf_LOW_divider;
-                                    sh_sup_LOW_divider <= sh_sup_LOW_divider;
+                                `ADC_START_CODE:
                                     adc_start_LOW_divider <= data;
-                                    ser_reset_n_LOW_divider <= ser_reset_n_LOW_divider;
-                                    ser_read_LOW_divider <= ser_read_LOW_divider;
-                                `SER_RESET_N:
-                                    csa_reset_n_LOW_divider <= csa_reset_n_LOW_divider;
-                                    sh_inf_LOW_divider <= sh_inf_LOW_divider;
-                                    sh_sup_LOW_divider <= sh_sup_LOW_divider;
-                                    adc_start_LOW_divider <= adc_start_LOW_divider;
+                                `SER_RESET_N_CODE:
                                     ser_reset_n_LOW_divider <= data;
-                                    ser_read_LOW_divider <= ser_read_LOW_divider;
-                                `SER_READ:
-                                    csa_reset_n_LOW_divider <= csa_reset_n_LOW_divider;
-                                    sh_inf_LOW_divider <= sh_inf_LOW_divider;
-                                    sh_sup_LOW_divider <= sh_sup_LOW_divider;
-                                    adc_start_LOW_divider <= adc_start_LOW_divider;
-                                    ser_reset_n_LOW_divider <= ser_reset_n_LOW_divider;
+                                `SER_READ_CODE:
                                     ser_read_LOW_divider <= data;
                             endcase
-                        `SET_SLOW_CTRL_CMD:
-                            // keep everything that is not slow ctrl packet
-                            slow_ctrl_counter <= slow_ctrl_counter;
-                            slow_ctrl_divider <= slow_ctrl_divider;
-                            adc_counter <= adc_counter;
-                            adc_divider <= adc_divider;
-                            ser_counter <= ser_counter;
-                            ser_divider <= ser_divider;
-                            sel_counter <= sel_counter;
-                            sel_divider <= sel_divider;
-                            inj_counter <= inj_counter;
-                            inj_divider <= inj_divider;
-                            csa_reset_n_counter <= csa_reset_n_counter;
-                            csa_reset_n_delay_divider <= csa_reset_n_delay_divider;
-                            csa_reset_n_HIGH_divider <= csa_reset_n_HIGH_divider;
-                            csa_reset_n_LOW_divider <= csa_reset_n_LOW_divider;
-                            sh_inf_counter <= sh_inf_counter;
-                            sh_inf_delay_divider <= sh_inf_delay_divider;
-                            sh_inf_HIGH_divider <= sh_inf_HIGH_divider;
-                            sh_inf_LOW_divider <= sh_inf_LOW_divider;
-                            sh_sup_counter <= sh_sup_counter;
-                            sh_sup_delay_divider <= sh_sup_delay_divider;
-                            sh_sup_HIGH_divider <= sh_sup_HIGH_divider;
-                            sh_sup_LOW_divider <= sh_sup_LOW_divider;
-                            adc_start_counter <= adc_start_counter;
-                            adc_start_delay_divider <= adc_start_delay_divider;
-                            adc_start_HIGH_divider <= adc_start_HIGH_divider;
-                            adc_start_LOW_divider <= adc_start_LOW_divider;
-                            ser_reset_n_counter <= ser_reset_n_counter;
-                            ser_reset_n_delay_divider <= ser_reset_n_delay_divider;
-                            ser_reset_n_HIGH_divider <= ser_reset_n_HIGH_divider;
-                            ser_reset_n_LOW_divider <= ser_reset_n_LOW_divider;
-                            ser_read_counter <= ser_read_counter;
-                            ser_read_delay_divider <= ser_read_delay_divider;
-                            ser_read_HIGH_divider <= ser_read_HIGH_divider;
-                            ser_read_LOW_divider <= ser_read_LOW_divider;
-                            pixel_row <= pixel_row;
-                            pixel_col <= pixel_col;
-                            pixel_available <= pixel_available;
-
+                        `SET_SLOW_CTRL_CMD: begin
                             slow_ctrl_packet <= data;
                             slow_ctrl_packet_index <= '0;
                             slow_ctrl_packet_available <= 1'b1;
-                        `SET_PIXEL_CMD:
-                            slow_ctrl_counter <= slow_ctrl_counter;
-                            slow_ctrl_divider <= slow_ctrl_divider;
-                            adc_counter <= adc_counter;
-                            adc_divider <= adc_divider;
-                            ser_counter <= ser_counter;
-                            ser_divider <= ser_divider;
-                            sel_counter <= sel_counter;
-                            sel_divider <= sel_divider;
-                            inj_counter <= inj_counter;
-                            inj_divider <= inj_divider;
-                            csa_reset_n_counter <= csa_reset_n_counter;
-                            csa_reset_n_delay_divider <= csa_reset_n_delay_divider;
-                            csa_reset_n_HIGH_divider <= csa_reset_n_HIGH_divider;
-                            csa_reset_n_LOW_divider <= csa_reset_n_LOW_divider;
-                            sh_inf_counter <= sh_inf_counter;
-                            sh_inf_delay_divider <= sh_inf_delay_divider;
-                            sh_inf_HIGH_divider <= sh_inf_HIGH_divider;
-                            sh_inf_LOW_divider <= sh_inf_LOW_divider;
-                            sh_sup_counter <= sh_sup_counter;
-                            sh_sup_delay_divider <= sh_sup_delay_divider;
-                            sh_sup_HIGH_divider <= sh_sup_HIGH_divider;
-                            sh_sup_LOW_divider <= sh_sup_LOW_divider;
-                            adc_start_counter <= adc_start_counter;
-                            adc_start_delay_divider <= adc_start_delay_divider;
-                            adc_start_HIGH_divider <= adc_start_HIGH_divider;
-                            adc_start_LOW_divider <= adc_start_LOW_divider;
-                            ser_reset_n_counter <= ser_reset_n_counter;
-                            ser_reset_n_delay_divider <= ser_reset_n_delay_divider;
-                            ser_reset_n_HIGH_divider <= ser_reset_n_HIGH_divider;
-                            ser_reset_n_LOW_divider <= ser_reset_n_LOW_divider;
-                            ser_read_counter <= ser_read_counter;
-                            ser_read_delay_divider <= ser_read_delay_divider;
-                            ser_read_HIGH_divider <= ser_read_HIGH_divider;
-                            ser_read_LOW_divider <= ser_read_LOW_divider;
-                            slow_ctrl_packet <= slow_ctrl_packet;
-                            slow_ctrl_packet_index <= slow_ctrl_packet_index;
-                            slow_ctrl_packet_available <= slow_ctrl_packet_available;
-
+                        end
+                        `SET_PIXEL_CMD: begin
                             pixel_row <= data;
                             pixel_col <= data;
                             pixel_available <= 1'b1;
+                        end
                     endcase
                 end
                 CMD_SEND_SLOW: begin

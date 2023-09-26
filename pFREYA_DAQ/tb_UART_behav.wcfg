@@ -3,207 +3,69 @@
    <wave_state>
    </wave_state>
    <db_ref_list>
-      <db_ref path="tb_UART_behav.wdb" id="1">
+      <db_ref path="tb_uart_behav.wdb" id="1">
          <top_modules>
             <top_module name="glbl" />
-            <top_module name="ipif_pkg" />
-            <top_module name="lib_pkg" />
-            <top_module name="tb_UART" />
+            <top_module name="tb_uart" />
          </top_modules>
       </db_ref>
    </db_ref_list>
    <zoom_setting>
-      <ZoomStartTime time="0.000 ns"></ZoomStartTime>
-      <ZoomEndTime time="486.742 ns"></ZoomEndTime>
-      <Cursor1Time time="130.000 ns"></Cursor1Time>
+      <ZoomStartTime time="0.000000 us"></ZoomStartTime>
+      <ZoomEndTime time="664.073562 us"></ZoomEndTime>
+      <Cursor1Time time="0.130000 us"></Cursor1Time>
    </zoom_setting>
    <column_width_setting>
       <NameColumnWidth column_width="191"></NameColumnWidth>
-      <ValueColumnWidth column_width="84"></ValueColumnWidth>
+      <ValueColumnWidth column_width="68"></ValueColumnWidth>
    </column_width_setting>
-   <WVObjectSize size="46" />
-   <wvobject fp_name="/tb_UART/uart_s_axi_aclk" type="logic">
-      <obj_property name="ElementShortName">uart_s_axi_aclk</obj_property>
-      <obj_property name="ObjectShortName">uart_s_axi_aclk</obj_property>
+   <WVObjectSize size="12" />
+   <wvobject fp_name="/tb_uart/clock" type="logic">
+      <obj_property name="ElementShortName">clock</obj_property>
+      <obj_property name="ObjectShortName">clock</obj_property>
    </wvobject>
-   <wvobject fp_name="/tb_UART/uart_s_axi_aresetn" type="logic">
-      <obj_property name="ElementShortName">uart_s_axi_aresetn</obj_property>
-      <obj_property name="ObjectShortName">uart_s_axi_aresetn</obj_property>
+   <wvobject fp_name="/tb_uart/rx_ser" type="logic">
+      <obj_property name="ElementShortName">rx_ser</obj_property>
+      <obj_property name="ObjectShortName">rx_ser</obj_property>
    </wvobject>
-   <wvobject fp_name="/tb_UART/uart_s_axi_awvalid" type="logic">
-      <obj_property name="ElementShortName">uart_s_axi_awvalid</obj_property>
-      <obj_property name="ObjectShortName">uart_s_axi_awvalid</obj_property>
+   <wvobject fp_name="/tb_uart/rx_byte" type="array">
+      <obj_property name="ElementShortName">rx_byte[7:0]</obj_property>
+      <obj_property name="ObjectShortName">rx_byte[7:0]</obj_property>
    </wvobject>
-   <wvobject fp_name="/tb_UART/uart_s_axi_wvalid" type="logic">
-      <obj_property name="ElementShortName">uart_s_axi_wvalid</obj_property>
-      <obj_property name="ObjectShortName">uart_s_axi_wvalid</obj_property>
+   <wvobject fp_name="/tb_uart/rx_dv" type="logic">
+      <obj_property name="ElementShortName">rx_dv</obj_property>
+      <obj_property name="ObjectShortName">rx_dv</obj_property>
    </wvobject>
-   <wvobject fp_name="/tb_UART/uart_s_axi_bready" type="logic">
-      <obj_property name="ElementShortName">uart_s_axi_bready</obj_property>
-      <obj_property name="ObjectShortName">uart_s_axi_bready</obj_property>
+   <wvobject fp_name="/tb_uart/tx_dv" type="logic">
+      <obj_property name="ElementShortName">tx_dv</obj_property>
+      <obj_property name="ObjectShortName">tx_dv</obj_property>
    </wvobject>
-   <wvobject fp_name="/tb_UART/uart_s_axi_arvalid" type="logic">
-      <obj_property name="ElementShortName">uart_s_axi_arvalid</obj_property>
-      <obj_property name="ObjectShortName">uart_s_axi_arvalid</obj_property>
+   <wvobject fp_name="/tb_uart/tx_byte" type="array">
+      <obj_property name="ElementShortName">tx_byte[7:0]</obj_property>
+      <obj_property name="ObjectShortName">tx_byte[7:0]</obj_property>
    </wvobject>
-   <wvobject fp_name="/tb_UART/uart_s_axi_rready" type="logic">
-      <obj_property name="ElementShortName">uart_s_axi_rready</obj_property>
-      <obj_property name="ObjectShortName">uart_s_axi_rready</obj_property>
+   <wvobject fp_name="/tb_uart/tx_done" type="logic">
+      <obj_property name="ElementShortName">tx_done</obj_property>
+      <obj_property name="ObjectShortName">tx_done</obj_property>
    </wvobject>
-   <wvobject fp_name="/tb_UART/uart_s_axi_awready" type="logic">
-      <obj_property name="ElementShortName">uart_s_axi_awready</obj_property>
-      <obj_property name="ObjectShortName">uart_s_axi_awready</obj_property>
+   <wvobject fp_name="/tb_uart/tx_active" type="logic">
+      <obj_property name="ElementShortName">tx_active</obj_property>
+      <obj_property name="ObjectShortName">tx_active</obj_property>
    </wvobject>
-   <wvobject fp_name="/tb_UART/uart_s_axi_wready" type="logic">
-      <obj_property name="ElementShortName">uart_s_axi_wready</obj_property>
-      <obj_property name="ObjectShortName">uart_s_axi_wready</obj_property>
+   <wvobject fp_name="/tb_uart/tx_ser" type="logic">
+      <obj_property name="ElementShortName">tx_ser</obj_property>
+      <obj_property name="ObjectShortName">tx_ser</obj_property>
    </wvobject>
-   <wvobject fp_name="/tb_UART/uart_s_axi_bvalid" type="logic">
-      <obj_property name="ElementShortName">uart_s_axi_bvalid</obj_property>
-      <obj_property name="ObjectShortName">uart_s_axi_bvalid</obj_property>
+   <wvobject fp_name="/tb_uart/rx_s_ser" type="logic">
+      <obj_property name="ElementShortName">rx_s_ser</obj_property>
+      <obj_property name="ObjectShortName">rx_s_ser</obj_property>
    </wvobject>
-   <wvobject fp_name="/tb_UART/uart_s_axi_rvalid" type="logic">
-      <obj_property name="ElementShortName">uart_s_axi_rvalid</obj_property>
-      <obj_property name="ObjectShortName">uart_s_axi_rvalid</obj_property>
+   <wvobject fp_name="/tb_uart/rx_s_byte" type="array">
+      <obj_property name="ElementShortName">rx_s_byte[7:0]</obj_property>
+      <obj_property name="ObjectShortName">rx_s_byte[7:0]</obj_property>
    </wvobject>
-   <wvobject fp_name="/tb_UART/uart_s_axi_arready" type="logic">
-      <obj_property name="ElementShortName">uart_s_axi_arready</obj_property>
-      <obj_property name="ObjectShortName">uart_s_axi_arready</obj_property>
-   </wvobject>
-   <wvobject fp_name="/tb_UART/uart_s_axi_awaddr" type="array">
-      <obj_property name="ElementShortName">uart_s_axi_awaddr[3:0]</obj_property>
-      <obj_property name="ObjectShortName">uart_s_axi_awaddr[3:0]</obj_property>
-   </wvobject>
-   <wvobject fp_name="/tb_UART/uart_s_axi_araddr" type="array">
-      <obj_property name="ElementShortName">uart_s_axi_araddr[3:0]</obj_property>
-      <obj_property name="ObjectShortName">uart_s_axi_araddr[3:0]</obj_property>
-   </wvobject>
-   <wvobject fp_name="/tb_UART/uart_s_axi_wdata" type="array">
-      <obj_property name="ElementShortName">uart_s_axi_wdata[31:0]</obj_property>
-      <obj_property name="ObjectShortName">uart_s_axi_wdata[31:0]</obj_property>
-   </wvobject>
-   <wvobject fp_name="/tb_UART/uart_s_axi_rdata" type="array">
-      <obj_property name="ElementShortName">uart_s_axi_rdata[31:0]</obj_property>
-      <obj_property name="ObjectShortName">uart_s_axi_rdata[31:0]</obj_property>
-   </wvobject>
-   <wvobject fp_name="/tb_UART/uart_s_axi_wstrb" type="array">
-      <obj_property name="ElementShortName">uart_s_axi_wstrb[3:0]</obj_property>
-      <obj_property name="ObjectShortName">uart_s_axi_wstrb[3:0]</obj_property>
-   </wvobject>
-   <wvobject fp_name="/tb_UART/uart_s_axi_bresp" type="array">
-      <obj_property name="ElementShortName">uart_s_axi_bresp[1:0]</obj_property>
-      <obj_property name="ObjectShortName">uart_s_axi_bresp[1:0]</obj_property>
-   </wvobject>
-   <wvobject fp_name="/tb_UART/uart_s_axi_rresp" type="array">
-      <obj_property name="ElementShortName">uart_s_axi_rresp[1:0]</obj_property>
-      <obj_property name="ObjectShortName">uart_s_axi_rresp[1:0]</obj_property>
-   </wvobject>
-   <wvobject fp_name="/tb_UART/uart_interrupt" type="logic">
-      <obj_property name="ElementShortName">uart_interrupt</obj_property>
-      <obj_property name="ObjectShortName">uart_interrupt</obj_property>
-   </wvobject>
-   <wvobject fp_name="/tb_UART/uart_rx" type="logic">
-      <obj_property name="ElementShortName">uart_rx</obj_property>
-      <obj_property name="ObjectShortName">uart_rx</obj_property>
-   </wvobject>
-   <wvobject fp_name="/tb_UART/uart_tx" type="logic">
-      <obj_property name="ElementShortName">uart_tx</obj_property>
-      <obj_property name="ObjectShortName">uart_tx</obj_property>
-   </wvobject>
-   <wvobject fp_name="/tb_UART/data" type="array">
-      <obj_property name="ElementShortName">data[31:0]</obj_property>
-      <obj_property name="ObjectShortName">data[31:0]</obj_property>
-   </wvobject>
-   <wvobject fp_name="/tb_UART/uartmaster_s_axi_aclk" type="logic">
-      <obj_property name="ElementShortName">uartmaster_s_axi_aclk</obj_property>
-      <obj_property name="ObjectShortName">uartmaster_s_axi_aclk</obj_property>
-   </wvobject>
-   <wvobject fp_name="/tb_UART/uartmaster_s_axi_aresetn" type="logic">
-      <obj_property name="ElementShortName">uartmaster_s_axi_aresetn</obj_property>
-      <obj_property name="ObjectShortName">uartmaster_s_axi_aresetn</obj_property>
-   </wvobject>
-   <wvobject fp_name="/tb_UART/uartmaster_s_axi_awvalid" type="logic">
-      <obj_property name="ElementShortName">uartmaster_s_axi_awvalid</obj_property>
-      <obj_property name="ObjectShortName">uartmaster_s_axi_awvalid</obj_property>
-   </wvobject>
-   <wvobject fp_name="/tb_UART/uartmaster_s_axi_wvalid" type="logic">
-      <obj_property name="ElementShortName">uartmaster_s_axi_wvalid</obj_property>
-      <obj_property name="ObjectShortName">uartmaster_s_axi_wvalid</obj_property>
-   </wvobject>
-   <wvobject fp_name="/tb_UART/uartmaster_s_axi_bready" type="logic">
-      <obj_property name="ElementShortName">uartmaster_s_axi_bready</obj_property>
-      <obj_property name="ObjectShortName">uartmaster_s_axi_bready</obj_property>
-   </wvobject>
-   <wvobject fp_name="/tb_UART/uartmaster_s_axi_arvalid" type="logic">
-      <obj_property name="ElementShortName">uartmaster_s_axi_arvalid</obj_property>
-      <obj_property name="ObjectShortName">uartmaster_s_axi_arvalid</obj_property>
-   </wvobject>
-   <wvobject fp_name="/tb_UART/uartmaster_s_axi_rready" type="logic">
-      <obj_property name="ElementShortName">uartmaster_s_axi_rready</obj_property>
-      <obj_property name="ObjectShortName">uartmaster_s_axi_rready</obj_property>
-   </wvobject>
-   <wvobject fp_name="/tb_UART/uartmaster_s_axi_awready" type="logic">
-      <obj_property name="ElementShortName">uartmaster_s_axi_awready</obj_property>
-      <obj_property name="ObjectShortName">uartmaster_s_axi_awready</obj_property>
-   </wvobject>
-   <wvobject fp_name="/tb_UART/uartmaster_s_axi_wready" type="logic">
-      <obj_property name="ElementShortName">uartmaster_s_axi_wready</obj_property>
-      <obj_property name="ObjectShortName">uartmaster_s_axi_wready</obj_property>
-   </wvobject>
-   <wvobject fp_name="/tb_UART/uartmaster_s_axi_bvalid" type="logic">
-      <obj_property name="ElementShortName">uartmaster_s_axi_bvalid</obj_property>
-      <obj_property name="ObjectShortName">uartmaster_s_axi_bvalid</obj_property>
-   </wvobject>
-   <wvobject fp_name="/tb_UART/uartmaster_s_axi_rvalid" type="logic">
-      <obj_property name="ElementShortName">uartmaster_s_axi_rvalid</obj_property>
-      <obj_property name="ObjectShortName">uartmaster_s_axi_rvalid</obj_property>
-   </wvobject>
-   <wvobject fp_name="/tb_UART/uartmaster_s_axi_arready" type="logic">
-      <obj_property name="ElementShortName">uartmaster_s_axi_arready</obj_property>
-      <obj_property name="ObjectShortName">uartmaster_s_axi_arready</obj_property>
-   </wvobject>
-   <wvobject fp_name="/tb_UART/uartmaster_s_axi_awaddr" type="array">
-      <obj_property name="ElementShortName">uartmaster_s_axi_awaddr[3:0]</obj_property>
-      <obj_property name="ObjectShortName">uartmaster_s_axi_awaddr[3:0]</obj_property>
-   </wvobject>
-   <wvobject fp_name="/tb_UART/uartmaster_s_axi_araddr" type="array">
-      <obj_property name="ElementShortName">uartmaster_s_axi_araddr[3:0]</obj_property>
-      <obj_property name="ObjectShortName">uartmaster_s_axi_araddr[3:0]</obj_property>
-   </wvobject>
-   <wvobject fp_name="/tb_UART/uartmaster_s_axi_wdata" type="array">
-      <obj_property name="ElementShortName">uartmaster_s_axi_wdata[31:0]</obj_property>
-      <obj_property name="ObjectShortName">uartmaster_s_axi_wdata[31:0]</obj_property>
-   </wvobject>
-   <wvobject fp_name="/tb_UART/uartmaster_s_axi_rdata" type="array">
-      <obj_property name="ElementShortName">uartmaster_s_axi_rdata[31:0]</obj_property>
-      <obj_property name="ObjectShortName">uartmaster_s_axi_rdata[31:0]</obj_property>
-   </wvobject>
-   <wvobject fp_name="/tb_UART/uartmaster_s_axi_wstrb" type="array">
-      <obj_property name="ElementShortName">uartmaster_s_axi_wstrb[3:0]</obj_property>
-      <obj_property name="ObjectShortName">uartmaster_s_axi_wstrb[3:0]</obj_property>
-   </wvobject>
-   <wvobject fp_name="/tb_UART/uartmaster_s_axi_bresp" type="array">
-      <obj_property name="ElementShortName">uartmaster_s_axi_bresp[1:0]</obj_property>
-      <obj_property name="ObjectShortName">uartmaster_s_axi_bresp[1:0]</obj_property>
-   </wvobject>
-   <wvobject fp_name="/tb_UART/uartmaster_s_axi_rresp" type="array">
-      <obj_property name="ElementShortName">uartmaster_s_axi_rresp[1:0]</obj_property>
-      <obj_property name="ObjectShortName">uartmaster_s_axi_rresp[1:0]</obj_property>
-   </wvobject>
-   <wvobject fp_name="/tb_UART/uartmaster_interrupt" type="logic">
-      <obj_property name="ElementShortName">uartmaster_interrupt</obj_property>
-      <obj_property name="ObjectShortName">uartmaster_interrupt</obj_property>
-   </wvobject>
-   <wvobject fp_name="/tb_UART/uartmaster_rx" type="logic">
-      <obj_property name="ElementShortName">uartmaster_rx</obj_property>
-      <obj_property name="ObjectShortName">uartmaster_rx</obj_property>
-   </wvobject>
-   <wvobject fp_name="/tb_UART/uartmaster_tx" type="logic">
-      <obj_property name="ElementShortName">uartmaster_tx</obj_property>
-      <obj_property name="ObjectShortName">uartmaster_tx</obj_property>
-   </wvobject>
-   <wvobject fp_name="/tb_UART/datamaster" type="array">
-      <obj_property name="ElementShortName">datamaster[31:0]</obj_property>
-      <obj_property name="ObjectShortName">datamaster[31:0]</obj_property>
+   <wvobject fp_name="/tb_uart/rx_s_dv" type="logic">
+      <obj_property name="ElementShortName">rx_s_dv</obj_property>
+      <obj_property name="ObjectShortName">rx_s_dv</obj_property>
    </wvobject>
 </wave_config>

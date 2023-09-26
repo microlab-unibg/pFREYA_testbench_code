@@ -1,0 +1,16 @@
+Copyright 1986-2022 Xilinx, Inc. All Rights Reserved. Copyright 2022-2023 Advanced Micro Devices, Inc. All Rights Reserved.
+---------------------------------------------------------------------------------------------------------------------------------------------
+| Tool Version : Vivado v.2023.1 (win64) Build 3865809 Sun May  7 15:05:29 MDT 2023
+| Date         : Wed Sep 20 11:41:04 2023
+| Host         : pollostrazon_pc running 64-bit major release  (build 9200)
+| Command      : upgrade_ip
+| Device       : xcku5p-ffvb676-2-e
+---------------------------------------------------------------------------------------------------------------------------------------------
+
+Upgrade Log for IP 'axi_uartlite_pFREYA'
+
+1. Summary
+----------
+
+SUCCESS in the upgrade of axi_uartlite_pFREYA (xilinx.com:ip:axi_uartlite:2.0) from (Rev. 31) to (Rev. 32)
+
