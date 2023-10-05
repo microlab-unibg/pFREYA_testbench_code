@@ -1,7 +1,7 @@
 `timescale 1ns / 1ps
 //////////////////////////////////////////////////////////////////////////////////
-// Company: 
-// Engineer: 
+// Company: Microlab - Università degli Studi di Bergamo
+// Engineer: Paolo Lazzaroni
 // 
 // Create Date: 09/26/2023 05:08:29 PM
 // Design Name: 

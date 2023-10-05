@@ -42,19 +42,22 @@ module pFREYA_IF(
         CMD_EVAL,
         CMD_ERR,
         CMD_READ_DATA,
+        CMD_SET,
+        CMD_SEND_SLOW,
+        CMD_SEL_PIX,
         SEND_SLOW_CTRL,
         SEND_PIXEL_SEL
     } state, next;
 
     // CK internal
     // generated with counters that reach a divisor
-    logic [SLOW_CNT_N-1:0] slow_ctrl_counter, slow_ctrl_divider;
-    logic [SEL_CNT_N-1:0] sel_counter, sel_divider;
-    logic [ADC_CNT_N-1:0] adc_counter, adc_divider;
-    logic [INJ_CNT_N-1:0] inj_counter, inj_divider;
-    logic [SER_CNT_N-1:0] ser_counter, ser_divider;
+    logic [CK_CNT_N-1:0] slow_ctrl_cnt, slow_ctrl_div;
+    logic [CK_CNT_N-1:0] sel_cnt, sel_div;
+    logic [CK_CNT_N-1:0] adc_cnt, adc_div;
+    logic [CK_CNT_N-1:0] inj_cnt, inj_div;
+    logic [CK_CNT_N-1:0] ser_cnt, ser_div;
     // for selection
-    logic sel_ck, sel_in; // internal clock temporisation
+    logic sel_ck; // internal clock temporisation
     logic [PIXEL_COL_N-1:0] sel_ckcol_cnt;
     logic [PIXEL_ROW_N-1:0] sel_ckrow_cnt;
     // for injection
@@ -62,39 +65,51 @@ module pFREYA_IF(
     // fast control timing
     // generated with counter that reach a divisor, where the divisor changes based on flag
     // flag value is 0 for delay, 1 for HIGH, 2 for LOW (the actual polarity is in the name of the signal)
-    logic [FAST_CTRL_N-1:0] csa_reset_n_flag, csa_reset_n_counter, csa_reset_n_delay_divider, csa_reset_n_HIGH_divider, csa_reset_n_LOW_divider;
-    logic [FAST_CTRL_N-1:0] sh_inf_flag, sh_inf_counter, sh_inf_delay_divider, sh_inf_HIGH_divider, sh_inf_LOW_divider;
-    logic [FAST_CTRL_N-1:0] sh_sup_flag, sh_sup_counter, sh_sup_delay_divider, sh_sup_HIGH_divider, sh_sup_LOW_divider;
-    logic [FAST_CTRL_N-1:0] adc_start_flag, adc_start_counter, adc_start_delay_divider, adc_start_HIGH_divider, adc_start_LOW_divider;
-    logic [FAST_CTRL_N-1:0] ser_reset_n_flag, ser_reset_n_counter, ser_reset_n_delay_divider, ser_reset_n_HIGH_divider, ser_reset_n_LOW_divider;
-    logic [FAST_CTRL_N-1:0] ser_read_flag, ser_read_counter, ser_read_delay_divider, ser_read_HIGH_divider, ser_read_LOW_divider;
+    logic [FAST_CTRL_FLAG_N-1:0] csa_reset_n_flag;
+    logic [FAST_CTRL_FLAG_N-1:0] sh_phi1d_inf_flag;
+    logic [FAST_CTRL_FLAG_N-1:0] sh_phi1d_sup_flag;
+    logic [FAST_CTRL_FLAG_N-1:0] adc_start_flag;
+    logic [FAST_CTRL_FLAG_N-1:0] ser_reset_n_flag;
+    logic [FAST_CTRL_FLAG_N-1:0] ser_read_flag;
+    logic [FAST_CTRL_N-1:0] csa_reset_n_cnt, csa_reset_n_delay_div, csa_reset_n_HIGH_div, csa_reset_n_LOW_div;
+    logic [FAST_CTRL_N-1:0] sh_phi1d_inf_cnt, sh_phi1d_inf_delay_div, sh_phi1d_inf_HIGH_div, sh_phi1d_inf_LOW_div;
+    logic [FAST_CTRL_N-1:0] sh_phi1d_sup_cnt, sh_phi1d_sup_delay_div, sh_phi1d_sup_HIGH_div, sh_phi1d_sup_LOW_div;
+    logic [FAST_CTRL_N-1:0] adc_start_cnt, adc_start_delay_div, adc_start_HIGH_div, adc_start_LOW_div;
+    logic [FAST_CTRL_N-1:0] ser_reset_n_cnt, ser_reset_n_delay_div, ser_reset_n_HIGH_div, ser_reset_n_LOW_div;
+    logic [FAST_CTRL_N-1:0] ser_read_cnt, ser_read_delay_div, ser_read_HIGH_div, ser_read_LOW_div;
 
     // control logic
     logic uart_valid, cmd_available, data_available, slow_ctrl_packet_available, slow_ctrl_packet_sent, sel_available, sel_sent, pixel_available, sel_ckcol_sent, sel_ckrow_sent;
     // data
     logic [FAST_CTRL_N-1:0] slow_ctrl_packet_index;
     logic [UART_PACKET_SIZE-1:0] slow_ctrl_packet, pixel_row, pixel_col, data;
-    logic [CMD_SIZE-1:0] cmd;
+    logic [CMD_CODE_SIZE-1:0] cmd;
     logic [DATA_SIZE-1:0] signal;
 
 //======================= COMB and FF ================================
+//======================= STD CLOCKS =================================
+// Standard means that should repeat with duty cycle = 50%
     // slow ctrl clock generation
     always_ff @(posedge ck, posedge reset) begin: slow_ctrl_ck_generation
         if (reset) begin
             slow_ctrl_ck <= 1'b0;
-            slow_ctrl_counter <= '0;
+            slow_ctrl_cnt <= '0;
         end
         else if (~slow_ctrl_reset_n) begin
             slow_ctrl_ck <= 1'b0;
-            slow_ctrl_counter <= '0;
+            slow_ctrl_cnt <= '0;
         end
-        else if (slow_ctrl_counter == slow_ctrl_divider) begin
+        else if (slow_ctrl_div == '0) begin
+            slow_ctrl_ck <= 1'b0;
+            slow_ctrl_cnt <= '0;
+        end
+        else if (slow_ctrl_cnt == slow_ctrl_div-1) begin
             slow_ctrl_ck <= ~slow_ctrl_ck;
-            slow_ctrl_counter <= '0;
+            slow_ctrl_cnt <= '0;
         end
         else begin
             slow_ctrl_ck <= slow_ctrl_ck;
-            slow_ctrl_counter <= slow_ctrl_counter + 1'b1;
+            slow_ctrl_cnt <= slow_ctrl_cnt + 1'b1;
         end
     end
 
@@ -102,19 +117,23 @@ module pFREYA_IF(
     always_ff @(posedge ck, posedge reset) begin: sel_ck_generation
         if (reset) begin
             sel_ck <= 1'b0;
-            sel_counter <= '0;
+            sel_cnt <= -1;
         end
-        else if (~sel_init_n) begin
+        else if (sel_init_n) begin
             sel_ck <= 1'b0;
-            sel_counter <= '0;
+            sel_cnt <= -1;
         end
-        else if (sel_counter == sel_divider) begin
+        else if (sel_div == '0) begin
+            sel_ck <= 1'b0;
+            sel_cnt <= -1;
+        end
+        else if (sel_cnt == sel_div-1) begin
             sel_ck <= ~sel_ck;
-            sel_counter <= '0;
+            sel_cnt <= '0;
         end
         else begin
             sel_ck <= sel_ck;
-            sel_counter <= sel_counter + 1'b1;
+            sel_cnt <= sel_cnt + 1'b1;
         end
     end
 
@@ -122,19 +141,23 @@ module pFREYA_IF(
     always_ff @(posedge ck, posedge reset) begin: adc_ck_generation
         if (reset) begin
             adc_ck <= 1'b0;
-            adc_counter <= '0;
+            adc_cnt <= '0;
         end
-        else if (adc_start) begin
+        else if (~adc_start) begin
             adc_ck <= 1'b0;
-            adc_counter <= '0;
+            adc_cnt <= '0;
         end
-        else if (adc_counter == adc_divider) begin
+        else if (adc_div == '0) begin
+            adc_ck <= 1'b0;
+            adc_cnt <= '0;
+        end
+        else if (adc_cnt == adc_div-1) begin
             adc_ck <= ~adc_ck;
-            adc_counter <= '0;
+            adc_cnt <= '0;
         end
         else begin
             adc_ck <= adc_ck;
-            adc_counter <= adc_counter + 1'b1;
+            adc_cnt <= adc_cnt + 1'b1;
         end
     end
 
@@ -142,19 +165,23 @@ module pFREYA_IF(
     always_ff @(posedge ck, posedge reset) begin: inj_stb_generation
         if (reset) begin
             inj_stb <= 1'b0;
-            inj_counter <= '0;
+            inj_cnt <= '0;
         end
-        else if (inj_start) begin
+        else if (~inj_start) begin
             inj_stb <= 1'b0;
-            inj_counter <= '0;
+            inj_cnt <= '0;
         end
-        else if (inj_counter == inj_divider) begin
+        else if (inj_div == '0) begin
+            inj_stb <= 1'b0;
+            inj_cnt <= '0;
+        end
+        else if (inj_cnt == inj_div-1) begin
             inj_stb <= ~inj_stb;
-            inj_counter <= '0;
+            inj_cnt <= '0;
         end
         else begin
             inj_stb <= inj_stb;
-            inj_counter <= inj_counter + 1'b1;
+            inj_cnt <= inj_cnt + 1'b1;
         end
     end
 
@@ -162,22 +189,281 @@ module pFREYA_IF(
     always_ff @(posedge ck, posedge reset) begin: ser_ck_generation
         if (reset) begin
             ser_ck <= 1'b0;
-            ser_counter <= '0;
+            ser_cnt <= '0;
         end
         else if (~ser_reset_n) begin
             ser_ck <= 1'b0;
-            ser_counter <= '0;
+            ser_cnt <= '0;
         end
-        else if (ser_counter == ser_divider) begin
+        else if (ser_div == '0) begin
+            ser_ck <= 1'b0;
+            ser_cnt <= '0;
+        end
+        else if (ser_cnt == ser_div-1) begin
             ser_ck <= ~ser_ck;
-            ser_counter <= '0;
+            ser_cnt <= '0;
         end
         else begin
             ser_ck <= ser_ck;
-            ser_counter <= ser_counter + 1'b1;
+            ser_cnt <= ser_cnt + 1'b1;
+        end
+    end
+//===================== END STD CLOCKS ===============================
+
+//====================== FAST CONTROL ================================
+// These are the fast controls, managed in a similar ways as the clocks, with two different dividers for high and low state
+    always_ff @(posedge ck, posedge reset) begin: csa_reset_n_generation
+        if (reset) begin
+            csa_reset_n <= 1'b1;
+            csa_reset_n_cnt <= '0;
+            csa_reset_n_flag <= FAST_CTRL_DELAY;
+        end
+        else if (csa_reset_n_flag == FAST_CTRL_DELAY &&
+                 csa_reset_n_delay_div == '0) begin
+            csa_reset_n <= 1'b1;
+            csa_reset_n_cnt <= '0;
+            csa_reset_n_flag <= FAST_CTRL_DELAY;
+        end
+        else if (csa_reset_n_HIGH_div == '0 ||
+                 csa_reset_n_LOW_div == '0    ) begin
+            csa_reset_n <= 1'b1;
+            csa_reset_n_cnt <= '0;
+            csa_reset_n_flag <= FAST_CTRL_DELAY;
+        end
+        else if (csa_reset_n_flag == FAST_CTRL_DELAY &&
+                 csa_reset_n_cnt == csa_reset_n_delay_div-1) begin
+            csa_reset_n <= ~csa_reset_n;
+            csa_reset_n_cnt <= '0;
+            csa_reset_n_flag <= FAST_CTRL_HIGH;
+        end
+        else if (csa_reset_n_flag == FAST_CTRL_HIGH &&
+                 csa_reset_n_cnt == csa_reset_n_HIGH_div-1) begin
+            csa_reset_n <= ~csa_reset_n;
+            csa_reset_n_cnt <= '0;
+            csa_reset_n_flag <= FAST_CTRL_LOW;
+        end
+        else if (csa_reset_n_flag == FAST_CTRL_LOW &&
+                 csa_reset_n_cnt == csa_reset_n_LOW_div-1) begin
+            csa_reset_n <= ~csa_reset_n;
+            csa_reset_n_cnt <= '0;
+            csa_reset_n_flag <= FAST_CTRL_HIGH;
+        end
+        else begin
+            csa_reset_n <= csa_reset_n;
+            csa_reset_n_cnt <= csa_reset_n_cnt + 1'b1;
         end
     end
 
+    always_ff @(posedge ck, posedge reset) begin: sh_phi1d_inf_generation
+        if (reset) begin
+            sh_phi1d_inf <= 1'b0;
+            sh_phi1d_inf_cnt <= '0;
+            sh_phi1d_inf_flag <= FAST_CTRL_DELAY;
+        end
+        else if (sh_phi1d_inf_flag == FAST_CTRL_DELAY &&
+                 sh_phi1d_inf_delay_div == '0) begin
+            sh_phi1d_inf <= 1'b0;
+            sh_phi1d_inf_cnt <= '0;
+            sh_phi1d_inf_flag <= FAST_CTRL_DELAY;
+        end
+        else if (sh_phi1d_inf_HIGH_div == '0 ||
+                 sh_phi1d_inf_LOW_div == '0    ) begin
+            sh_phi1d_inf <= 1'b0;
+            sh_phi1d_inf_cnt <= '0;
+            sh_phi1d_inf_flag <= FAST_CTRL_DELAY;
+        end
+        else if (sh_phi1d_inf_flag == FAST_CTRL_DELAY &&
+                 sh_phi1d_inf_cnt == sh_phi1d_inf_delay_div-1) begin
+            sh_phi1d_inf <= ~sh_phi1d_inf;
+            sh_phi1d_inf_cnt <= '0;
+            sh_phi1d_inf_flag <= FAST_CTRL_HIGH;
+        end
+        else if (sh_phi1d_inf_flag == FAST_CTRL_HIGH &&
+                 sh_phi1d_inf_cnt == sh_phi1d_inf_HIGH_div-1) begin
+            sh_phi1d_inf <= ~sh_phi1d_inf;
+            sh_phi1d_inf_cnt <= '0;
+            sh_phi1d_inf_flag <= FAST_CTRL_LOW;
+        end
+        else if (sh_phi1d_inf_flag == FAST_CTRL_LOW &&
+                 sh_phi1d_inf_cnt == sh_phi1d_inf_LOW_div-1) begin
+            sh_phi1d_inf <= ~sh_phi1d_inf;
+            sh_phi1d_inf_cnt <= '0;
+            sh_phi1d_inf_flag <= FAST_CTRL_HIGH;
+        end
+        else begin
+            sh_phi1d_inf <= sh_phi1d_inf;
+            sh_phi1d_inf_cnt <= sh_phi1d_inf_cnt + 1'b1;
+        end
+    end
+
+    always_ff @(posedge ck, posedge reset) begin: sh_phi1d_sup_generation
+        if (reset) begin
+            sh_phi1d_sup <= 1'b0;
+            sh_phi1d_sup_cnt <= '0;
+            sh_phi1d_sup_flag <= FAST_CTRL_DELAY;
+        end
+        else if (sh_phi1d_sup_flag == FAST_CTRL_DELAY &&
+                 sh_phi1d_sup_delay_div == '0) begin
+            sh_phi1d_sup <= 1'b0;
+            sh_phi1d_sup_cnt <= '0;
+            sh_phi1d_sup_flag <= FAST_CTRL_DELAY;
+        end
+        else if (sh_phi1d_sup_HIGH_div == '0 ||
+                 sh_phi1d_sup_LOW_div == '0    ) begin
+            sh_phi1d_sup <= 1'b0;
+            sh_phi1d_sup_cnt <= '0;
+            sh_phi1d_sup_flag <= FAST_CTRL_DELAY;
+        end
+        else if (sh_phi1d_sup_flag == FAST_CTRL_DELAY &&
+                 sh_phi1d_sup_cnt == sh_phi1d_sup_delay_div-1) begin
+            sh_phi1d_sup <= ~sh_phi1d_sup;
+            sh_phi1d_sup_cnt <= '0;
+            sh_phi1d_sup_flag <= FAST_CTRL_HIGH;
+        end
+        else if (sh_phi1d_sup_flag == FAST_CTRL_HIGH &&
+                 sh_phi1d_sup_cnt == sh_phi1d_sup_HIGH_div-1) begin
+            sh_phi1d_sup <= ~sh_phi1d_sup;
+            sh_phi1d_sup_cnt <= '0;
+            sh_phi1d_sup_flag <= FAST_CTRL_LOW;
+        end
+        else if (sh_phi1d_sup_flag == FAST_CTRL_LOW &&
+                 sh_phi1d_sup_cnt == sh_phi1d_sup_LOW_div-1) begin
+            sh_phi1d_sup <= ~sh_phi1d_sup;
+            sh_phi1d_sup_cnt <= '0;
+            sh_phi1d_sup_flag <= FAST_CTRL_HIGH;
+        end
+        else begin
+            sh_phi1d_sup <= sh_phi1d_sup;
+            sh_phi1d_sup_cnt <= sh_phi1d_sup_cnt + 1'b1;
+        end
+    end
+
+    always_ff @(posedge ck, posedge reset) begin: adc_start_generation
+        if (reset) begin
+            adc_start <= 1'b0;
+            adc_start_cnt <= '0;
+            adc_start_flag <= FAST_CTRL_DELAY;
+        end
+        else if (adc_start_flag == FAST_CTRL_DELAY &&
+                 adc_start_delay_div == '0) begin
+            adc_start <= 1'b0;
+            adc_start_cnt <= '0;
+            adc_start_flag <= FAST_CTRL_DELAY;
+        end
+        else if (adc_start_HIGH_div == '0 ||
+                 adc_start_LOW_div == '0    ) begin
+            adc_start <= 1'b0;
+            adc_start_cnt <= '0;
+            adc_start_flag <= FAST_CTRL_DELAY;
+        end
+        else if (adc_start_flag == FAST_CTRL_DELAY &&
+                 adc_start_cnt == adc_start_delay_div-1) begin
+            adc_start <= ~adc_start;
+            adc_start_cnt <= '0;
+            adc_start_flag <= FAST_CTRL_HIGH;
+        end
+        else if (adc_start_flag == FAST_CTRL_HIGH &&
+                 adc_start_cnt == adc_start_HIGH_div-1) begin
+            adc_start <= ~adc_start;
+            adc_start_cnt <= '0;
+            adc_start_flag <= FAST_CTRL_LOW;
+        end
+        else if (adc_start_flag == FAST_CTRL_LOW &&
+                 adc_start_cnt == adc_start_LOW_div-1) begin
+            adc_start <= ~adc_start;
+            adc_start_cnt <= '0;
+            adc_start_flag <= FAST_CTRL_HIGH;
+        end
+        else begin
+            adc_start <= adc_start;
+            adc_start_cnt <= adc_start_cnt + 1'b1;
+        end
+    end
+
+    always_ff @(posedge ck, posedge reset) begin: ser_reset_n_generation
+        if (reset) begin
+            ser_reset_n <= 1'b1;
+            ser_reset_n_cnt <= '0;
+            ser_reset_n_flag <= FAST_CTRL_DELAY;
+        end
+        else if (ser_reset_n_flag == FAST_CTRL_DELAY &&
+                 ser_reset_n_delay_div == '0) begin
+            ser_reset_n <= 1'b1;
+            ser_reset_n_cnt <= '0;
+            ser_reset_n_flag <= FAST_CTRL_DELAY;
+        end
+        else if (ser_reset_n_HIGH_div == '0 ||
+                 ser_reset_n_LOW_div == '0    ) begin
+            ser_reset_n <= 1'b1;
+            ser_reset_n_cnt <= '0;
+            ser_reset_n_flag <= FAST_CTRL_DELAY;
+        end
+        else if (ser_reset_n_flag == FAST_CTRL_DELAY &&
+                 ser_reset_n_cnt == ser_reset_n_delay_div-1) begin
+            ser_reset_n <= ~ser_reset_n;
+            ser_reset_n_cnt <= '0;
+            ser_reset_n_flag <= FAST_CTRL_HIGH;
+        end
+        else if (ser_reset_n_flag == FAST_CTRL_HIGH &&
+                 ser_reset_n_cnt == ser_reset_n_HIGH_div-1) begin
+            ser_reset_n <= ~ser_reset_n;
+            ser_reset_n_cnt <= '0;
+            ser_reset_n_flag <= FAST_CTRL_LOW;
+        end
+        else if (ser_reset_n_flag == FAST_CTRL_LOW &&
+                 ser_reset_n_cnt == ser_reset_n_LOW_div-1) begin
+            ser_reset_n <= ~ser_reset_n;
+            ser_reset_n_cnt <= '0;
+            ser_reset_n_flag <= FAST_CTRL_HIGH;
+        end
+        else begin
+            ser_reset_n <= ser_reset_n;
+            ser_reset_n_cnt <= ser_reset_n_cnt + 1'b1;
+        end
+    end
+
+    always_ff @(posedge ck, posedge reset) begin: ser_read_generation
+        if (reset) begin
+            ser_read <= 1'b0;
+            ser_read_cnt <= '0;
+            ser_read_flag <= FAST_CTRL_DELAY;
+        end
+        else if (ser_read_flag == FAST_CTRL_DELAY &&
+                 ser_read_delay_div == '0) begin
+            ser_read <= 1'b0;
+            ser_read_cnt <= '0;
+            ser_read_flag <= FAST_CTRL_DELAY;
+        end
+        else if (ser_read_HIGH_div == '0 ||
+                 ser_read_LOW_div == '0    ) begin
+            ser_read <= 1'b0;
+            ser_read_cnt <= '0;
+            ser_read_flag <= FAST_CTRL_DELAY;
+        end
+        else if (ser_read_flag == FAST_CTRL_DELAY &&
+                 ser_read_cnt == ser_read_delay_div-1) begin
+            ser_read <= ~ser_read;
+            ser_read_cnt <= '0;
+            ser_read_flag <= FAST_CTRL_HIGH;
+        end
+        else if (ser_read_flag == FAST_CTRL_HIGH &&
+                 ser_read_cnt == ser_read_HIGH_div-1) begin
+            ser_read <= ~ser_read;
+            ser_read_cnt <= '0;
+            ser_read_flag <= FAST_CTRL_LOW;
+        end
+        else if (ser_read_flag == FAST_CTRL_LOW &&
+                 ser_read_cnt == ser_read_LOW_div-1) begin
+            ser_read <= ~ser_read;
+            ser_read_cnt <= '0;
+            ser_read_flag <= FAST_CTRL_HIGH;
+        end
+        else begin
+            ser_read <= ser_read;
+            ser_read_cnt <= ser_read_cnt + 1'b1;
+        end
+    end
+//===================== END FAST CONTROL =============================
     // state machine control
     always_comb begin : state_machine_ctrl
         case (state)
@@ -247,23 +533,17 @@ module pFREYA_IF(
     always_ff @(posedge ck, posedge reset) begin: state_machine_set_output
         if (reset) begin
             // reset all registers
-            slow_ctrl_counter <= '0;
-            slow_ctrl_divider <= '0;
-            adc_counter <= '0;
-            adc_divider <= '0;
-            ser_counter <= '0;
-            ser_divider <= '0;
+            reset_reset();
+            reset_div();
+            reset_vars();
         end
         else begin
             case (state)
                 RESET: begin
                     // reset all registers
-                    slow_ctrl_counter <= '0;
-                    slow_ctrl_divider <= '0;
-                    adc_counter <= '0;
-                    adc_divider <= '0;
-                    ser_counter <= '0;
-                    ser_divider <= '0;
+                    reset_reset();
+                    reset_div();
+                    reset_vars();
                 end
                 CMD_EVAL: begin
                     // evaluate command if available
@@ -283,63 +563,63 @@ module pFREYA_IF(
                             // set clocks divider
                             case (signal)
                                 `SLOW_CTRL_CK_CODE:
-                                    slow_ctrl_divider <= data;
+                                    slow_ctrl_div <= data;
                                 `SEL_CK_CODE:
-                                    sel_divider <= data;
+                                    sel_div <= data;
                                 `ADC_CK_CODE:
-                                    adc_divider <= data;
+                                    adc_div <= data;
                                 `INJ_DAC_CK_CODE:
-                                    inj_divider <= data;
+                                    inj_div <= data;
                                 `SER_CK_CODE:
-                                    ser_divider <= data;
+                                    ser_div <= data;
                             endcase
                         `SET_DELAY_CMD:
                             // set delay divider
                             case (signal)
                                 `CSA_RESET_N_CODE:
-                                    csa_reset_n_delay_divider <= data;
+                                    csa_reset_n_delay_div <= data;
                                 `SH_INF_CODE:
-                                    sh_inf_delay_divider <= data;
+                                    sh_phi1d_inf_delay_div <= data;
                                 `SH_SUP_CODE:
-                                    sh_sup_delay_divider <= data;
+                                    sh_phi1d_sup_delay_div <= data;
                                 `ADC_START_CODE:
-                                    adc_start_delay_divider <= data;
+                                    adc_start_delay_div <= data;
                                 `SER_RESET_N_CODE:
-                                    ser_reset_n_delay_divider <= data;
+                                    ser_reset_n_delay_div <= data;
                                 `SER_READ_CODE:
-                                    ser_read_delay_divider <= data;
+                                    ser_read_delay_div <= data;
                             endcase
                         `SET_HIGH_CMD:
                             // set HIGH divider
                             case (signal)
                                 `CSA_RESET_N_CODE:
-                                    csa_reset_n_HIGH_divider <= data;
+                                    csa_reset_n_HIGH_div <= data;
                                 `SH_INF_CODE:
-                                    sh_inf_HIGH_divider <= data;
+                                    sh_phi1d_inf_HIGH_div <= data;
                                 `SH_SUP_CODE:
-                                    sh_sup_HIGH_divider <= data;
+                                    sh_phi1d_sup_HIGH_div <= data;
                                 `ADC_START_CODE:
-                                    adc_start_HIGH_divider <= data;
+                                    adc_start_HIGH_div <= data;
                                 `SER_RESET_N_CODE:
-                                    ser_reset_n_HIGH_divider <= data;
+                                    ser_reset_n_HIGH_div <= data;
                                 `SER_READ_CODE:
-                                    ser_read_HIGH_divider <= data;
+                                    ser_read_HIGH_div <= data;
                             endcase
                         `SET_LOW_CMD:
                             // set HIGH divider
                             case (signal)
                                 `CSA_RESET_N_CODE:
-                                    csa_reset_n_LOW_divider <= data;
+                                    csa_reset_n_LOW_div <= data;
                                 `SH_INF_CODE:
-                                    sh_inf_LOW_divider <= data;
+                                    sh_phi1d_inf_LOW_div <= data;
                                 `SH_SUP_CODE:
-                                    sh_sup_LOW_divider <= data;
+                                    sh_phi1d_sup_LOW_div <= data;
                                 `ADC_START_CODE:
-                                    adc_start_LOW_divider <= data;
+                                    adc_start_LOW_div <= data;
                                 `SER_RESET_N_CODE:
-                                    ser_reset_n_LOW_divider <= data;
+                                    ser_reset_n_LOW_div <= data;
                                 `SER_READ_CODE:
-                                    ser_read_LOW_divider <= data;
+                                    ser_read_LOW_div <= data;
                             endcase
                         `SET_SLOW_CTRL_CMD: begin
                             slow_ctrl_packet <= data;
@@ -386,92 +666,194 @@ module pFREYA_IF(
     end
 
     // if sel_ck is posedge then col or row ck might need to commute
-    always_ff @(posedge sel_ck, posedge reset) begin: pixel_sel_send_posedge
-        if (~sel_init_n) begin
-            // row
-            if (sel_ckrow_cnt < pixel_row) begin
-                sel_ckrow <= sel_ck;
-                sel_ckrow_cnt <= sel_ckrow_cnt + 1'b1;
-                sel_sent <= 1'b0;
-            end else begin
-                // if everything was transmitted, reset index
-                sel_ckrow_cnt <= 1'b0;
-                sel_ckrow_sent <= 1'b1;
-                sel_sent <= sel_ckcol_sent & 1'b1;
-            end
-            // col
-            if (sel_ckcol_cnt < pixel_col) begin
-                sel_ckcol <= sel_ck;
-                sel_ckcol_cnt <= sel_ckcol_cnt + 1'b1;
-                sel_sent <= 1'b0;
-            end else begin
-                // if everything was transmitted, reset index
-                sel_ckcol_cnt <= 1'b0;
-                sel_ckcol_sent <= 1'b1;
-                sel_sent <= sel_ckrow_sent & 1'b1;
-            end
+    always_ff @(posedge ck, posedge reset) begin: pixel_sel_send_posedge
+        if (reset) begin
+            sel_ckrow <= 1'b0;
+            sel_ckcol <= 1'b0;
+            sel_ckrow_cnt <= -1;
+            sel_ckcol_cnt <= -1;
+            sel_ckrow_sent <= 1'b0;
+            sel_ckrow_sent <= 1'b0;
         end
-    end
-
-    // if sel_ck is negedge then col or row ck might need to commute
-    always_ff @(negedge sel_ck) begin: pixel_sel_send_negedge
-        if (~sel_init_n) begin
-            // row
-            if (sel_ckrow_cnt < pixel_row) begin
-                sel_ckrow <= sel_ck;
-                // don't count or it will count twice one per edge
+        // here one triggers if sel_init_n is low
+        else if (~sel_init_n) begin
+            // if posedge sel_ck
+            if (~sel_ck && sel_cnt == sel_div-1) begin
+                // row
+                if (~sel_ckrow_sent) begin
+                    if (sel_ckrow_cnt == pixel_row) begin
+                        // if everything was transmitted, reset index
+                        sel_ckrow <= 1'b0;
+                        sel_ckrow_cnt <= '0;
+                        sel_ckrow_sent <= 1'b1;
+                    end else begin
+                        sel_ckrow <= sel_ck;
+                        sel_ckrow_cnt <= sel_ckrow_cnt + 1'b1;
+                    end
+                end
+                // col
+                if (~sel_ckcol_sent) begin
+                    if (sel_ckcol_cnt == pixel_col) begin
+                        // if everything was transmitted, reset index
+                        sel_ckcol <= 1'b0;
+                        sel_ckcol_cnt <= '0;
+                        sel_ckcol_sent <= 1'b1;
+                    end else begin
+                        sel_ckcol <= sel_ck;
+                        sel_ckcol_cnt <= sel_ckcol_cnt + 1'b1;
+                    end
+                end
+                // both sent
+                if (sel_ckrow_sent & sel_ckcol_sent)
+                    sel_sent <= 1'b1;
+                else
+                    sel_sent <= 1'b0;
             end
-            // col
-            if (sel_ckcol_cnt < pixel_col) begin
-                sel_ckcol <= sel_ck;
-                // don't count or it will count twice one per edge
+            // if negedge sel_ck
+            else if (sel_ck && sel_cnt == sel_div-1) begin
+                if (~sel_ckrow_sent)
+                    sel_ckrow <= sel_ck;
+                if (~sel_ckcol_sent)
+                    sel_ckcol <= sel_ck;
             end
         end
     end
 //======================= END COMB and FF ================================
 
+//======================= FUNCTIONS ======================================
+// This function resets all the dividers
+function void reset_div;
+    slow_ctrl_div <= '0;
+    adc_div <= '0;
+    ser_div <= '0;
+    sel_div <= '0;
+    inj_div <= '0;
+                            
+    csa_reset_n_delay_div <= '0;
+    sh_phi1d_inf_delay_div <= '0;
+    sh_phi1d_sup_delay_div <= '0;
+    adc_start_delay_div <= '0;
+    ser_reset_n_delay_div <= '0;
+    ser_read_delay_div <= '0;
+    
+    csa_reset_n_HIGH_div <= '0;
+    sh_phi1d_inf_HIGH_div <= '0;
+    sh_phi1d_sup_HIGH_div <= '0;
+    adc_start_HIGH_div <= '0;
+    ser_reset_n_HIGH_div <= '0;
+    ser_read_HIGH_div <= '0;
+
+    csa_reset_n_LOW_div <= '0;
+    sh_phi1d_inf_LOW_div <= '0;
+    sh_phi1d_sup_LOW_div <= '0;
+    adc_start_LOW_div <= '0;
+    ser_reset_n_LOW_div <= '0;
+    ser_read_LOW_div <= '0;   
+endfunction
+
+// This function resets all the resets
+function void reset_reset;
+    slow_ctrl_reset_n <= 1'b0;
+    adc_start <= 1'b1;
+    ser_reset_n <= 1'b0;
+    sel_init_n <= 1'b1;
+    inj_start <= 1'b0;
+endfunction
+
+// This function resets all the variables
+function void reset_vars;
+    uart_valid <= 1'b0;
+    cmd_available <= 1'b0;
+    data_available <= 1'b0;
+    slow_ctrl_packet_available <= 1'b0;
+    slow_ctrl_packet_sent <= 1'b0;
+    sel_available <= 1'b0;
+    sel_sent <= 1'b0;
+    pixel_available <= 1'b0;
+    sel_ckcol_sent <= 1'b0;
+    sel_ckrow_sent <= 1'b0;
+
+    slow_ctrl_packet_index <= '0;
+    slow_ctrl_packet <= '0;
+    pixel_row <= 3;
+    pixel_col <= 6;
+    data <= '0;
+    cmd <= '0;
+    signal <= '0;
+
+    inj_start <= '0;
+endfunction
+
+// This function manages general clocks signal that will not change in time
+// DOESNT WORK IN ALWAYS APPARENTLY
+// function void manage_clock(input logic glob_reset, sign_reset,
+//                       ref logic sign_ck,
+//                       ref logic [CK_CNT_N-1:0] sign_div, sign_cnt);
+//     if (glob_reset) begin
+//         sign_ck <= 1'b0;
+//         sign_cnt <= '0;
+//     end
+//     else if (sign_reset) begin
+//         sign_ck <= 1'b0;
+//         sign_cnt <= '0;
+//     end
+//     else if (sign_div == '0) begin
+//         sign_ck <= 1'b0;
+//         sign_cnt <= '0;
+//     end
+//     else if (inj_cnt == sign_div) begin
+//         sign_ck <= ~sign_ck;
+//         sign_cnt <= '0;
+//     end
+//     else begin
+//         sign_ck <= sign_ck;
+//         sign_cnt <= sign_cnt + 1'b1;
+//     end
+// endfunction
+//======================= END FUNCTIONS ==================================
+
 // data keep from one clock to the other
 /*
-slow_ctrl_counter <= slow_ctrl_counter;
-slow_ctrl_divider <= slow_ctrl_divider;
-adc_counter <= adc_counter;
-adc_divider <= adc_divider;
-ser_counter <= ser_counter;
-ser_divider <= ser_divider;
-sel_counter <= sel_counter;
-sel_divider <= sel_divider;
-inj_counter <= inj_counter;
-inj_divider <= inj_divider;
+slow_ctrl_cnt <= slow_ctrl_cnt;
+slow_ctrl_div <= slow_ctrl_div;
+adc_cnt <= adc_cnt;
+adc_div <= adc_div;
+ser_cnt <= ser_cnt;
+ser_div <= ser_div;
+sel_cnt <= sel_cnt;
+sel_div <= sel_div;
+inj_cnt <= inj_cnt;
+inj_div <= inj_div;
 csa_reset_n_flag <= csa_reset_n_flag;
-csa_reset_n_counter <= csa_reset_n_counter;
-csa_reset_n_delay_divider <= csa_reset_n_delay_divider;
-csa_reset_n_HIGH_divider <= csa_reset_n_HIGH_divider;
-csa_reset_n_LOW_divider <= csa_reset_n_LOW_divider;
-sh_inf_flag <= sh_inf_flag;
-sh_inf_counter <= sh_inf_counter;
-sh_inf_delay_divider <= sh_inf_delay_divider;
-sh_inf_HIGH_divider <= sh_inf_HIGH_divider;
-sh_inf_LOW_divider <= sh_inf_LOW_divider;
-sh_sup_flag <= sh_sup_flag;
-sh_sup_counter <= sh_sup_counter;
-sh_sup_delay_divider <= sh_sup_delay_divider;
-sh_sup_HIGH_divider <= sh_sup_HIGH_divider;
-sh_sup_LOW_divider <= sh_sup_LOW_divider;
+csa_reset_n_cnt <= csa_reset_n_cnt;
+csa_reset_n_delay_div <= csa_reset_n_delay_div;
+csa_reset_n_HIGH_div <= csa_reset_n_HIGH_div;
+csa_reset_n_LOW_div <= csa_reset_n_LOW_div;
+sh_phi1d_inf_flag <= sh_phi1d_inf_flag;
+sh_phi1d_inf_cnt <= sh_phi1d_inf_cnt;
+sh_phi1d_inf_delay_div <= sh_phi1d_inf_delay_div;
+sh_phi1d_inf_HIGH_div <= sh_phi1d_inf_HIGH_div;
+sh_phi1d_inf_LOW_div <= sh_phi1d_inf_LOW_div;
+sh_phi1d_sup_flag <= sh_phi1d_sup_flag;
+sh_phi1d_sup_cnt <= sh_phi1d_sup_cnt;
+sh_phi1d_sup_delay_div <= sh_phi1d_sup_delay_div;
+sh_phi1d_sup_HIGH_div <= sh_phi1d_sup_HIGH_div;
+sh_phi1d_sup_LOW_div <= sh_phi1d_sup_LOW_div;
 adc_start_flag <= adc_start_flag;
-adc_start_counter <= adc_start_counter;
-adc_start_delay_divider <= adc_start_delay_divider;
-adc_start_HIGH_divider <= adc_start_HIGH_divider;
-adc_start_LOW_divider <= adc_start_LOW_divider;
+adc_start_cnt <= adc_start_cnt;
+adc_start_delay_div <= adc_start_delay_div;
+adc_start_HIGH_div <= adc_start_HIGH_div;
+adc_start_LOW_div <= adc_start_LOW_div;
 ser_reset_n_flag <= ser_reset_n_flag;
-ser_reset_n_counter <= ser_reset_n_counter;
-ser_reset_n_delay_divider <= ser_reset_n_delay_divider;
-ser_reset_n_HIGH_divider <= ser_reset_n_HIGH_divider;
-ser_reset_n_LOW_divider <= ser_reset_n_LOW_divider;
+ser_reset_n_cnt <= ser_reset_n_cnt;
+ser_reset_n_delay_div <= ser_reset_n_delay_div;
+ser_reset_n_HIGH_div <= ser_reset_n_HIGH_div;
+ser_reset_n_LOW_div <= ser_reset_n_LOW_div;
 ser_read_flag <= ser_read_flag;
-ser_read_counter <= ser_read_counter;
-ser_read_delay_divider <= ser_read_delay_divider;
-ser_read_HIGH_divider <= ser_read_HIGH_divider;
-ser_read_LOW_divider <= ser_read_LOW_divider;
+ser_read_cnt <= ser_read_cnt;
+ser_read_delay_div <= ser_read_delay_div;
+ser_read_HIGH_div <= ser_read_HIGH_div;
+ser_read_LOW_div <= ser_read_LOW_div;
 slow_ctrl_packet <= slow_ctrl_packet;
 slow_ctrl_packet_index <= slow_ctrl_packet_index;
 slow_ctrl_packet_available <= slow_ctrl_packet_available;

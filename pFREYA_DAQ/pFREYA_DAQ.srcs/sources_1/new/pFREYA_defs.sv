@@ -1,6 +1,6 @@
 //////////////////////////////////////////////////////////////////////////////////
-// Company: 
-// Engineer: 
+// Company: Microlab - Università degli Studi di Bergamo
+// Engineer: Paolo Lazzaroni
 // 
 // Create Date: 05/18/2023 06:43:31 PM
 // Design Name: 
@@ -28,11 +28,7 @@
     parameter N_SHAP_MODE = 2;  // N of SHAP mode bits
 
     // CK counter sizes
-    parameter SLOW_CNT_N = 8;
-    parameter SEL_CNT_N  = 8;
-    parameter ADC_CNT_N  = 8;
-    parameter INJ_CNT_N  = 8;
-    parameter SER_CNT_N  = 8;
+    parameter CK_CNT_N  = 8;
 
     // Slow ctrl default values
     parameter SLOW_CTRL_PACKET_LENGTH = 7 * 8 * 2;
@@ -40,9 +36,10 @@
 
     // fast ctrl feature sizes
     parameter FAST_CTRL_N = 8;
+    parameter FAST_CTRL_FLAG_N = 2;
 
     // pixel selection sizes
-    parameter PIXEL_ROW_N = 1;
+    parameter PIXEL_ROW_N = 3;
     parameter PIXEL_COL_N = 3;
 
     // UART command properties
@@ -57,6 +54,10 @@
     parameter DATA_SIZE        = 8;
     parameter DATA_START_POS   = 7;
     parameter DATA_END_POS     = 0;
+    // fast control state (for generation)
+    parameter FAST_CTRL_DELAY = 2'b00;
+    parameter FAST_CTRL_LOW   = 2'b01;
+    parameter FAST_CTRL_HIGH  = 2'b10;
 
     // Slow ctrl packet
     typedef struct packed {
