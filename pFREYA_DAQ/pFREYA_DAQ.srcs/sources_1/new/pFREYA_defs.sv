@@ -71,8 +71,8 @@
     // UART commands
     `define SET_CK_CMD         4'b0000   // for general CK (calls for clock map)
     `define SET_DELAY_CMD      4'b0001   // for fast ctrl (call for fast control map)
-    `define SET_HIGH_CMD     4'b0010   // for fast ctrl
-    `define SET_LOW_CMD      4'b0011   // for fast ctrl
+    `define SET_HIGH_CMD       4'b0010   // for fast ctrl
+    `define SET_LOW_CMD        4'b0011   // for fast ctrl
     `define SET_SLOW_CTRL_CMD  4'b0100   // for slow ctrl
     `define SET_DAC_LVL_CMD    4'b0101   // for injection
     `define SET_PIXEL_CMD      4'b0110   // for pixel selection
@@ -100,6 +100,11 @@
     `define ADC_START_CODE         3'b011
     `define SER_RESET_N_CODE       3'b100
     `define SER_READ_CODE          3'b101
+    `define SEL_INIT_N_CODE        3'b110
+
+    // Pixel selection
+    `define PIXEL_ROW_CODE         3'b000
+    `define PIXEL_COL_CODE         3'b001
 
     // cmd padding
     `define CMD_PADDING            1'b0

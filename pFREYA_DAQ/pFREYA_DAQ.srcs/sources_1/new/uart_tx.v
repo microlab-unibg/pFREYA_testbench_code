@@ -12,7 +12,7 @@
 // (10000000)/(115200) = 87
   
 module uart_tx 
-  #(parameter CLKS_PER_BIT=87)
+  #(parameter CKS_PER_BIT=87)
   (
    input       i_Clock,
    input       i_Tx_DV,
@@ -63,7 +63,7 @@ module uart_tx
             o_Tx_Serial <= 1'b0;
              
             // Wait CLKS_PER_BIT-1 clock cycles for start bit to finish
-            if (r_Clock_Count < CLKS_PER_BIT-1)
+            if (r_Clock_Count < CKS_PER_BIT-1)
               begin
                 r_Clock_Count <= r_Clock_Count + 1;
                 r_SM_Main     <= s_TX_START_BIT;
@@ -81,7 +81,7 @@ module uart_tx
           begin
             o_Tx_Serial <= r_Tx_Data[r_Bit_Index];
              
-            if (r_Clock_Count < CLKS_PER_BIT-1)
+            if (r_Clock_Count < CKS_PER_BIT-1)
               begin
                 r_Clock_Count <= r_Clock_Count + 1;
                 r_SM_Main     <= s_TX_DATA_BITS;
@@ -111,7 +111,7 @@ module uart_tx
             o_Tx_Serial <= 1'b1;
              
             // Wait CLKS_PER_BIT-1 clock cycles for Stop bit to finish
-            if (r_Clock_Count < CLKS_PER_BIT-1)
+            if (r_Clock_Count < CKS_PER_BIT-1)
               begin
                 r_Clock_Count <= r_Clock_Count + 1;
                 r_SM_Main     <= s_TX_STOP_BIT;

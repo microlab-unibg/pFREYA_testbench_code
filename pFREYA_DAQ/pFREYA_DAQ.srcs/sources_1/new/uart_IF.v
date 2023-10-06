@@ -20,7 +20,9 @@
 //////////////////////////////////////////////////////////////////////////////////
 
 
-module uart_IF(
+module uart_IF
+#(parameter CKS_PER_BIT=87)
+(
     // UART signals
     input uart_ck,
     input rx_ser,
@@ -31,19 +33,17 @@ module uart_IF(
     input [7:0] tx_byte,
     output tx_done, tx_active, tx_ser
 );
-
-    parameter CKS_PER_BIT  = 87;
     
     // Simple UART
     // uart rx
-    uart_rx #(.CLKS_PER_BIT(CKS_PER_BIT)) uart_rx_inst (
+    uart_rx #(.CKS_PER_BIT(CKS_PER_BIT)) uart_rx_inst (
         .i_Clock(uart_ck),
         .i_Rx_Serial(rx_ser),
         .o_Rx_DV(rx_dv),
         .o_Rx_Byte(rx_byte)
     );
     //uart tx
-    uart_tx #(.CLKS_PER_BIT(CKS_PER_BIT)) uart_tx_inst (
+    uart_tx #(.CKS_PER_BIT(CKS_PER_BIT)) uart_tx_inst (
         .i_Clock(uart_ck),
         .i_Tx_DV(tx_dv),
         .i_Tx_Byte(tx_byte),

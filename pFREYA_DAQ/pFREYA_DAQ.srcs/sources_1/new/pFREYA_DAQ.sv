@@ -18,8 +18,11 @@
 // Additional Comments:
 // 
 //////////////////////////////////////////////////////////////////////////////////
+`include "pFREYA_defs.sv"
 
-module pFREYA_DAQ(
+module pFREYA_DAQ
+#(parameter CKS_PER_BIT=87)
+(
     // ASIC signals
     output dac_sdin, dac_sync_n, dac_sck,
     output sel_init_n,
@@ -33,19 +36,29 @@ module pFREYA_DAQ(
     output sh_phi1d_sup, sh_phi1d_inf,
     output slow_ctrl_in, slow_ctrl_reset_n, slow_ctrl_ck,
     // Internal signals
-    input  btn_reset,
+    input  daq_ck, btn_reset,
+    input  cmd_available, data_available,
+    // for UART
+    output  [UART_PACKET_SIZE-1:0] uart_data,
+    output  uart_valid,
+
     // UART signals
-    input  uart_clk,
-    input  rx_ser, tx_dv, tx_byte,
-    output rx_dv, rx_byte, tx_active, tx_ser, tx_done
+    input  uart_ck,
+    input  rx_ser,
+    //output [UART_PACKET_SIZE-1:0] rx_byte, -> uart_data
+    //output rx_dv, -> uart_valid
+
+    input  tx_dv,
+    input  [UART_PACKET_SIZE-1:0] tx_byte,
+    output tx_done, tx_active, tx_ser
 );
 
     // Simple UART
-    uart_IF uart_IF_inst (
-        .uart_clk   (uart_clk),
+    uart_IF #(.CKS_PER_BIT(CKS_PER_BIT)) uart_IF_inst (
+        .uart_ck    (uart_ck),
         .rx_ser     (rx_ser),
-        .rx_dv      (rx_dv),
-        .rx_byte    (rx_byte),
+        .rx_dv      (uart_valid),
+        .rx_byte    (uart_data),
         .tx_dv      (tx_dv),
         .tx_byte    (tx_byte),
         .tx_active  (tx_active),
@@ -74,7 +87,11 @@ module pFREYA_DAQ(
         .slow_ctrl_in       (slow_ctrl_in),
         .slow_ctrl_reset_n  (slow_ctrl_reset_n),
         .slow_ctrl_ck       (slow_ctrl_ck),
-        .ck                 (ck),
-        .reset              (btn_reset)
+        .ck                 (daq_ck),
+        .reset              (btn_reset),
+        .uart_data          (uart_data),
+        .uart_valid         (uart_valid),
+        .cmd_available      (cmd_available),
+        .data_available     (data_available)
     );
 endmodule

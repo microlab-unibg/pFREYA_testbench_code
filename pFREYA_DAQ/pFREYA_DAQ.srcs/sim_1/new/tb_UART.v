@@ -41,7 +41,7 @@ module tb_uart();
     wire tx_ser;
 
     // uart rx
-    uart_rx #(.CLKS_PER_BIT(CKS_PER_BIT)) uart_rx_inst
+    uart_rx #(.CKS_PER_BIT(CKS_PER_BIT)) uart_rx_inst
     (.i_Clock(clock),
     .i_Rx_Serial(rx_ser),
     .o_Rx_DV(rx_dv),
@@ -49,7 +49,7 @@ module tb_uart();
     );
 
     //uart tx
-    uart_tx #(.CLKS_PER_BIT(CKS_PER_BIT)) uart_tx_inst
+    uart_tx #(.CKS_PER_BIT(CKS_PER_BIT)) uart_tx_inst
     (.i_Clock(clock),
     .i_Tx_DV(tx_dv),
     .i_Tx_Byte(tx_byte),

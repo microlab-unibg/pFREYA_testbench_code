@@ -12,7 +12,7 @@
 // (10000000)/(115200) = 87
   
 module uart_rx 
-  #(parameter CLKS_PER_BIT=87)
+  #(parameter CKS_PER_BIT=87)
   (
    input        i_Clock,
    input        i_Rx_Serial,
@@ -65,7 +65,7 @@ module uart_rx
         // Check middle of start bit to make sure it's still low
         s_RX_START_BIT :
           begin
-            if (r_Clock_Count == (CLKS_PER_BIT-1)/2)
+            if (r_Clock_Count == (CKS_PER_BIT-1)/2)
               begin
                 if (r_Rx_Data == 1'b0)
                   begin
@@ -86,7 +86,7 @@ module uart_rx
         // Wait CLKS_PER_BIT-1 clock cycles to sample serial data
         s_RX_DATA_BITS :
           begin
-            if (r_Clock_Count < CLKS_PER_BIT-1)
+            if (r_Clock_Count < CKS_PER_BIT-1)
               begin
                 r_Clock_Count <= r_Clock_Count + 1;
                 r_SM_Main     <= s_RX_DATA_BITS;
@@ -115,7 +115,7 @@ module uart_rx
         s_RX_STOP_BIT :
           begin
             // Wait CLKS_PER_BIT-1 clock cycles for Stop bit to finish
-            if (r_Clock_Count < CLKS_PER_BIT-1)
+            if (r_Clock_Count < CKS_PER_BIT-1)
               begin
                 r_Clock_Count <= r_Clock_Count + 1;
                 r_SM_Main     <= s_RX_STOP_BIT;
