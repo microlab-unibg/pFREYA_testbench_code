@@ -148,6 +148,35 @@ module tb_pFREYA_DAQ;
             #(UART_BIT_PERIOD);
         end
     endtask // UART_WRITE_BYTE
+
+// Takes generates and send slow ctrl data
+    task uart_slow_ctrl_send;
+        integer i;
+        reg [32-1:0] uart_slow_ctrl_packet_temp; // urandom generates 32 bits
+        begin
+            uart_slow_ctrl_packet_temp <= $urandom(42); // 42 is the seed and the packet is repeated for each pixel
+            #10;
+            // Send slow ctrl packet
+            // must be done 15 times (see defs) with 0 as first bit
+            for (i=0; i<=14; i=i+1)
+            begin
+                uart_to_send[6:0] <= uart_slow_ctrl_packet_temp[6:0]; // last 7 bits
+                #10;
+                uart_to_send[7] <= NOTLAST_SLOW_CTRL_PACKET; // first bit
+                #10;
+                uart_write_byte(uart_to_send);
+                #20000;
+            end
+            
+            // Send last packet (16th)
+            uart_to_send[6:0] <= uart_slow_ctrl_packet_temp[6:0]; // last 7 bits
+            #10;
+            uart_to_send[7] <= LAST_SLOW_CTRL_PACKET; // first bit
+            #10;
+            uart_write_byte(uart_to_send);
+            #20000;
+        end
+    endtask // uart_slow_ctrl_send
 //=========== END TASKS ===============================
 
     // send command process
@@ -267,6 +296,29 @@ module tb_pFREYA_DAQ;
         #1000 cmd_available <= 1'b0;
                data_available <= 1'b1;
                uart_write_byte(uart_to_send);
+
+        // send a command to set slow ctrl word
+        // signal is not used
+        #20000 uart_to_send <= {`SET_SLOW_CTRL_CMD,`UNUSED_CODE,`CMD_PADDING};
+        #1000 cmd_available <= 1'b1;
+              data_available <= 1'b0;
+              uart_write_byte(uart_to_send);
+        // set slow ctrl word
+        #20000 cmd_available <= 1'b0;
+              data_available <= 1'b0;
+              uart_slow_ctrl_send();
+        #1000 cmd_available <= 1'b0;
+              data_available <= 1'b1;
+        // // send a command to set slow ctrl
+        // #20000 uart_to_send <= {`SET_CK_CMD,`SLOW_CTRL_CK_CODE,`CMD_PADDING};
+        // #1000 cmd_available <= 1'b1;
+        //       data_available <= 1'b0;
+        //       uart_write_byte(uart_to_send);
+        // // set slow ctrl
+        // #20000 uart_to_send <= 5;
+        // #1000 cmd_available <= 1'b0;
+        //        data_available <= 1'b1;
+        //        uart_write_byte(uart_to_send);
         #100000 $stop;
     end
 endmodule

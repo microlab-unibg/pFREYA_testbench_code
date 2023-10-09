@@ -12,15 +12,15 @@
       </db_ref>
    </db_ref_list>
    <zoom_setting>
-      <ZoomStartTime time="1,271,665.000 ns"></ZoomStartTime>
-      <ZoomEndTime time="1,273,211.001 ns"></ZoomEndTime>
-      <Cursor1Time time="1,272,285.000 ns"></Cursor1Time>
+      <ZoomStartTime time="1,379.778694 us"></ZoomStartTime>
+      <ZoomEndTime time="1,535.178695 us"></ZoomEndTime>
+      <Cursor1Time time="1,470.750000 us"></Cursor1Time>
    </zoom_setting>
    <column_width_setting>
-      <NameColumnWidth column_width="200"></NameColumnWidth>
+      <NameColumnWidth column_width="196"></NameColumnWidth>
       <ValueColumnWidth column_width="58"></ValueColumnWidth>
    </column_width_setting>
-   <WVObjectSize size="94" />
+   <WVObjectSize size="95" />
    <wvobject fp_name="/tb_pFREYA_DAQ/pFREYA_DAQ_inst/pFREYA_IF_inst/adc_ck" type="logic">
       <obj_property name="ElementShortName">adc_ck</obj_property>
       <obj_property name="ObjectShortName">adc_ck</obj_property>
@@ -396,5 +396,9 @@
    <wvobject fp_name="/tb_pFREYA_DAQ/tx_ser" type="logic">
       <obj_property name="ElementShortName">tx_ser</obj_property>
       <obj_property name="ObjectShortName">tx_ser</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_pFREYA_DAQ/uart_to_send" type="array">
+      <obj_property name="ElementShortName">uart_to_send[7:0]</obj_property>
+      <obj_property name="ObjectShortName">uart_to_send[7:0]</obj_property>
    </wvobject>
 </wave_config>

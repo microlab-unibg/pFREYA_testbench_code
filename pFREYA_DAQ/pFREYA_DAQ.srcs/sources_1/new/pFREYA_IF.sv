@@ -89,7 +89,8 @@ module pFREYA_IF(
     logic slow_ctrl_packet_available, slow_ctrl_packet_sent, sel_available, sel_sent, sel_ckcol_sent, sel_ckrow_sent;
     // data
     logic [FAST_CTRL_N-1:0] slow_ctrl_packet_index;
-    logic [UART_PACKET_SIZE-1:0] slow_ctrl_packet, pixel_row, pixel_col;
+    logic [SLOW_CTRL_PACKET_LENGTH-1:0] slow_ctrl_packet;
+    logic [UART_PACKET_SIZE-1:0] pixel_row, pixel_col;
     logic [DATA_SIZE-1:0] signal;
     logic [CMD_CODE_SIZE-1:0] cmd;
 
@@ -597,98 +598,104 @@ module pFREYA_IF(
                 end
                 CMD_EVAL: begin
                     // evaluate command if available
-                    if (uart_valid & cmd_available) begin
-                        cmd <= uart_data[CMD_START_POS:CMD_END_POS];
-                        signal <= uart_data[SIGNAL_START_POS:SIGNAL_END_POS];
-                    end
+                    cmd <= uart_data[CMD_START_POS:CMD_END_POS];
+                    signal <= uart_data[SIGNAL_START_POS:SIGNAL_END_POS];
                 end
                 CMD_SET: begin
-                    if (uart_valid & data_available) begin
-                        case (cmd)
-                            `SET_CK_CMD:
-                                // set clocks divider
-                                case (signal)
-                                    `SLOW_CTRL_CK_CODE:
-                                        slow_ctrl_div <= uart_data;
-                                    `SEL_CK_CODE:
-                                        sel_div <= uart_data;
-                                    `ADC_CK_CODE:
-                                        adc_div <= uart_data;
-                                    `INJ_DAC_CK_CODE:
-                                        inj_div <= uart_data;
-                                    `SER_CK_CODE:
-                                        ser_div <= uart_data;
-                                endcase
-                            `SET_DELAY_CMD:
-                                // set delay divider
-                                case (signal)
-                                    `CSA_RESET_N_CODE:
-                                        csa_reset_n_delay_div <= uart_data;
-                                    `SH_INF_CODE:
-                                        sh_phi1d_inf_delay_div <= uart_data;
-                                    `SH_SUP_CODE:
-                                        sh_phi1d_sup_delay_div <= uart_data;
-                                    `ADC_START_CODE:
-                                        adc_start_delay_div <= uart_data;
-                                    `SER_RESET_N_CODE:
-                                        ser_reset_n_delay_div <= uart_data;
-                                    `SER_READ_CODE:
-                                        ser_read_delay_div <= uart_data;
-                                    `SEL_INIT_N_CODE:
-                                        sel_init_n_delay_div <= uart_data;
-                                endcase
-                            `SET_HIGH_CMD:
-                                // set HIGH divider
-                                case (signal)
-                                    `CSA_RESET_N_CODE:
-                                        csa_reset_n_HIGH_div <= uart_data;
-                                    `SH_INF_CODE:
-                                        sh_phi1d_inf_HIGH_div <= uart_data;
-                                    `SH_SUP_CODE:
-                                        sh_phi1d_sup_HIGH_div <= uart_data;
-                                    `ADC_START_CODE:
-                                        adc_start_HIGH_div <= uart_data;
-                                    `SER_RESET_N_CODE:
-                                        ser_reset_n_HIGH_div <= uart_data;
-                                    `SER_READ_CODE:
-                                        ser_read_HIGH_div <= uart_data;
-                                    `SEL_INIT_N_CODE:
-                                        sel_init_n_HIGH_div <= uart_data;
-                                endcase
-                            `SET_LOW_CMD:
-                                // set HIGH divider
-                                case (signal)
-                                    `CSA_RESET_N_CODE:
-                                        csa_reset_n_LOW_div <= uart_data;
-                                    `SH_INF_CODE:
-                                        sh_phi1d_inf_LOW_div <= uart_data;
-                                    `SH_SUP_CODE:
-                                        sh_phi1d_sup_LOW_div <= uart_data;
-                                    `ADC_START_CODE:
-                                        adc_start_LOW_div <= uart_data;
-                                    `SER_RESET_N_CODE:
-                                        ser_reset_n_LOW_div <= uart_data;
-                                    `SER_READ_CODE:
-                                        ser_read_LOW_div <= uart_data;
-                                    `SEL_INIT_N_CODE:
-                                        sel_init_n_LOW_div <= uart_data;
-                                endcase
-                            `SET_SLOW_CTRL_CMD: begin
-                                slow_ctrl_packet <= uart_data;
-                                slow_ctrl_packet_index <= '0;
-                                slow_ctrl_packet_available <= 1'b1;
+                    case (cmd)
+                        `SET_CK_CMD:
+                            // set clocks divider
+                            case (signal)
+                                `SLOW_CTRL_CK_CODE:
+                                    slow_ctrl_div <= uart_data;
+                                `SEL_CK_CODE:
+                                    sel_div <= uart_data;
+                                `ADC_CK_CODE:
+                                    adc_div <= uart_data;
+                                `INJ_DAC_CK_CODE:
+                                    inj_div <= uart_data;
+                                `SER_CK_CODE:
+                                    ser_div <= uart_data;
+                            endcase
+                        `SET_DELAY_CMD:
+                            // set delay divider
+                            case (signal)
+                                `CSA_RESET_N_CODE:
+                                    csa_reset_n_delay_div <= uart_data;
+                                `SH_INF_CODE:
+                                    sh_phi1d_inf_delay_div <= uart_data;
+                                `SH_SUP_CODE:
+                                    sh_phi1d_sup_delay_div <= uart_data;
+                                `ADC_START_CODE:
+                                    adc_start_delay_div <= uart_data;
+                                `SER_RESET_N_CODE:
+                                    ser_reset_n_delay_div <= uart_data;
+                                `SER_READ_CODE:
+                                    ser_read_delay_div <= uart_data;
+                                `SEL_INIT_N_CODE:
+                                    sel_init_n_delay_div <= uart_data;
+                            endcase
+                        `SET_HIGH_CMD:
+                            // set HIGH divider
+                            case (signal)
+                                `CSA_RESET_N_CODE:
+                                    csa_reset_n_HIGH_div <= uart_data;
+                                `SH_INF_CODE:
+                                    sh_phi1d_inf_HIGH_div <= uart_data;
+                                `SH_SUP_CODE:
+                                    sh_phi1d_sup_HIGH_div <= uart_data;
+                                `ADC_START_CODE:
+                                    adc_start_HIGH_div <= uart_data;
+                                `SER_RESET_N_CODE:
+                                    ser_reset_n_HIGH_div <= uart_data;
+                                `SER_READ_CODE:
+                                    ser_read_HIGH_div <= uart_data;
+                                `SEL_INIT_N_CODE:
+                                    sel_init_n_HIGH_div <= uart_data;
+                            endcase
+                        `SET_LOW_CMD:
+                            // set HIGH divider
+                            case (signal)
+                                `CSA_RESET_N_CODE:
+                                    csa_reset_n_LOW_div <= uart_data;
+                                `SH_INF_CODE:
+                                    sh_phi1d_inf_LOW_div <= uart_data;
+                                `SH_SUP_CODE:
+                                    sh_phi1d_sup_LOW_div <= uart_data;
+                                `ADC_START_CODE:
+                                    adc_start_LOW_div <= uart_data;
+                                `SER_RESET_N_CODE:
+                                    ser_reset_n_LOW_div <= uart_data;
+                                `SER_READ_CODE:
+                                    ser_read_LOW_div <= uart_data;
+                                `SEL_INIT_N_CODE:
+                                    sel_init_n_LOW_div <= uart_data;
+                            endcase
+                        `SET_SLOW_CTRL_CMD: begin
+                            if () begin // just do this once per uart_available
+                                if (uart_data[UART_PACKET_SIZE-1] == LAST_SLOW_CTRL_PACKET) begin
+                                    // +: means starting from this bit get this much bits
+                                    // assign byte0 = dword[0 +: 8];    // Same as dword[7:0]
+                                    slow_ctrl_packet[SLOW_CTRL_PACKET_LENGTH-UART_PACKET_SIZE-1 +: UART_PACKET_SIZE-1] <= uart_data[UART_PACKET_SIZE-2:0];
+                                    slow_ctrl_packet_index <= '0;
+                                    slow_ctrl_packet_available <= 1'b1;
+                                end else begin
+                                    slow_ctrl_packet[slow_ctrl_packet_index +: UART_PACKET_SIZE-1] <= uart_data[UART_PACKET_SIZE-2:0];
+                                    slow_ctrl_packet_index <= slow_ctrl_packet_index + UART_PACKET_SIZE;
+                                    slow_ctrl_packet_available <= 1'b0;
+                                end
                             end
-                            `SET_PIXEL_CMD: begin
-                                // set row/col number
-                                case (signal)
-                                    `PIXEL_ROW_CODE:
-                                        pixel_row <= uart_data;
-                                    `PIXEL_COL_CODE:
-                                        pixel_col <= uart_data;
-                                endcase
-                            end
-                        endcase
-                    end
+                        end
+                        `SET_PIXEL_CMD: begin
+                            // set row/col number
+                            case (signal)
+                                `PIXEL_ROW_CODE:
+                                    pixel_row <= uart_data;
+                                `PIXEL_COL_CODE:
+                                    pixel_col <= uart_data;
+                            endcase
+                        end
+                    endcase
                 end
                 CMD_SEND_SLOW: begin
                     if (slow_ctrl_packet_sent)

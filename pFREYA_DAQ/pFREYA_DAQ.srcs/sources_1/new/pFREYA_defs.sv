@@ -31,8 +31,13 @@
     parameter CK_CNT_N  = 8;
 
     // Slow ctrl default values
-    parameter SLOW_CTRL_PACKET_LENGTH = 7 * 8 * 2;
+    // 7 * 8 * 2 = 112 is the length of the word. It can be sent by 14 8-bit packets but a bit
+    //   is needed to identify the last packet. So 16 7-bit packets will be used.
+    // SLOW_CTRL packet is |LAST(1)|DATA(7)| where LAST is 1 if this is the last packet, else 0
+    parameter SLOW_CTRL_PACKET_LENGTH = 112;
     parameter SLOW_CTRL_IDX_N = 7;
+    parameter LAST_SLOW_CTRL_PACKET = 1'b1;
+    parameter NOTLAST_SLOW_CTRL_PACKET = 1'b0;
 
     // fast ctrl feature sizes
     parameter FAST_CTRL_N = 8;
@@ -92,6 +97,7 @@
     `define ADC_CK_CODE       3'b010
     `define INJ_DAC_CK_CODE   3'b011
     `define SER_CK_CODE       3'b100
+    `define UNUSED_CODE       3'b111
 
     // Fast control map
     `define CSA_RESET_N_CODE       3'b000
