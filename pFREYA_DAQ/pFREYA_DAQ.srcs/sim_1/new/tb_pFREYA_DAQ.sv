@@ -238,6 +238,8 @@ module tb_pFREYA_DAQ;
     always begin
         // reset the DUT
         #100 btn_reset <= 1'b0;
+
+//============ PIXEL SELECTION ================================================
         // send a command to set selection divider
         // CMD packet is |CMD_CODE(4)|SIGNAL_CODE(3)|PADDING(1)|
         #100 uart_to_send <= {`SET_CK_CMD,`SEL_CK_CODE,`CMD_PADDING};
@@ -277,38 +279,9 @@ module tb_pFREYA_DAQ;
         #1000 cmd_available <= 1'b1;
               data_available <= 1'b0;
               uart_write_byte(uart_to_send);
+//============ END PIXEL SELECTION ============================================
 
-        // // send a command to set sel_init_n delay divider
-        // #20000 uart_to_send <= {`SET_DELAY_CMD,`SEL_INIT_N_CODE,`CMD_PADDING};
-        // #1000 cmd_available <= 1'b1;
-        //       data_available <= 1'b0;
-        //       uart_write_byte(uart_to_send);
-        // // set sel_init_n delay divider
-        // #20000 uart_to_send <= 2;
-        // #1000 cmd_available <= 1'b0;
-        //        data_available <= 1'b1;
-        //        uart_write_byte(uart_to_send);
-        // // send a command to set sel_init_n high divider
-        // #20000 uart_to_send <= {`SET_HIGH_CMD,`SEL_INIT_N_CODE,`CMD_PADDING};
-        // #1000 cmd_available <= 1'b1;
-        //       data_available <= 1'b0;
-        //       uart_write_byte(uart_to_send);
-        // // set sel_init_n high divider
-        // #20000 uart_to_send <= 100;
-        // #1000 cmd_available <= 1'b0;
-        //        data_available <= 1'b1;
-        //        uart_write_byte(uart_to_send);
-        // // send a command to set sel_init_n low divider
-        // #20000 uart_to_send <= {`SET_LOW_CMD,`SEL_INIT_N_CODE,`CMD_PADDING};
-        // #1000 cmd_available <= 1'b1;
-        //       data_available <= 1'b0;
-        //       uart_write_byte(uart_to_send);
-        // // set sel_init_n low divider
-        // #20000 uart_to_send <= 7;
-        // #1000 cmd_available <= 1'b0;
-        //        data_available <= 1'b1;
-        //        uart_write_byte(uart_to_send);
-
+//============ SLOW CTRL ======================================================
         // send a command to set slow ctrl word
         // signal is not used
         #20000 uart_to_send <= {`SET_SLOW_CTRL_CMD,`UNUSED_CODE,`CMD_PADDING};
@@ -334,43 +307,11 @@ module tb_pFREYA_DAQ;
         #1000 cmd_available <= 1'b1;
               data_available <= 1'b0;
               uart_write_byte(uart_to_send);
-        
-        // // swnd slow ctrl
-        // #20000 uart_to_send <= 5;
-        // #1000 cmd_available <= 1'b0;
-        //        data_available <= 1'b1;
-        //        uart_write_byte(uart_to_send);
+//============ END SLOW CTRL ==================================================
 
-        // // send a command to set slow_ctrl_init_n delay divider
-        // #20000 uart_to_send <= {`SET_DELAY_CMD,`SEL_INIT_N_CODE,`CMD_PADDING};
-        // #1000 cmd_available <= 1'b1;
-        //       data_available <= 1'b0;
-        //       uart_write_byte(uart_to_send);
-        // // set slow_ctrl_init_n delay divider
-        // #20000 uart_to_send <= 2;
-        // #1000 cmd_available <= 1'b0;
-        //        data_available <= 1'b1;
-        //        uart_write_byte(uart_to_send);
-        // // send a command to set slow_ctrl_init_n high divider
-        // #20000 uart_to_send <= {`SET_HIGH_CMD,`SEL_INIT_N_CODE,`CMD_PADDING};
-        // #1000 cmd_available <= 1'b1;
-        //       data_available <= 1'b0;
-        //       uart_write_byte(uart_to_send);
-        // // set slow_ctrl_init_n high divider
-        // #20000 uart_to_send <= 100;
-        // #1000 cmd_available <= 1'b0;
-        //        data_available <= 1'b1;
-        //        uart_write_byte(uart_to_send);
-        // // send a command to set slow_ctrl_init_n low divider
-        // #20000 uart_to_send <= {`SET_LOW_CMD,`SEL_INIT_N_CODE,`CMD_PADDING};
-        // #1000 cmd_available <= 1'b1;
-        //       data_available <= 1'b0;
-        //       uart_write_byte(uart_to_send);
-        // // set slow_ctrl_init_n low divider
-        // #20000 uart_to_send <= 7;
-        // #1000 cmd_available <= 1'b0;
-        //        data_available <= 1'b1;
-        //        uart_write_byte(uart_to_send);
+        // DAC setup
+
+        // signal setup
         
         #100000 cmd_available <= 1'b0;
                 data_available <= 1'b0;
