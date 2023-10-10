@@ -77,6 +77,7 @@ module pFREYA_IF(
     logic [FAST_CTRL_FLAG_N-1:0] ser_reset_n_flag;
     logic [FAST_CTRL_FLAG_N-1:0] ser_read_flag;
     logic [FAST_CTRL_FLAG_N-1:0] sel_init_n_flag;
+    logic [FAST_CTRL_FLAG_N-1:0] slow_ctrl_reset_n_flag;
     logic [FAST_CTRL_N-1:0] csa_reset_n_cnt, csa_reset_n_delay_div, csa_reset_n_HIGH_div, csa_reset_n_LOW_div;
     logic [FAST_CTRL_N-1:0] sh_phi1d_inf_cnt, sh_phi1d_inf_delay_div, sh_phi1d_inf_HIGH_div, sh_phi1d_inf_LOW_div;
     logic [FAST_CTRL_N-1:0] sh_phi1d_sup_cnt, sh_phi1d_sup_delay_div, sh_phi1d_sup_HIGH_div, sh_phi1d_sup_LOW_div;
@@ -84,15 +85,18 @@ module pFREYA_IF(
     logic [FAST_CTRL_N-1:0] ser_reset_n_cnt, ser_reset_n_delay_div, ser_reset_n_HIGH_div, ser_reset_n_LOW_div;
     logic [FAST_CTRL_N-1:0] ser_read_cnt, ser_read_delay_div, ser_read_HIGH_div, ser_read_LOW_div;
     logic [FAST_CTRL_N-1:0] sel_init_n_cnt, sel_init_n_delay_div, sel_init_n_HIGH_div, sel_init_n_LOW_div;
+    logic [FAST_CTRL_N-1:0] slow_ctrl_reset_n_cnt, slow_ctrl_reset_n_delay_div, slow_ctrl_reset_n_HIGH_div, slow_ctrl_reset_n_LOW_div;
 
     // control logic
-    logic slow_ctrl_packet_available, slow_ctrl_packet_sent, sel_available, sel_sent, sel_ckcol_sent, sel_ckrow_sent;
+    logic slow_ctrl_packet_available, slow_ctrl_packet_sent, sel_available, sel_ckcol_sent, sel_ckrow_sent;
     // data
     logic [FAST_CTRL_N-1:0] slow_ctrl_packet_index;
     logic [SLOW_CTRL_PACKET_LENGTH-1:0] slow_ctrl_packet;
     logic [UART_PACKET_SIZE-1:0] pixel_row, pixel_col;
     logic [DATA_SIZE-1:0] signal;
     logic [CMD_CODE_SIZE-1:0] cmd;
+    // check UART rising edge
+    logic uart_valid_last;
 
 //======================= COMB and FF ================================
 //======================= STD CLOCKS =================================
@@ -101,15 +105,16 @@ module pFREYA_IF(
     always_ff @(posedge ck, posedge reset) begin: slow_ctrl_ck_generation
         if (reset) begin
             slow_ctrl_ck <= 1'b0;
-            slow_ctrl_cnt <= '0;
+            slow_ctrl_cnt <= -1;
         end
-        else if (~slow_ctrl_reset_n) begin
+        // the second check is to assure that the last HIGH is the same semiperiod as the others
+        else if (~slow_ctrl_reset_n & slow_ctrl_ck == 1'b0) begin
             slow_ctrl_ck <= 1'b0;
-            slow_ctrl_cnt <= '0;
+            slow_ctrl_cnt <= -1;
         end
         else if (slow_ctrl_div == '0) begin
             slow_ctrl_ck <= 1'b0;
-            slow_ctrl_cnt <= '0;
+            slow_ctrl_cnt <= -1;
         end
         else if (slow_ctrl_cnt == slow_ctrl_div-1) begin
             slow_ctrl_ck <= ~slow_ctrl_ck;
@@ -127,6 +132,7 @@ module pFREYA_IF(
             sel_ck <= 1'b0;
             sel_cnt <= -1;
         end
+        // the second check is to assure that the last HIGH is the same semiperiod as the others
         else if (sel_init_n) begin
             sel_ck <= 1'b0;
             sel_cnt <= -1;
@@ -471,55 +477,12 @@ module pFREYA_IF(
             ser_read_cnt <= ser_read_cnt + 1'b1;
         end
     end
-
-    always_ff @(posedge ck, posedge reset) begin: sel_init_n_generation
-    // it CAN be sent more than one time but let's say that its MUST BE sent only once
-        if (reset) begin
-            sel_init_n <= 1'b1;
-            sel_init_n_cnt <= '0;
-            sel_init_n_flag <= FAST_CTRL_DELAY;
-        end
-        else if (sel_init_n_flag == FAST_CTRL_DELAY &&
-                 sel_init_n_delay_div == '0) begin
-            sel_init_n <= 1'b1;
-            sel_init_n_cnt <= '0;
-            sel_init_n_flag <= FAST_CTRL_DELAY;
-        end
-        else if (sel_init_n_HIGH_div == '0 ||
-                 sel_init_n_LOW_div == '0    ) begin
-            sel_init_n <= 1'b1;
-            sel_init_n_cnt <= '0;
-            sel_init_n_flag <= FAST_CTRL_DELAY;
-        end
-        else if (sel_init_n_flag == FAST_CTRL_DELAY &&
-                 sel_init_n_cnt == sel_init_n_delay_div-1) begin
-            sel_init_n <= ~sel_init_n;
-            sel_init_n_cnt <= '0;
-            sel_init_n_flag <= FAST_CTRL_HIGH;
-        end
-        else if (sel_init_n_flag == FAST_CTRL_HIGH &&
-                 sel_init_n_cnt == sel_init_n_HIGH_div-1) begin
-            sel_init_n <= ~sel_init_n;
-            sel_init_n_cnt <= '0;
-            sel_init_n_flag <= FAST_CTRL_LOW;
-        end
-        // changed this logic to keep it low
-        else if (sel_init_n_flag == FAST_CTRL_LOW) begin
-            sel_init_n <= 1'b1;
-            sel_init_n_cnt <= '0;
-            sel_init_n_flag <= FAST_CTRL_LOW;
-        end
-        else begin
-            sel_init_n <= sel_init_n;
-            sel_init_n_cnt <= sel_init_n_cnt + 1'b1;
-        end
-    end
 //===================== END FAST CONTROL =============================
     // state machine control
     always_comb begin : state_machine_ctrl
         case (state)
             RESET:
-                next = CMD_EVAL;
+                next <= CMD_EVAL;
             CMD_EVAL:
                 if (uart_valid & cmd_available) begin
                     case (cmd)
@@ -532,20 +495,20 @@ module pFREYA_IF(
                         `SET_SLOW_CTRL_CMD,
                         `SET_DAC_LVL_CMD,
                         `SET_PIXEL_CMD:
-                            next = CMD_SET;
+                            next <= CMD_SET;
                         // next send slow control
                         `SEND_SLOW_CTRL_CMD:
-                            next = CMD_SEND_SLOW;
+                            next <= CMD_SEND_SLOW;
                         // next send slow control
                         `SEND_PIXEL_SEL_CMD:
-                            next = CMD_SEL_PIX;
+                            next <= CMD_SEL_PIX;
                         // if the command is not known error
                         default:
-                            next = CMD_ERR;
+                            next <= CMD_ERR;
                     endcase
                 end else
                     // if no comms or command is available recheck
-                    next = CMD_EVAL;
+                    next <= CMD_EVAL;
             CMD_ERR:
                 // it just stays here
                 // TODO change
@@ -553,20 +516,20 @@ module pFREYA_IF(
             CMD_SET:
                 if (uart_valid & data_available)
                     // if data has been read wait for new command
-                    next = CMD_EVAL;
+                    next <= CMD_EVAL;
                 else
                     // if data is not fully read continue
-                    next = CMD_SET;
+                    next <= CMD_SET;
             CMD_SEND_SLOW:
                 if (slow_ctrl_packet_available & ~slow_ctrl_packet_sent)
-                    next = CMD_SEND_SLOW;
+                    next <= CMD_SEND_SLOW;
                 else
-                    next = CMD_EVAL;
+                    next <= CMD_EVAL;
             CMD_SEL_PIX:
-                if (uart_valid & data_available)
-                    next = CMD_SEL_PIX;
+                if (sel_ckrow_sent & sel_ckcol_sent)
+                    next <= CMD_EVAL;
                 else
-                    next = CMD_EVAL;
+                    next <= CMD_SEL_PIX;
             default:
                 next <= CMD_ERR;
         endcase
@@ -578,6 +541,14 @@ module pFREYA_IF(
             state <= RESET;
         else
             state <= next;
+    end
+
+    // save last uart valid to detect rising edge
+    always_ff @(posedge ck, posedge reset) begin: uart_valid_last_logic
+        if (reset)
+            uart_valid_last <= 1'b0;
+        else
+            uart_valid_last <= uart_valid;
     end
 
     // what to do on each state
@@ -634,6 +605,8 @@ module pFREYA_IF(
                                     ser_read_delay_div <= uart_data;
                                 `SEL_INIT_N_CODE:
                                     sel_init_n_delay_div <= uart_data;
+                                `SLOW_CTRL_RESET_N_CODE:
+                                    slow_ctrl_reset_n_delay_div <= uart_data;
                             endcase
                         `SET_HIGH_CMD:
                             // set HIGH divider
@@ -652,6 +625,8 @@ module pFREYA_IF(
                                     ser_read_HIGH_div <= uart_data;
                                 `SEL_INIT_N_CODE:
                                     sel_init_n_HIGH_div <= uart_data;
+                                `SLOW_CTRL_RESET_N_CODE:
+                                    slow_ctrl_reset_n_HIGH_div <= uart_data;
                             endcase
                         `SET_LOW_CMD:
                             // set HIGH divider
@@ -670,18 +645,21 @@ module pFREYA_IF(
                                     ser_read_LOW_div <= uart_data;
                                 `SEL_INIT_N_CODE:
                                     sel_init_n_LOW_div <= uart_data;
+                                `SLOW_CTRL_RESET_N_CODE:
+                                    slow_ctrl_reset_n_LOW_div <= uart_data;
                             endcase
                         `SET_SLOW_CTRL_CMD: begin
-                            if () begin // just do this once per uart_available
+                            if (uart_valid & ~uart_valid_last) begin
                                 if (uart_data[UART_PACKET_SIZE-1] == LAST_SLOW_CTRL_PACKET) begin
                                     // +: means starting from this bit get this much bits
                                     // assign byte0 = dword[0 +: 8];    // Same as dword[7:0]
-                                    slow_ctrl_packet[SLOW_CTRL_PACKET_LENGTH-UART_PACKET_SIZE-1 +: UART_PACKET_SIZE-1] <= uart_data[UART_PACKET_SIZE-2:0];
+                                    // 7 bits per assignment, not 8, cause the first is just the check
+                                    slow_ctrl_packet[SLOW_CTRL_PACKET_LENGTH-UART_PACKET_SIZE+1 +: UART_PACKET_SIZE-1] <= uart_data[UART_PACKET_SIZE-2:0];
                                     slow_ctrl_packet_index <= '0;
                                     slow_ctrl_packet_available <= 1'b1;
                                 end else begin
                                     slow_ctrl_packet[slow_ctrl_packet_index +: UART_PACKET_SIZE-1] <= uart_data[UART_PACKET_SIZE-2:0];
-                                    slow_ctrl_packet_index <= slow_ctrl_packet_index + UART_PACKET_SIZE;
+                                    slow_ctrl_packet_index <= slow_ctrl_packet_index + UART_PACKET_SIZE-1; // 7 bit per time
                                     slow_ctrl_packet_available <= 1'b0;
                                 end
                             end
@@ -698,27 +676,39 @@ module pFREYA_IF(
                     endcase
                 end
                 CMD_SEND_SLOW: begin
+                    // this way we are checking on the falling edge and no ck is sent after the signal is on
                     if (slow_ctrl_packet_sent)
                         slow_ctrl_reset_n <= 1'b0;
                     else
                         slow_ctrl_reset_n <= 1'b1;
+                end
+                CMD_SEL_PIX: begin
+                    // this way we are checking on the falling edge and no ck is sent after the signal is off
+                    if (sel_ckrow_sent && sel_ckcol_sent)
+                        sel_init_n <= 1'b1;
+                    else
+                        sel_init_n <= 1'b0;
                 end
             endcase
         end
     end
 
     // if slow ctrl is posedge then data need to be transmitted
-    always_ff @(posedge slow_ctrl_ck, posedge reset) begin: slow_ctrl_data_send
+    always_ff @(posedge ck, posedge reset) begin: slow_ctrl_data_send
         if (slow_ctrl_reset_n) begin
-            if (slow_ctrl_packet_index < SLOW_CTRL_PACKET_LENGTH) begin
-                slow_ctrl_in <= slow_ctrl_packet[slow_ctrl_packet_index];
-                slow_ctrl_packet_index <= slow_ctrl_packet_index + 1'b1;
-                slow_ctrl_packet_sent <= 1'b0;
-            end else begin
-                // if everything was transmitted, reset index
-                slow_ctrl_packet_index <= 1'b0;
-                slow_ctrl_packet_sent <= 1'b1;
-                slow_ctrl_in <= 1'b0;
+            if (slow_ctrl_ck == 1'b0 && slow_ctrl_cnt == slow_ctrl_div-1) begin
+                if (slow_ctrl_packet_index < SLOW_CTRL_PACKET_LENGTH) begin
+                    slow_ctrl_in <= slow_ctrl_packet[slow_ctrl_packet_index];
+                    slow_ctrl_packet_index <= slow_ctrl_packet_index + 1'b1;
+                end else begin
+                    // if everything was transmitted, reset index
+                    slow_ctrl_packet_index <= 1'b0;
+                    slow_ctrl_in <= 1'b0;
+                end
+            end
+            else if (slow_ctrl_ck == 1'b1 && slow_ctrl_cnt == slow_ctrl_div-1) begin
+                if (slow_ctrl_packet_index >= SLOW_CTRL_PACKET_LENGTH)
+                    slow_ctrl_packet_sent <= 1'b1;
             end
         end
     end
@@ -743,7 +733,6 @@ module pFREYA_IF(
                         // if everything was transmitted, reset index
                         sel_ckrow <= 1'b0;
                         sel_ckrow_cnt <= '0;
-                        sel_ckrow_sent <= 1'b1;
                     end else begin
                         sel_ckrow <= ~sel_ck;
                         sel_ckrow_cnt <= sel_ckrow_cnt + 1'b1;
@@ -755,20 +744,23 @@ module pFREYA_IF(
                         // if everything was transmitted, reset index
                         sel_ckcol <= 1'b0;
                         sel_ckcol_cnt <= '0;
-                        sel_ckcol_sent <= 1'b1;
                     end else begin
                         sel_ckcol <= ~sel_ck;
                         sel_ckcol_cnt <= sel_ckcol_cnt + 1'b1;
                     end
                 end
-                // both sent
-                if (sel_ckrow_sent & sel_ckcol_sent)
-                    sel_sent <= 1'b1;
-                else
-                    sel_sent <= 1'b0;
             end
             // if negedge sel_ck
             else if (sel_ck == 1'b1 && sel_cnt == sel_div-1) begin
+                // check on negedge to have it ready and not to waste a sel_ck
+                if (sel_ckrow_cnt == pixel_row) begin
+                    // if everything was transmitted, set sel_ckrow_sent
+                    sel_ckrow_sent <= 1'b1;
+                end
+                if (sel_ckcol_cnt == pixel_col) begin
+                    // if everything was transmitted, set sel_ckcol_sent
+                    sel_ckcol_sent <= 1'b1;
+                end
                 if (~sel_ckrow_sent)
                     sel_ckrow <= ~sel_ck;
                 if (~sel_ckcol_sent)
@@ -826,7 +818,6 @@ function void reset_vars;
     slow_ctrl_packet_available <= 1'b0;
     slow_ctrl_packet_sent <= 1'b0;
     sel_available <= 1'b0;
-    sel_sent <= 1'b0;
     sel_ckcol_sent <= 1'b0;
     sel_ckrow_sent <= 1'b0;
 
@@ -838,6 +829,8 @@ function void reset_vars;
     signal <= '0;
 
     inj_start <= '0;
+
+    slow_ctrl_in <= '0;
 endfunction
 
 // This function manages general clocks signal that will not change in time

@@ -154,7 +154,10 @@ module tb_pFREYA_DAQ;
         integer i;
         reg [32-1:0] uart_slow_ctrl_packet_temp; // urandom generates 32 bits
         begin
-            uart_slow_ctrl_packet_temp <= $urandom(42); // 42 is the seed and the packet is repeated for each pixel
+            cmd_available <= 1'b0;
+            data_available <= 1'b0;
+
+            uart_slow_ctrl_packet_temp <= $urandom(42069); // 42 is the seed and the packet is repeated for each pixel
             #10;
             // Send slow ctrl packet
             // must be done 15 times (see defs) with 0 as first bit
@@ -173,6 +176,8 @@ module tb_pFREYA_DAQ;
             #10;
             uart_to_send[7] <= LAST_SLOW_CTRL_PACKET; // first bit
             #10;
+            cmd_available <= 1'b0;
+            data_available <= 1'b1;
             uart_write_byte(uart_to_send);
             #20000;
         end
@@ -265,37 +270,44 @@ module tb_pFREYA_DAQ;
         #1000 cmd_available <= 1'b0;
                data_available <= 1'b1;
                uart_write_byte(uart_to_send);
+        
+        // sel pixel
+        // signal is not used
+        #20000 uart_to_send <= {`SEND_PIXEL_SEL_CMD,`UNUSED_CODE,`CMD_PADDING};
+        #1000 cmd_available <= 1'b1;
+              data_available <= 1'b0;
+              uart_write_byte(uart_to_send);
 
-        // send a command to set sel_init_n delay divider
-        #20000 uart_to_send <= {`SET_DELAY_CMD,`SEL_INIT_N_CODE,`CMD_PADDING};
-        #1000 cmd_available <= 1'b1;
-              data_available <= 1'b0;
-              uart_write_byte(uart_to_send);
-        // set sel_init_n delay divider
-        #20000 uart_to_send <= 2;
-        #1000 cmd_available <= 1'b0;
-               data_available <= 1'b1;
-               uart_write_byte(uart_to_send);
-        // send a command to set sel_init_n high divider
-        #20000 uart_to_send <= {`SET_HIGH_CMD,`SEL_INIT_N_CODE,`CMD_PADDING};
-        #1000 cmd_available <= 1'b1;
-              data_available <= 1'b0;
-              uart_write_byte(uart_to_send);
-        // set sel_init_n high divider
-        #20000 uart_to_send <= 100;
-        #1000 cmd_available <= 1'b0;
-               data_available <= 1'b1;
-               uart_write_byte(uart_to_send);
-        // send a command to set sel_init_n low divider
-        #20000 uart_to_send <= {`SET_LOW_CMD,`SEL_INIT_N_CODE,`CMD_PADDING};
-        #1000 cmd_available <= 1'b1;
-              data_available <= 1'b0;
-              uart_write_byte(uart_to_send);
-        // set sel_init_n low divider
-        #20000 uart_to_send <= 7;
-        #1000 cmd_available <= 1'b0;
-               data_available <= 1'b1;
-               uart_write_byte(uart_to_send);
+        // // send a command to set sel_init_n delay divider
+        // #20000 uart_to_send <= {`SET_DELAY_CMD,`SEL_INIT_N_CODE,`CMD_PADDING};
+        // #1000 cmd_available <= 1'b1;
+        //       data_available <= 1'b0;
+        //       uart_write_byte(uart_to_send);
+        // // set sel_init_n delay divider
+        // #20000 uart_to_send <= 2;
+        // #1000 cmd_available <= 1'b0;
+        //        data_available <= 1'b1;
+        //        uart_write_byte(uart_to_send);
+        // // send a command to set sel_init_n high divider
+        // #20000 uart_to_send <= {`SET_HIGH_CMD,`SEL_INIT_N_CODE,`CMD_PADDING};
+        // #1000 cmd_available <= 1'b1;
+        //       data_available <= 1'b0;
+        //       uart_write_byte(uart_to_send);
+        // // set sel_init_n high divider
+        // #20000 uart_to_send <= 100;
+        // #1000 cmd_available <= 1'b0;
+        //        data_available <= 1'b1;
+        //        uart_write_byte(uart_to_send);
+        // // send a command to set sel_init_n low divider
+        // #20000 uart_to_send <= {`SET_LOW_CMD,`SEL_INIT_N_CODE,`CMD_PADDING};
+        // #1000 cmd_available <= 1'b1;
+        //       data_available <= 1'b0;
+        //       uart_write_byte(uart_to_send);
+        // // set sel_init_n low divider
+        // #20000 uart_to_send <= 7;
+        // #1000 cmd_available <= 1'b0;
+        //        data_available <= 1'b1;
+        //        uart_write_byte(uart_to_send);
 
         // send a command to set slow ctrl word
         // signal is not used
@@ -304,21 +316,64 @@ module tb_pFREYA_DAQ;
               data_available <= 1'b0;
               uart_write_byte(uart_to_send);
         // set slow ctrl word
-        #20000 cmd_available <= 1'b0;
+        #20000 uart_slow_ctrl_send();
+        
+        // send a command to set slow ctrl div
+        #20000 uart_to_send <= {`SET_CK_CMD,`SLOW_CTRL_CK_CODE,`CMD_PADDING};
+        #1000 cmd_available <= 1'b1;
               data_available <= 1'b0;
-              uart_slow_ctrl_send();
+              uart_write_byte(uart_to_send);
+        // set slow ctrl div
+        #20000 uart_to_send <= 5;
         #1000 cmd_available <= 1'b0;
-              data_available <= 1'b1;
-        // // send a command to set slow ctrl
-        // #20000 uart_to_send <= {`SET_CK_CMD,`SLOW_CTRL_CK_CODE,`CMD_PADDING};
-        // #1000 cmd_available <= 1'b1;
-        //       data_available <= 1'b0;
-        //       uart_write_byte(uart_to_send);
-        // // set slow ctrl
+               data_available <= 1'b1;
+               uart_write_byte(uart_to_send);
+        
+        // send a command to send slow ctrl
+        #20000 uart_to_send <= {`SEND_SLOW_CTRL_CMD,`UNUSED_CODE,`CMD_PADDING};
+        #1000 cmd_available <= 1'b1;
+              data_available <= 1'b0;
+              uart_write_byte(uart_to_send);
+        
+        // // swnd slow ctrl
         // #20000 uart_to_send <= 5;
         // #1000 cmd_available <= 1'b0;
         //        data_available <= 1'b1;
         //        uart_write_byte(uart_to_send);
-        #100000 $stop;
+
+        // // send a command to set slow_ctrl_init_n delay divider
+        // #20000 uart_to_send <= {`SET_DELAY_CMD,`SEL_INIT_N_CODE,`CMD_PADDING};
+        // #1000 cmd_available <= 1'b1;
+        //       data_available <= 1'b0;
+        //       uart_write_byte(uart_to_send);
+        // // set slow_ctrl_init_n delay divider
+        // #20000 uart_to_send <= 2;
+        // #1000 cmd_available <= 1'b0;
+        //        data_available <= 1'b1;
+        //        uart_write_byte(uart_to_send);
+        // // send a command to set slow_ctrl_init_n high divider
+        // #20000 uart_to_send <= {`SET_HIGH_CMD,`SEL_INIT_N_CODE,`CMD_PADDING};
+        // #1000 cmd_available <= 1'b1;
+        //       data_available <= 1'b0;
+        //       uart_write_byte(uart_to_send);
+        // // set slow_ctrl_init_n high divider
+        // #20000 uart_to_send <= 100;
+        // #1000 cmd_available <= 1'b0;
+        //        data_available <= 1'b1;
+        //        uart_write_byte(uart_to_send);
+        // // send a command to set slow_ctrl_init_n low divider
+        // #20000 uart_to_send <= {`SET_LOW_CMD,`SEL_INIT_N_CODE,`CMD_PADDING};
+        // #1000 cmd_available <= 1'b1;
+        //       data_available <= 1'b0;
+        //       uart_write_byte(uart_to_send);
+        // // set slow_ctrl_init_n low divider
+        // #20000 uart_to_send <= 7;
+        // #1000 cmd_available <= 1'b0;
+        //        data_available <= 1'b1;
+        //        uart_write_byte(uart_to_send);
+        
+        #100000 cmd_available <= 1'b0;
+                data_available <= 1'b0;
+                $stop;
     end
 endmodule

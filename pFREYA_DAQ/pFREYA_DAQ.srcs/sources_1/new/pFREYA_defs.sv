@@ -104,9 +104,11 @@
     `define SH_INF_CODE            3'b001
     `define SH_SUP_CODE            3'b010
     `define ADC_START_CODE         3'b011
+    // Slow control map
     `define SER_RESET_N_CODE       3'b100
     `define SER_READ_CODE          3'b101
     `define SEL_INIT_N_CODE        3'b110
+    `define SLOW_CTRL_RESET_N_CODE 3'b111
 
     // Pixel selection
     `define PIXEL_ROW_CODE         3'b000
