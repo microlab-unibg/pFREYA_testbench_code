@@ -49,9 +49,8 @@ module pFREYA_IF(
         CMD_READ_DATA,
         CMD_SET,
         CMD_SEND_SLOW,
-        CMD_SEL_PIX,
-        SEND_SLOW_CTRL,
-        SEND_PIXEL_SEL
+        CMD_SEND_DAC,
+        CMD_SEL_PIX
     } state, next;
 
     // CK internal
@@ -61,6 +60,7 @@ module pFREYA_IF(
     logic [CK_CNT_N-1:0] adc_cnt, adc_div;
     logic [CK_CNT_N-1:0] inj_cnt, inj_div;
     logic [CK_CNT_N-1:0] ser_cnt, ser_div;
+    logic [CK_CNT_N-1:0] dac_sck_cnt, dac_sck_div;
     // for selection
     logic sel_ck; // internal clock temporisation
     logic [PIXEL_COL_N-1:0] sel_ckcol_cnt;
@@ -76,7 +76,6 @@ module pFREYA_IF(
     logic [FAST_CTRL_FLAG_N-1:0] adc_start_flag;
     logic [FAST_CTRL_FLAG_N-1:0] ser_reset_n_flag;
     logic [FAST_CTRL_FLAG_N-1:0] ser_read_flag;
-    logic [FAST_CTRL_FLAG_N-1:0] sel_init_n_flag;
     logic [FAST_CTRL_FLAG_N-1:0] slow_ctrl_reset_n_flag;
     logic [FAST_CTRL_N-1:0] csa_reset_n_cnt, csa_reset_n_delay_div, csa_reset_n_HIGH_div, csa_reset_n_LOW_div;
     logic [FAST_CTRL_N-1:0] sh_phi1d_inf_cnt, sh_phi1d_inf_delay_div, sh_phi1d_inf_HIGH_div, sh_phi1d_inf_LOW_div;
@@ -84,14 +83,14 @@ module pFREYA_IF(
     logic [FAST_CTRL_N-1:0] adc_start_cnt, adc_start_delay_div, adc_start_HIGH_div, adc_start_LOW_div;
     logic [FAST_CTRL_N-1:0] ser_reset_n_cnt, ser_reset_n_delay_div, ser_reset_n_HIGH_div, ser_reset_n_LOW_div;
     logic [FAST_CTRL_N-1:0] ser_read_cnt, ser_read_delay_div, ser_read_HIGH_div, ser_read_LOW_div;
-    logic [FAST_CTRL_N-1:0] sel_init_n_cnt, sel_init_n_delay_div, sel_init_n_HIGH_div, sel_init_n_LOW_div;
-    logic [FAST_CTRL_N-1:0] slow_ctrl_reset_n_cnt, slow_ctrl_reset_n_delay_div, slow_ctrl_reset_n_HIGH_div, slow_ctrl_reset_n_LOW_div;
 
     // control logic
-    logic slow_ctrl_packet_available, slow_ctrl_packet_sent, sel_available, sel_ckcol_sent, sel_ckrow_sent;
+    logic slow_ctrl_packet_available, slow_ctrl_packet_sent, dac_packet_available, dac_packet_sent, sel_available, sel_ckcol_sent, sel_ckrow_sent;
     // data
     logic [FAST_CTRL_N-1:0] slow_ctrl_packet_index;
     logic [SLOW_CTRL_PACKET_LENGTH-1:0] slow_ctrl_packet;
+    logic [FAST_CTRL_N-1:0] dac_packet_index;
+    logic [DAC_PACKET_LENGTH-1:0] dac_packet;
     logic [UART_PACKET_SIZE-1:0] pixel_row, pixel_col;
     logic [DATA_SIZE-1:0] signal;
     logic [CMD_CODE_SIZE-1:0] cmd;
@@ -155,11 +154,11 @@ module pFREYA_IF(
     always_ff @(posedge ck, posedge reset) begin: adc_ck_generation
         if (reset) begin
             adc_ck <= 1'b0;
-            adc_cnt <= '0;
+            adc_cnt <= -1;
         end
         else if (~adc_start) begin
             adc_ck <= 1'b0;
-            adc_cnt <= '0;
+            adc_cnt <= -1;
         end
         else if (adc_div == '0) begin
             adc_ck <= 1'b0;
@@ -179,11 +178,11 @@ module pFREYA_IF(
     always_ff @(posedge ck, posedge reset) begin: inj_stb_generation
         if (reset) begin
             inj_stb <= 1'b0;
-            inj_cnt <= '0;
+            inj_cnt <= -1;
         end
         else if (~inj_start) begin
             inj_stb <= 1'b0;
-            inj_cnt <= '0;
+            inj_cnt <= -1;
         end
         else if (inj_div == '0) begin
             inj_stb <= 1'b0;
@@ -203,11 +202,11 @@ module pFREYA_IF(
     always_ff @(posedge ck, posedge reset) begin: ser_ck_generation
         if (reset) begin
             ser_ck <= 1'b0;
-            ser_cnt <= '0;
+            ser_cnt <= -1;
         end
         else if (~ser_reset_n) begin
             ser_ck <= 1'b0;
-            ser_cnt <= '0;
+            ser_cnt <= -1;
         end
         else if (ser_div == '0) begin
             ser_ck <= 1'b0;
@@ -222,6 +221,30 @@ module pFREYA_IF(
             ser_cnt <= ser_cnt + 1'b1;
         end
     end
+
+    // dac SCK clock generation
+    always_ff @(posedge ck, posedge reset) begin: dac_sck_generation
+        if (reset) begin
+            dac_sck <= 1'b0;
+            dac_sck_cnt <= -1;
+        end
+        else if (dac_sync_n) begin
+            dac_sck <= 1'b0;
+            dac_sck_cnt <= -1;
+        end
+        else if (dac_sck_div == '0) begin
+            dac_sck <= 1'b0;
+            dac_sck_cnt <= '0;
+        end
+        else if (dac_sck_cnt == dac_sck_div-1) begin
+            dac_sck <= ~dac_sck;
+            dac_sck_cnt <= '0;
+        end
+        else begin
+            dac_sck <= dac_sck;
+            dac_sck_cnt <= dac_sck_cnt + 1'b1;
+        end
+    end
 //===================== END STD CLOCKS ===============================
 
 //====================== FAST CONTROL ================================
@@ -229,19 +252,19 @@ module pFREYA_IF(
     always_ff @(posedge ck, posedge reset) begin: csa_reset_n_generation
         if (reset) begin
             csa_reset_n <= 1'b1;
-            csa_reset_n_cnt <= '0;
+            csa_reset_n_cnt <= -1;
             csa_reset_n_flag <= FAST_CTRL_DELAY;
         end
         else if (csa_reset_n_flag == FAST_CTRL_DELAY &&
                  csa_reset_n_delay_div == '0) begin
             csa_reset_n <= 1'b1;
-            csa_reset_n_cnt <= '0;
+            csa_reset_n_cnt <= -1;
             csa_reset_n_flag <= FAST_CTRL_DELAY;
         end
         else if (csa_reset_n_HIGH_div == '0 ||
                  csa_reset_n_LOW_div == '0    ) begin
             csa_reset_n <= 1'b1;
-            csa_reset_n_cnt <= '0;
+            csa_reset_n_cnt <= -1;
             csa_reset_n_flag <= FAST_CTRL_DELAY;
         end
         else if (csa_reset_n_flag == FAST_CTRL_DELAY &&
@@ -271,19 +294,19 @@ module pFREYA_IF(
     always_ff @(posedge ck, posedge reset) begin: sh_phi1d_inf_generation
         if (reset) begin
             sh_phi1d_inf <= 1'b0;
-            sh_phi1d_inf_cnt <= '0;
+            sh_phi1d_inf_cnt <= -1;
             sh_phi1d_inf_flag <= FAST_CTRL_DELAY;
         end
         else if (sh_phi1d_inf_flag == FAST_CTRL_DELAY &&
                  sh_phi1d_inf_delay_div == '0) begin
             sh_phi1d_inf <= 1'b0;
-            sh_phi1d_inf_cnt <= '0;
+            sh_phi1d_inf_cnt <= -1;
             sh_phi1d_inf_flag <= FAST_CTRL_DELAY;
         end
         else if (sh_phi1d_inf_HIGH_div == '0 ||
                  sh_phi1d_inf_LOW_div == '0    ) begin
             sh_phi1d_inf <= 1'b0;
-            sh_phi1d_inf_cnt <= '0;
+            sh_phi1d_inf_cnt <= -1;
             sh_phi1d_inf_flag <= FAST_CTRL_DELAY;
         end
         else if (sh_phi1d_inf_flag == FAST_CTRL_DELAY &&
@@ -313,19 +336,19 @@ module pFREYA_IF(
     always_ff @(posedge ck, posedge reset) begin: sh_phi1d_sup_generation
         if (reset) begin
             sh_phi1d_sup <= 1'b0;
-            sh_phi1d_sup_cnt <= '0;
+            sh_phi1d_sup_cnt <= -1;
             sh_phi1d_sup_flag <= FAST_CTRL_DELAY;
         end
         else if (sh_phi1d_sup_flag == FAST_CTRL_DELAY &&
                  sh_phi1d_sup_delay_div == '0) begin
             sh_phi1d_sup <= 1'b0;
-            sh_phi1d_sup_cnt <= '0;
+            sh_phi1d_sup_cnt <= -1;
             sh_phi1d_sup_flag <= FAST_CTRL_DELAY;
         end
         else if (sh_phi1d_sup_HIGH_div == '0 ||
                  sh_phi1d_sup_LOW_div == '0    ) begin
             sh_phi1d_sup <= 1'b0;
-            sh_phi1d_sup_cnt <= '0;
+            sh_phi1d_sup_cnt <= -1;
             sh_phi1d_sup_flag <= FAST_CTRL_DELAY;
         end
         else if (sh_phi1d_sup_flag == FAST_CTRL_DELAY &&
@@ -355,19 +378,19 @@ module pFREYA_IF(
     always_ff @(posedge ck, posedge reset) begin: adc_start_generation
         if (reset) begin
             adc_start <= 1'b0;
-            adc_start_cnt <= '0;
+            adc_start_cnt <= -1;
             adc_start_flag <= FAST_CTRL_DELAY;
         end
         else if (adc_start_flag == FAST_CTRL_DELAY &&
                  adc_start_delay_div == '0) begin
             adc_start <= 1'b0;
-            adc_start_cnt <= '0;
+            adc_start_cnt <= -1;
             adc_start_flag <= FAST_CTRL_DELAY;
         end
         else if (adc_start_HIGH_div == '0 ||
                  adc_start_LOW_div == '0    ) begin
             adc_start <= 1'b0;
-            adc_start_cnt <= '0;
+            adc_start_cnt <= -1;
             adc_start_flag <= FAST_CTRL_DELAY;
         end
         else if (adc_start_flag == FAST_CTRL_DELAY &&
@@ -397,19 +420,19 @@ module pFREYA_IF(
     always_ff @(posedge ck, posedge reset) begin: ser_reset_n_generation
         if (reset) begin
             ser_reset_n <= 1'b1;
-            ser_reset_n_cnt <= '0;
+            ser_reset_n_cnt <= -1;
             ser_reset_n_flag <= FAST_CTRL_DELAY;
         end
         else if (ser_reset_n_flag == FAST_CTRL_DELAY &&
                  ser_reset_n_delay_div == '0) begin
             ser_reset_n <= 1'b1;
-            ser_reset_n_cnt <= '0;
+            ser_reset_n_cnt <= -1;
             ser_reset_n_flag <= FAST_CTRL_DELAY;
         end
         else if (ser_reset_n_HIGH_div == '0 ||
                  ser_reset_n_LOW_div == '0    ) begin
             ser_reset_n <= 1'b1;
-            ser_reset_n_cnt <= '0;
+            ser_reset_n_cnt <= -1;
             ser_reset_n_flag <= FAST_CTRL_DELAY;
         end
         else if (ser_reset_n_flag == FAST_CTRL_DELAY &&
@@ -439,19 +462,19 @@ module pFREYA_IF(
     always_ff @(posedge ck, posedge reset) begin: ser_read_generation
         if (reset) begin
             ser_read <= 1'b0;
-            ser_read_cnt <= '0;
+            ser_read_cnt <= -1;
             ser_read_flag <= FAST_CTRL_DELAY;
         end
         else if (ser_read_flag == FAST_CTRL_DELAY &&
                  ser_read_delay_div == '0) begin
             ser_read <= 1'b0;
-            ser_read_cnt <= '0;
+            ser_read_cnt <= -1;
             ser_read_flag <= FAST_CTRL_DELAY;
         end
         else if (ser_read_HIGH_div == '0 ||
                  ser_read_LOW_div == '0    ) begin
             ser_read <= 1'b0;
-            ser_read_cnt <= '0;
+            ser_read_cnt <= -1;
             ser_read_flag <= FAST_CTRL_DELAY;
         end
         else if (ser_read_flag == FAST_CTRL_DELAY &&
@@ -493,13 +516,16 @@ module pFREYA_IF(
                         `SET_HIGH_CMD,
                         `SET_LOW_CMD,
                         `SET_SLOW_CTRL_CMD,
-                        `SET_DAC_LVL_CMD,
+                        `SET_DAC_CMD,
                         `SET_PIXEL_CMD:
                             next <= CMD_SET;
                         // next send slow control
                         `SEND_SLOW_CTRL_CMD:
                             next <= CMD_SEND_SLOW;
-                        // next send slow control
+                        // next send DAC config
+                        `SEND_DAC_CMD:
+                            next <= CMD_SEND_DAC;
+                        // next send sel pixel
                         `SEND_PIXEL_SEL_CMD:
                             next <= CMD_SEL_PIX;
                         // if the command is not known error
@@ -523,6 +549,11 @@ module pFREYA_IF(
             CMD_SEND_SLOW:
                 if (slow_ctrl_packet_available & ~slow_ctrl_packet_sent)
                     next <= CMD_SEND_SLOW;
+                else
+                    next <= CMD_EVAL;
+            CMD_SEND_DAC:
+                if (dac_packet_available & ~dac_packet_sent)
+                    next <= CMD_SEND_DAC;
                 else
                     next <= CMD_EVAL;
             CMD_SEL_PIX:
@@ -587,6 +618,8 @@ module pFREYA_IF(
                                     inj_div <= uart_data;
                                 `SER_CK_CODE:
                                     ser_div <= uart_data;
+                                `DAC_SCK_CODE:
+                                    dac_sck_div <= uart_data;
                             endcase
                         `SET_DELAY_CMD:
                             // set delay divider
@@ -603,10 +636,6 @@ module pFREYA_IF(
                                     ser_reset_n_delay_div <= uart_data;
                                 `SER_READ_CODE:
                                     ser_read_delay_div <= uart_data;
-                                `SEL_INIT_N_CODE:
-                                    sel_init_n_delay_div <= uart_data;
-                                `SLOW_CTRL_RESET_N_CODE:
-                                    slow_ctrl_reset_n_delay_div <= uart_data;
                             endcase
                         `SET_HIGH_CMD:
                             // set HIGH divider
@@ -623,10 +652,6 @@ module pFREYA_IF(
                                     ser_reset_n_HIGH_div <= uart_data;
                                 `SER_READ_CODE:
                                     ser_read_HIGH_div <= uart_data;
-                                `SEL_INIT_N_CODE:
-                                    sel_init_n_HIGH_div <= uart_data;
-                                `SLOW_CTRL_RESET_N_CODE:
-                                    slow_ctrl_reset_n_HIGH_div <= uart_data;
                             endcase
                         `SET_LOW_CMD:
                             // set HIGH divider
@@ -643,14 +668,10 @@ module pFREYA_IF(
                                     ser_reset_n_LOW_div <= uart_data;
                                 `SER_READ_CODE:
                                     ser_read_LOW_div <= uart_data;
-                                `SEL_INIT_N_CODE:
-                                    sel_init_n_LOW_div <= uart_data;
-                                `SLOW_CTRL_RESET_N_CODE:
-                                    slow_ctrl_reset_n_LOW_div <= uart_data;
                             endcase
                         `SET_SLOW_CTRL_CMD: begin
                             if (uart_valid & ~uart_valid_last) begin
-                                if (uart_data[UART_PACKET_SIZE-1] == LAST_SLOW_CTRL_PACKET) begin
+                                if (uart_data[UART_PACKET_SIZE-1] == LAST_UART_PACKET) begin
                                     // +: means starting from this bit get this much bits
                                     // assign byte0 = dword[0 +: 8];    // Same as dword[7:0]
                                     // 7 bits per assignment, not 8, cause the first is just the check
@@ -661,6 +682,20 @@ module pFREYA_IF(
                                     slow_ctrl_packet[slow_ctrl_packet_index +: UART_PACKET_SIZE-1] <= uart_data[UART_PACKET_SIZE-2:0];
                                     slow_ctrl_packet_index <= slow_ctrl_packet_index + UART_PACKET_SIZE-1; // 7 bit per time
                                     slow_ctrl_packet_available <= 1'b0;
+                                end
+                            end
+                        end
+                        `SET_DAC_CMD: begin
+                            if (uart_valid & ~uart_valid_last) begin
+                                if (uart_data[UART_PACKET_SIZE-1] == LAST_UART_PACKET) begin
+                                    // last 3 bits
+                                    dac_packet[DAC_PACKET_LENGTH-1-3 +: 3] <= uart_data[2:0];
+                                    dac_packet_index <= '0;
+                                    dac_packet_available <= 1'b1;
+                                end else begin
+                                    dac_packet[dac_packet_index +: UART_PACKET_SIZE-1] <= uart_data[UART_PACKET_SIZE-2:0];
+                                    dac_packet_index <= dac_packet_index + UART_PACKET_SIZE-1; // 7 bit per time
+                                    dac_packet_available <= 1'b0;
                                 end
                             end
                         end
@@ -681,6 +716,13 @@ module pFREYA_IF(
                         slow_ctrl_reset_n <= 1'b0;
                     else
                         slow_ctrl_reset_n <= 1'b1;
+                end
+                CMD_SEND_DAC: begin
+                    // this way we are checking on the falling edge and no ck is sent after the signal is on
+                    if (dac_packet_sent)
+                        dac_sync_n <= 1'b1;
+                    else
+                        dac_sync_n <= 1'b0;
                 end
                 CMD_SEL_PIX: begin
                     // this way we are checking on the falling edge and no ck is sent after the signal is off
@@ -709,6 +751,26 @@ module pFREYA_IF(
             else if (slow_ctrl_ck == 1'b1 && slow_ctrl_cnt == slow_ctrl_div-1) begin
                 if (slow_ctrl_packet_index >= SLOW_CTRL_PACKET_LENGTH)
                     slow_ctrl_packet_sent <= 1'b1;
+            end
+        end
+    end
+
+    // if slow ctrl is posedge then data need to be transmitted
+    always_ff @(posedge ck, posedge reset) begin: dac_data_send
+        if (~dac_sync_n) begin
+            if (dac_sck == 1'b0 && dac_sck_cnt == dac_sck_div-1) begin
+                if (dac_packet_index < DAC_PACKET_LENGTH) begin
+                    dac_sdin <= dac_packet[dac_packet_index];
+                    dac_packet_index <= dac_packet_index + 1'b1;
+                end else begin
+                    // if everything was transmitted, reset index
+                    dac_packet_index <= 1'b0;
+                    dac_sdin <= 1'b0;
+                end
+            end
+            else if (dac_sck == 1'b1 && dac_sck_cnt == dac_sck_div-1) begin
+                if (dac_packet_index >= DAC_PACKET_LENGTH)
+                    dac_packet_sent <= 1'b1;
             end
         end
     end
@@ -778,6 +840,7 @@ function void reset_div;
     ser_div <= '0;
     sel_div <= '0;
     inj_div <= '0;
+    dac_sck_div <= '0;
                             
     csa_reset_n_delay_div <= '0;
     sh_phi1d_inf_delay_div <= '0;
@@ -785,7 +848,6 @@ function void reset_div;
     adc_start_delay_div <= '0;
     ser_reset_n_delay_div <= '0;
     ser_read_delay_div <= '0;
-    sel_init_n_delay_div <= '0;
     
     csa_reset_n_HIGH_div <= '0;
     sh_phi1d_inf_HIGH_div <= '0;
@@ -793,7 +855,6 @@ function void reset_div;
     adc_start_HIGH_div <= '0;
     ser_reset_n_HIGH_div <= '0;
     ser_read_HIGH_div <= '0;
-    sel_init_n_HIGH_div <= '0;
 
     csa_reset_n_LOW_div <= '0;
     sh_phi1d_inf_LOW_div <= '0;
@@ -801,12 +862,12 @@ function void reset_div;
     adc_start_LOW_div <= '0;
     ser_reset_n_LOW_div <= '0;
     ser_read_LOW_div <= '0;
-    sel_init_n_LOW_div <= '0;
 endfunction
 
 // This function resets all the resets
 function void reset_reset;
     slow_ctrl_reset_n <= 1'b0;
+    dac_sync_n <= 1'b1;
     adc_start <= 1'b1;
     ser_reset_n <= 1'b0;
     sel_init_n <= 1'b1;
@@ -817,12 +878,16 @@ endfunction
 function void reset_vars;
     slow_ctrl_packet_available <= 1'b0;
     slow_ctrl_packet_sent <= 1'b0;
+    dac_packet_available <= 1'b0;
+    dac_packet_sent <= 1'b0;
     sel_available <= 1'b0;
     sel_ckcol_sent <= 1'b0;
     sel_ckrow_sent <= 1'b0;
 
     slow_ctrl_packet_index <= '0;
     slow_ctrl_packet <= '0;
+    dac_packet_index <= '0;
+    dac_packet <= '0;
     pixel_row <= '0;
     pixel_col <= '0;
     cmd <= '0;
@@ -831,6 +896,7 @@ function void reset_vars;
     inj_start <= '0;
 
     slow_ctrl_in <= '0;
+    dac_sdin <= '0;
 endfunction
 
 // This function manages general clocks signal that will not change in time

@@ -12,15 +12,15 @@
       </db_ref>
    </db_ref_list>
    <zoom_setting>
-      <ZoomStartTime time="1,379.778694 us"></ZoomStartTime>
-      <ZoomEndTime time="1,535.178695 us"></ZoomEndTime>
-      <Cursor1Time time="1,470.750000 us"></Cursor1Time>
+      <ZoomStartTime time="3,207.855000 us"></ZoomStartTime>
+      <ZoomEndTime time="3,602.355001 us"></ZoomEndTime>
+      <Cursor1Time time="3,433.355000 us"></Cursor1Time>
    </zoom_setting>
    <column_width_setting>
-      <NameColumnWidth column_width="196"></NameColumnWidth>
+      <NameColumnWidth column_width="184"></NameColumnWidth>
       <ValueColumnWidth column_width="58"></ValueColumnWidth>
    </column_width_setting>
-   <WVObjectSize size="95" />
+   <WVObjectSize size="97" />
    <wvobject fp_name="/tb_pFREYA_DAQ/pFREYA_DAQ_inst/pFREYA_IF_inst/adc_ck" type="logic">
       <obj_property name="ElementShortName">adc_ck</obj_property>
       <obj_property name="ObjectShortName">adc_ck</obj_property>
@@ -92,18 +92,6 @@
    <wvobject fp_name="/tb_pFREYA_DAQ/pFREYA_DAQ_inst/pFREYA_IF_inst/csa_reset_n_flag" type="array">
       <obj_property name="ElementShortName">csa_reset_n_flag[1:0]</obj_property>
       <obj_property name="ObjectShortName">csa_reset_n_flag[1:0]</obj_property>
-   </wvobject>
-   <wvobject fp_name="/tb_pFREYA_DAQ/pFREYA_DAQ_inst/pFREYA_IF_inst/dac_sck" type="logic">
-      <obj_property name="ElementShortName">dac_sck</obj_property>
-      <obj_property name="ObjectShortName">dac_sck</obj_property>
-   </wvobject>
-   <wvobject fp_name="/tb_pFREYA_DAQ/pFREYA_DAQ_inst/pFREYA_IF_inst/dac_sdin" type="logic">
-      <obj_property name="ElementShortName">dac_sdin</obj_property>
-      <obj_property name="ObjectShortName">dac_sdin</obj_property>
-   </wvobject>
-   <wvobject fp_name="/tb_pFREYA_DAQ/pFREYA_DAQ_inst/pFREYA_IF_inst/dac_sync_n" type="logic">
-      <obj_property name="ElementShortName">dac_sync_n</obj_property>
-      <obj_property name="ObjectShortName">dac_sync_n</obj_property>
    </wvobject>
    <wvobject fp_name="/tb_pFREYA_DAQ/pFREYA_DAQ_inst/pFREYA_IF_inst/data_available" type="logic">
       <obj_property name="ElementShortName">data_available</obj_property>
@@ -185,29 +173,9 @@
       <obj_property name="ElementShortName">sel_init_n</obj_property>
       <obj_property name="ObjectShortName">sel_init_n</obj_property>
    </wvobject>
-   <wvobject fp_name="/tb_pFREYA_DAQ/pFREYA_DAQ_inst/pFREYA_IF_inst/sel_init_n_HIGH_div" type="array">
-      <obj_property name="ElementShortName">sel_init_n_HIGH_div[7:0]</obj_property>
-      <obj_property name="ObjectShortName">sel_init_n_HIGH_div[7:0]</obj_property>
-   </wvobject>
-   <wvobject fp_name="/tb_pFREYA_DAQ/pFREYA_DAQ_inst/pFREYA_IF_inst/sel_init_n_LOW_div" type="array">
-      <obj_property name="ElementShortName">sel_init_n_LOW_div[7:0]</obj_property>
-      <obj_property name="ObjectShortName">sel_init_n_LOW_div[7:0]</obj_property>
-   </wvobject>
-   <wvobject fp_name="/tb_pFREYA_DAQ/pFREYA_DAQ_inst/pFREYA_IF_inst/sel_init_n_cnt" type="array">
-      <obj_property name="ElementShortName">sel_init_n_cnt[7:0]</obj_property>
-      <obj_property name="ObjectShortName">sel_init_n_cnt[7:0]</obj_property>
-   </wvobject>
-   <wvobject fp_name="/tb_pFREYA_DAQ/pFREYA_DAQ_inst/pFREYA_IF_inst/sel_init_n_delay_div" type="array">
-      <obj_property name="ElementShortName">sel_init_n_delay_div[7:0]</obj_property>
-      <obj_property name="ObjectShortName">sel_init_n_delay_div[7:0]</obj_property>
-   </wvobject>
    <wvobject fp_name="/tb_pFREYA_DAQ/pFREYA_DAQ_inst/pFREYA_IF_inst/sel_init_n_flag" type="array">
       <obj_property name="ElementShortName">sel_init_n_flag[1:0]</obj_property>
       <obj_property name="ObjectShortName">sel_init_n_flag[1:0]</obj_property>
-   </wvobject>
-   <wvobject fp_name="/tb_pFREYA_DAQ/pFREYA_DAQ_inst/pFREYA_IF_inst/sel_sent" type="logic">
-      <obj_property name="ElementShortName">sel_sent</obj_property>
-      <obj_property name="ObjectShortName">sel_sent</obj_property>
    </wvobject>
    <wvobject fp_name="/tb_pFREYA_DAQ/pFREYA_DAQ_inst/pFREYA_IF_inst/ser_ck" type="logic">
       <obj_property name="ElementShortName">ser_ck</obj_property>
@@ -342,8 +310,8 @@
       <obj_property name="ObjectShortName">slow_ctrl_in</obj_property>
    </wvobject>
    <wvobject fp_name="/tb_pFREYA_DAQ/pFREYA_DAQ_inst/pFREYA_IF_inst/slow_ctrl_packet" type="array">
-      <obj_property name="ElementShortName">slow_ctrl_packet[7:0]</obj_property>
-      <obj_property name="ObjectShortName">slow_ctrl_packet[7:0]</obj_property>
+      <obj_property name="ElementShortName">slow_ctrl_packet[111:0]</obj_property>
+      <obj_property name="ObjectShortName">slow_ctrl_packet[111:0]</obj_property>
    </wvobject>
    <wvobject fp_name="/tb_pFREYA_DAQ/pFREYA_DAQ_inst/pFREYA_IF_inst/slow_ctrl_packet_available" type="logic">
       <obj_property name="ElementShortName">slow_ctrl_packet_available</obj_property>
@@ -361,6 +329,42 @@
       <obj_property name="ElementShortName">slow_ctrl_reset_n</obj_property>
       <obj_property name="ObjectShortName">slow_ctrl_reset_n</obj_property>
    </wvobject>
+   <wvobject fp_name="/tb_pFREYA_DAQ/dac_sdin" type="logic">
+      <obj_property name="ElementShortName">dac_sdin</obj_property>
+      <obj_property name="ObjectShortName">dac_sdin</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_pFREYA_DAQ/dac_sync_n" type="logic">
+      <obj_property name="ElementShortName">dac_sync_n</obj_property>
+      <obj_property name="ObjectShortName">dac_sync_n</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_pFREYA_DAQ/dac_sck" type="logic">
+      <obj_property name="ElementShortName">dac_sck</obj_property>
+      <obj_property name="ObjectShortName">dac_sck</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_pFREYA_DAQ/pFREYA_DAQ_inst/pFREYA_IF_inst/dac_sck_cnt" type="array">
+      <obj_property name="ElementShortName">dac_sck_cnt[7:0]</obj_property>
+      <obj_property name="ObjectShortName">dac_sck_cnt[7:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_pFREYA_DAQ/pFREYA_DAQ_inst/pFREYA_IF_inst/dac_sck_div" type="array">
+      <obj_property name="ElementShortName">dac_sck_div[7:0]</obj_property>
+      <obj_property name="ObjectShortName">dac_sck_div[7:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_pFREYA_DAQ/pFREYA_DAQ_inst/pFREYA_IF_inst/dac_packet_available" type="logic">
+      <obj_property name="ElementShortName">dac_packet_available</obj_property>
+      <obj_property name="ObjectShortName">dac_packet_available</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_pFREYA_DAQ/pFREYA_DAQ_inst/pFREYA_IF_inst/dac_packet_sent" type="logic">
+      <obj_property name="ElementShortName">dac_packet_sent</obj_property>
+      <obj_property name="ObjectShortName">dac_packet_sent</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_pFREYA_DAQ/pFREYA_DAQ_inst/pFREYA_IF_inst/dac_packet_index" type="array">
+      <obj_property name="ElementShortName">dac_packet_index[7:0]</obj_property>
+      <obj_property name="ObjectShortName">dac_packet_index[7:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_pFREYA_DAQ/pFREYA_DAQ_inst/pFREYA_IF_inst/dac_packet" type="array">
+      <obj_property name="ElementShortName">dac_packet[23:0]</obj_property>
+      <obj_property name="ObjectShortName">dac_packet[23:0]</obj_property>
+   </wvobject>
    <wvobject fp_name="/tb_pFREYA_DAQ/pFREYA_DAQ_inst/pFREYA_IF_inst/state" type="array">
       <obj_property name="ElementShortName">state[5:0]</obj_property>
       <obj_property name="ObjectShortName">state[5:0]</obj_property>
@@ -372,6 +376,10 @@
    <wvobject fp_name="/tb_pFREYA_DAQ/pFREYA_DAQ_inst/pFREYA_IF_inst/uart_valid" type="logic">
       <obj_property name="ElementShortName">uart_valid</obj_property>
       <obj_property name="ObjectShortName">uart_valid</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_pFREYA_DAQ/pFREYA_DAQ_inst/pFREYA_IF_inst/uart_valid_last" type="logic">
+      <obj_property name="ElementShortName">uart_valid_last</obj_property>
+      <obj_property name="ObjectShortName">uart_valid_last</obj_property>
    </wvobject>
    <wvobject fp_name="/tb_pFREYA_DAQ/rx_ser" type="logic">
       <obj_property name="ElementShortName">rx_ser</obj_property>

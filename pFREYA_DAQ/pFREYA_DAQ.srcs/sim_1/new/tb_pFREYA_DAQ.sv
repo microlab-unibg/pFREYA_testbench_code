@@ -164,8 +164,7 @@ module tb_pFREYA_DAQ;
             for (i=0; i<=14; i=i+1)
             begin
                 uart_to_send[6:0] <= uart_slow_ctrl_packet_temp[6:0]; // last 7 bits
-                #10;
-                uart_to_send[7] <= NOTLAST_SLOW_CTRL_PACKET; // first bit
+                uart_to_send[7] <= NOTLAST_UART_PACKET; // first bit
                 #10;
                 uart_write_byte(uart_to_send);
                 #20000;
@@ -173,8 +172,38 @@ module tb_pFREYA_DAQ;
             
             // Send last packet (16th)
             uart_to_send[6:0] <= uart_slow_ctrl_packet_temp[6:0]; // last 7 bits
+            uart_to_send[7] <= LAST_UART_PACKET; // first bit
             #10;
-            uart_to_send[7] <= LAST_SLOW_CTRL_PACKET; // first bit
+            cmd_available <= 1'b0;
+            data_available <= 1'b1;
+            uart_write_byte(uart_to_send);
+            #20000;
+        end
+    endtask // uart_slow_ctrl_send
+
+// Takes generates and send slow ctrl data
+    task uart_DAC_send;
+        input [DAC_PACKET_LENGTH-1:0] data;
+        integer i;
+        begin
+            cmd_available <= 1'b0;
+            data_available <= 1'b0;
+
+            #10;
+            // Send DAC packet
+            // must be done 3 times (see defs) with 0 as first bit
+            for (i=0; i<=2; i=i+1)
+            begin
+                uart_to_send[6:0] <= data[i*(UART_PACKET_SIZE-1) +: UART_PACKET_SIZE-1]; // last 7 bits
+                uart_to_send[7] <= NOTLAST_UART_PACKET; // first bit
+                #10;
+                uart_write_byte(uart_to_send);
+                #20000;
+            end
+            
+            // Send last packet (4th)
+            uart_to_send[6:0] <= {4'b0000, data[DAC_PACKET_LENGTH-1-3 +: 3]}; // last 3 bits
+            uart_to_send[7] <= LAST_UART_PACKET; // first bit
             #10;
             cmd_available <= 1'b0;
             data_available <= 1'b1;
@@ -279,6 +308,7 @@ module tb_pFREYA_DAQ;
         #1000 cmd_available <= 1'b1;
               data_available <= 1'b0;
               uart_write_byte(uart_to_send);
+        #1000;
 //============ END PIXEL SELECTION ============================================
 
 //============ SLOW CTRL ======================================================
@@ -309,7 +339,35 @@ module tb_pFREYA_DAQ;
               uart_write_byte(uart_to_send);
 //============ END SLOW CTRL ==================================================
 
-        // DAC setup
+//============ DAC SETUP ======================================================
+        // send a command to set DAC word
+        // signal is not used
+        #20000 uart_to_send <= {`SET_DAC_CMD,`UNUSED_CODE,`CMD_PADDING};
+        #1000 cmd_available <= 1'b1;
+              data_available <= 1'b0;
+              uart_write_byte(uart_to_send);
+        // set DAC word
+        // DAC full packet is |CMD_PADDING(4)|CMD(4)|DATA(16)|
+        // in this example 0000_0100_0000_0001_0000_0001
+        #20000 uart_DAC_send({`DAC_CMD_PADDING,`DAC_CMD_GAIN,`DAC_DATA_GAIN_PADDING,`DAC_DATA_GAIN_DIV2,`DAC_DATA_GAIN_PADDING,`DAC_DATA_GAIN_BUF2});
+        
+        // send a command to set slow ctrl div
+        #20000 uart_to_send <= {`SET_CK_CMD,`DAC_SCK_CODE,`CMD_PADDING};
+        #1000 cmd_available <= 1'b1;
+              data_available <= 1'b0;
+              uart_write_byte(uart_to_send);
+        // set slow ctrl div
+        #20000 uart_to_send <= 5;
+        #1000 cmd_available <= 1'b0;
+               data_available <= 1'b1;
+               uart_write_byte(uart_to_send);
+        
+        // send a command to send slow ctrl
+        #20000 uart_to_send <= {`SEND_DAC_CMD,`UNUSED_CODE,`CMD_PADDING};
+        #1000 cmd_available <= 1'b1;
+              data_available <= 1'b0;
+              uart_write_byte(uart_to_send);
+//============ END DAC SETUP ==================================================
 
         // signal setup
         
