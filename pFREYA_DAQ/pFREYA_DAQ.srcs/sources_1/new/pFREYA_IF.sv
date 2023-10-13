@@ -76,7 +76,6 @@ module pFREYA_IF(
     logic [FAST_CTRL_FLAG_N-1:0] adc_start_flag;
     logic [FAST_CTRL_FLAG_N-1:0] ser_reset_n_flag;
     logic [FAST_CTRL_FLAG_N-1:0] ser_read_flag;
-    logic [FAST_CTRL_FLAG_N-1:0] slow_ctrl_reset_n_flag;
     logic [FAST_CTRL_N-1:0] csa_reset_n_cnt, csa_reset_n_delay_div, csa_reset_n_HIGH_div, csa_reset_n_LOW_div;
     logic [FAST_CTRL_N-1:0] sh_phi1d_inf_cnt, sh_phi1d_inf_delay_div, sh_phi1d_inf_HIGH_div, sh_phi1d_inf_LOW_div;
     logic [FAST_CTRL_N-1:0] sh_phi1d_sup_cnt, sh_phi1d_sup_delay_div, sh_phi1d_sup_HIGH_div, sh_phi1d_sup_LOW_div;
@@ -85,7 +84,7 @@ module pFREYA_IF(
     logic [FAST_CTRL_N-1:0] ser_read_cnt, ser_read_delay_div, ser_read_HIGH_div, ser_read_LOW_div;
 
     // control logic
-    logic slow_ctrl_packet_available, slow_ctrl_packet_sent, dac_packet_available, dac_packet_sent, sel_available, sel_ckcol_sent, sel_ckrow_sent;
+    logic slow_ctrl_packet_available, slow_ctrl_packet_sent, dac_packet_available, dac_packet_sent, sel_ckcol_sent, sel_ckrow_sent;
     // data
     logic [FAST_CTRL_N-1:0] slow_ctrl_packet_index;
     logic [SLOW_CTRL_PACKET_LENGTH-1:0] slow_ctrl_packet;
@@ -251,19 +250,19 @@ module pFREYA_IF(
 // These are the fast controls, managed in a similar ways as the clocks, with two different dividers for high and low state
     always_ff @(posedge ck, posedge reset) begin: csa_reset_n_generation
         if (reset) begin
-            csa_reset_n <= 1'b1;
+            csa_reset_n <= 1'b0;
             csa_reset_n_cnt <= -1;
             csa_reset_n_flag <= FAST_CTRL_DELAY;
         end
         else if (csa_reset_n_flag == FAST_CTRL_DELAY &&
                  csa_reset_n_delay_div == '0) begin
-            csa_reset_n <= 1'b1;
+            csa_reset_n <= 1'b0;
             csa_reset_n_cnt <= -1;
             csa_reset_n_flag <= FAST_CTRL_DELAY;
         end
         else if (csa_reset_n_HIGH_div == '0 ||
                  csa_reset_n_LOW_div == '0    ) begin
-            csa_reset_n <= 1'b1;
+            csa_reset_n <= 1'b0;
             csa_reset_n_cnt <= -1;
             csa_reset_n_flag <= FAST_CTRL_DELAY;
         end
@@ -419,19 +418,19 @@ module pFREYA_IF(
 
     always_ff @(posedge ck, posedge reset) begin: ser_reset_n_generation
         if (reset) begin
-            ser_reset_n <= 1'b1;
+            ser_reset_n <= 1'b0;
             ser_reset_n_cnt <= -1;
             ser_reset_n_flag <= FAST_CTRL_DELAY;
         end
         else if (ser_reset_n_flag == FAST_CTRL_DELAY &&
                  ser_reset_n_delay_div == '0) begin
-            ser_reset_n <= 1'b1;
+            ser_reset_n <= 1'b0;
             ser_reset_n_cnt <= -1;
             ser_reset_n_flag <= FAST_CTRL_DELAY;
         end
         else if (ser_reset_n_HIGH_div == '0 ||
                  ser_reset_n_LOW_div == '0    ) begin
-            ser_reset_n <= 1'b1;
+            ser_reset_n <= 1'b0;
             ser_reset_n_cnt <= -1;
             ser_reset_n_flag <= FAST_CTRL_DELAY;
         end
@@ -736,7 +735,7 @@ module pFREYA_IF(
     end
 
     // if slow ctrl is posedge then data need to be transmitted
-    always_ff @(posedge ck, posedge reset) begin: slow_ctrl_data_send
+    always_ff @(posedge ck) begin: slow_ctrl_data_send
         if (slow_ctrl_reset_n) begin
             if (slow_ctrl_ck == 1'b0 && slow_ctrl_cnt == slow_ctrl_div-1) begin
                 if (slow_ctrl_packet_index < SLOW_CTRL_PACKET_LENGTH) begin
@@ -756,7 +755,7 @@ module pFREYA_IF(
     end
 
     // if slow ctrl is posedge then data need to be transmitted
-    always_ff @(posedge ck, posedge reset) begin: dac_data_send
+    always_ff @(posedge ck) begin: dac_data_sen
         if (~dac_sync_n) begin
             if (dac_sck == 1'b0 && dac_sck_cnt == dac_sck_div-1) begin
                 if (dac_packet_index < DAC_PACKET_LENGTH) begin
@@ -868,8 +867,6 @@ endfunction
 function void reset_reset;
     slow_ctrl_reset_n <= 1'b0;
     dac_sync_n <= 1'b1;
-    adc_start <= 1'b1;
-    ser_reset_n <= 1'b0;
     sel_init_n <= 1'b1;
     inj_start <= 1'b0;
 endfunction
@@ -880,7 +877,6 @@ function void reset_vars;
     slow_ctrl_packet_sent <= 1'b0;
     dac_packet_available <= 1'b0;
     dac_packet_sent <= 1'b0;
-    sel_available <= 1'b0;
     sel_ckcol_sent <= 1'b0;
     sel_ckrow_sent <= 1'b0;
 

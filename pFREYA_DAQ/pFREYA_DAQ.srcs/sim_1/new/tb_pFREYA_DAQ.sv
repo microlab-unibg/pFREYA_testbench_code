@@ -212,18 +212,6 @@ module tb_pFREYA_DAQ;
         end
     endtask // uart_slow_ctrl_send
 //=========== END TASKS ===============================
-
-    // send command process
-    
-
-    // read data process
-    
-
-    // simulate the event
-    
-
-    // simulate the SPI
-    
     
     // setup initial values of all signals
     initial begin
