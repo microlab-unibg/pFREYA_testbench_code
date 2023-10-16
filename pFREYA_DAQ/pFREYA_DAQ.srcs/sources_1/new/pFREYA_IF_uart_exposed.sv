@@ -19,9 +19,9 @@
 // 
 //////////////////////////////////////////////////////////////////////////////////
 
-`include "pFREYA_defs.sv"
+`include "pFREYA_defs_uart_exposed.sv"
 
-module pFREYA_IF(
+module pFREYA_IF_uart_exposed(
         output logic dac_sdin, dac_sync_n, dac_sck,
         output logic sel_init_n,
         output logic sel_ckcol, sel_ckrow,
@@ -35,6 +35,7 @@ module pFREYA_IF(
         output logic slow_ctrl_in, slow_ctrl_reset_n, slow_ctrl_ck,
         // internal
         input  logic ck, reset,
+        input  logic cmd_available, data_available,
         // for UART
         input  logic [UART_PACKET_SIZE-1:0] uart_data,
         input  logic uart_valid
@@ -47,7 +48,6 @@ module pFREYA_IF(
         CMD_ERR,
         CMD_READ_DATA,
         CMD_SET,
-        CMD_SET_LONG,
         CMD_SEND_SLOW,
         CMD_SEND_DAC,
         CMD_SEL_PIX
@@ -90,13 +90,11 @@ module pFREYA_IF(
     logic [SLOW_CTRL_PACKET_LENGTH-1:0] slow_ctrl_packet;
     logic [FAST_CTRL_N-1:0] dac_packet_index;
     logic [DAC_PACKET_LENGTH-1:0] dac_packet;
-    logic [DATA_SIZE-1:0] pixel_row, pixel_col;
+    logic [UART_PACKET_SIZE-1:0] pixel_row, pixel_col;
     logic [DATA_SIZE-1:0] signal;
     logic [CMD_CODE_SIZE-1:0] cmd;
     // check UART rising edge
     logic uart_valid_last;
-    // check cmd or data
-    logic cmd_available, data_available;
 
 //======================= COMB and FF ================================
 //======================= STD CLOCKS =================================
@@ -502,14 +500,13 @@ module pFREYA_IF(
         end
     end
 //===================== END FAST CONTROL =============================
-
     // state machine control
     always_comb begin : state_machine_ctrl
         case (state)
             RESET:
                 next <= CMD_EVAL;
             CMD_EVAL:
-                if (~uart_valid & cmd_available) begin
+                if (uart_valid & cmd_available) begin
                     case (cmd)
                         // if the command is a known one
                         // next read which signal to set
@@ -542,16 +539,9 @@ module pFREYA_IF(
                 // TODO change
                 next <= CMD_ERR;
             CMD_SET:
-                if (~uart_valid & data_available) begin
-                    // for slow ctl and dac need to wait for more packets
-                    if (cmd == `SET_SLOW_CTRL_CMD && uart_data[SLOW_CTRL_UART_DATA_POS+1] != LAST_UART_PACKET)
-                        next <= CMD_SET;
-                    else if (cmd == `SET_DAC_CMD && uart_data[DAC_UART_DATA_POS+1] != LAST_UART_PACKET)
-                        next <= CMD_SET;
-                    else
-                        // if data has been read wait for new command
-                        next <= CMD_EVAL;
-                end
+                if (uart_valid & data_available)
+                    // if data has been read wait for new command
+                    next <= CMD_EVAL;
                 else
                     // if data is not fully read continue
                     next <= CMD_SET;
@@ -591,30 +581,6 @@ module pFREYA_IF(
             uart_valid_last <= uart_valid;
     end
 
-    // check for cmd or data
-    always_ff @(posedge ck, posedge reset) begin: check_cmd_data_available
-        if (reset) begin
-            cmd_available <= 1'b0;
-            data_available <= 1'b0;
-        end
-        else begin
-            if (uart_valid & ~uart_valid_last) begin
-                if (uart_data[7] == CMD_PACKET) begin
-                    cmd_available <= 1'b1;
-                    data_available <= 1'b0;
-                end
-                else begin
-                    cmd_available <= 1'b0;
-                    data_available <= 1'b1;
-                end
-            end
-            else if (~uart_valid & uart_valid_last) begin
-                cmd_available <= 1'b0;
-                data_available <= 1'b0;
-            end
-        end
-    end
-
     // what to do on each state
     always_ff @(posedge ck, posedge reset) begin: state_machine_set_output
         if (reset) begin
@@ -633,123 +599,115 @@ module pFREYA_IF(
                 end
                 CMD_EVAL: begin
                     // evaluate command if available
-                    if (cmd_available) begin
-                        cmd <= uart_data[CMD_START_POS:CMD_END_POS];
-                        signal <= uart_data[SIGNAL_START_POS:SIGNAL_END_POS];
-                    end
+                    cmd <= uart_data[CMD_START_POS:CMD_END_POS];
+                    signal <= uart_data[SIGNAL_START_POS:SIGNAL_END_POS];
                 end
                 CMD_SET: begin
-                    if (data_available) begin
-                        case (cmd)
-                            `SET_CK_CMD: begin
-                                // set clocks divider
-                                case (signal)
-                                    `SLOW_CTRL_CK_CODE:
-                                        slow_ctrl_div <= uart_data[DATA_START_POS:DATA_END_POS];
-                                    `SEL_CK_CODE:
-                                        sel_div <= uart_data[DATA_START_POS:DATA_END_POS];
-                                    `ADC_CK_CODE:
-                                        adc_div <= uart_data[DATA_START_POS:DATA_END_POS];
-                                    `INJ_DAC_CK_CODE:
-                                        inj_div <= uart_data[DATA_START_POS:DATA_END_POS];
-                                    `SER_CK_CODE:
-                                        ser_div <= uart_data[DATA_START_POS:DATA_END_POS];
-                                    `DAC_SCK_CODE:
-                                        dac_sck_div <= uart_data[DATA_START_POS:DATA_END_POS];
-                                endcase
-                            end
-                            `SET_DELAY_CMD: begin
-                                // set delay divider
-                                case (signal)
-                                    `CSA_RESET_N_CODE:
-                                        csa_reset_n_delay_div <= uart_data[DATA_START_POS:DATA_END_POS];
-                                    `SH_INF_CODE:
-                                        sh_phi1d_inf_delay_div <= uart_data[DATA_START_POS:DATA_END_POS];
-                                    `SH_SUP_CODE:
-                                        sh_phi1d_sup_delay_div <= uart_data[DATA_START_POS:DATA_END_POS];
-                                    `ADC_START_CODE:
-                                        adc_start_delay_div <= uart_data[DATA_START_POS:DATA_END_POS];
-                                    `SER_RESET_N_CODE:
-                                        ser_reset_n_delay_div <= uart_data[DATA_START_POS:DATA_END_POS];
-                                    `SER_READ_CODE:
-                                        ser_read_delay_div <= uart_data[DATA_START_POS:DATA_END_POS];
-                                endcase
-                            end
-                            `SET_HIGH_CMD: begin
-                                // set HIGH divider
-                                case (signal)
-                                    `CSA_RESET_N_CODE:
-                                        csa_reset_n_HIGH_div <= uart_data[DATA_START_POS:DATA_END_POS];
-                                    `SH_INF_CODE:
-                                        sh_phi1d_inf_HIGH_div <= uart_data[DATA_START_POS:DATA_END_POS];
-                                    `SH_SUP_CODE:
-                                        sh_phi1d_sup_HIGH_div <= uart_data[DATA_START_POS:DATA_END_POS];
-                                    `ADC_START_CODE:
-                                        adc_start_HIGH_div <= uart_data[DATA_START_POS:DATA_END_POS];
-                                    `SER_RESET_N_CODE:
-                                        ser_reset_n_HIGH_div <= uart_data[DATA_START_POS:DATA_END_POS];
-                                    `SER_READ_CODE:
-                                        ser_read_HIGH_div <= uart_data[DATA_START_POS:DATA_END_POS];
-                                endcase
-                            end
-                            `SET_LOW_CMD: begin
-                                // set HIGH divider
-                                case (signal)
-                                    `CSA_RESET_N_CODE:
-                                        csa_reset_n_LOW_div <= uart_data[DATA_START_POS:DATA_END_POS];
-                                    `SH_INF_CODE:
-                                        sh_phi1d_inf_LOW_div <= uart_data[DATA_START_POS:DATA_END_POS];
-                                    `SH_SUP_CODE:
-                                        sh_phi1d_sup_LOW_div <= uart_data[DATA_START_POS:DATA_END_POS];
-                                    `ADC_START_CODE:
-                                        adc_start_LOW_div <= uart_data[DATA_START_POS:DATA_END_POS];
-                                    `SER_RESET_N_CODE:
-                                        ser_reset_n_LOW_div <= uart_data[DATA_START_POS:DATA_END_POS];
-                                    `SER_READ_CODE:
-                                        ser_read_LOW_div <= uart_data[DATA_START_POS:DATA_END_POS];
-                                endcase
-                            end
-                            `SET_SLOW_CTRL_CMD: begin
-                                if (~uart_valid & uart_valid_last) begin
-                                    if (uart_data[SLOW_CTRL_UART_DATA_POS+1] == LAST_UART_PACKET) begin
-                                        // +: means starting from this bit get this much bits
-                                        // assign byte0 = dword[0 +: 8];    // Same as dword[7:0]
-                                        // 7 bits per assignment, not 8, cause the first is just the check
-                                        slow_ctrl_packet[SLOW_CTRL_PACKET_LENGTH-1-SLOW_CTRL_UART_DATA_LAST_POS +: SLOW_CTRL_UART_DATA_LAST_POS+1] <= uart_data[SLOW_CTRL_UART_DATA_LAST_POS:DATA_END_POS];
-                                        slow_ctrl_packet_index <= '0;
-                                        slow_ctrl_packet_available <= 1'b1;
-                                    end else begin
-                                        slow_ctrl_packet[slow_ctrl_packet_index +: SLOW_CTRL_UART_DATA_POS+1] <= uart_data[SLOW_CTRL_UART_DATA_POS:DATA_END_POS];
-                                        slow_ctrl_packet_index <= slow_ctrl_packet_index + SLOW_CTRL_UART_DATA_POS+1; // 6 bit per time
-                                        slow_ctrl_packet_available <= 1'b0;
-                                    end
+                    case (cmd)
+                        `SET_CK_CMD:
+                            // set clocks divider
+                            case (signal)
+                                `SLOW_CTRL_CK_CODE:
+                                    slow_ctrl_div <= uart_data;
+                                `SEL_CK_CODE:
+                                    sel_div <= uart_data;
+                                `ADC_CK_CODE:
+                                    adc_div <= uart_data;
+                                `INJ_DAC_CK_CODE:
+                                    inj_div <= uart_data;
+                                `SER_CK_CODE:
+                                    ser_div <= uart_data;
+                                `DAC_SCK_CODE:
+                                    dac_sck_div <= uart_data;
+                            endcase
+                        `SET_DELAY_CMD:
+                            // set delay divider
+                            case (signal)
+                                `CSA_RESET_N_CODE:
+                                    csa_reset_n_delay_div <= uart_data;
+                                `SH_INF_CODE:
+                                    sh_phi1d_inf_delay_div <= uart_data;
+                                `SH_SUP_CODE:
+                                    sh_phi1d_sup_delay_div <= uart_data;
+                                `ADC_START_CODE:
+                                    adc_start_delay_div <= uart_data;
+                                `SER_RESET_N_CODE:
+                                    ser_reset_n_delay_div <= uart_data;
+                                `SER_READ_CODE:
+                                    ser_read_delay_div <= uart_data;
+                            endcase
+                        `SET_HIGH_CMD:
+                            // set HIGH divider
+                            case (signal)
+                                `CSA_RESET_N_CODE:
+                                    csa_reset_n_HIGH_div <= uart_data;
+                                `SH_INF_CODE:
+                                    sh_phi1d_inf_HIGH_div <= uart_data;
+                                `SH_SUP_CODE:
+                                    sh_phi1d_sup_HIGH_div <= uart_data;
+                                `ADC_START_CODE:
+                                    adc_start_HIGH_div <= uart_data;
+                                `SER_RESET_N_CODE:
+                                    ser_reset_n_HIGH_div <= uart_data;
+                                `SER_READ_CODE:
+                                    ser_read_HIGH_div <= uart_data;
+                            endcase
+                        `SET_LOW_CMD:
+                            // set HIGH divider
+                            case (signal)
+                                `CSA_RESET_N_CODE:
+                                    csa_reset_n_LOW_div <= uart_data;
+                                `SH_INF_CODE:
+                                    sh_phi1d_inf_LOW_div <= uart_data;
+                                `SH_SUP_CODE:
+                                    sh_phi1d_sup_LOW_div <= uart_data;
+                                `ADC_START_CODE:
+                                    adc_start_LOW_div <= uart_data;
+                                `SER_RESET_N_CODE:
+                                    ser_reset_n_LOW_div <= uart_data;
+                                `SER_READ_CODE:
+                                    ser_read_LOW_div <= uart_data;
+                            endcase
+                        `SET_SLOW_CTRL_CMD: begin
+                            if (uart_valid & ~uart_valid_last) begin
+                                if (uart_data[UART_PACKET_SIZE-1] == LAST_UART_PACKET) begin
+                                    // +: means starting from this bit get this much bits
+                                    // assign byte0 = dword[0 +: 8];    // Same as dword[7:0]
+                                    // 7 bits per assignment, not 8, cause the first is just the check
+                                    slow_ctrl_packet[SLOW_CTRL_PACKET_LENGTH-UART_PACKET_SIZE+1 +: UART_PACKET_SIZE-1] <= uart_data[UART_PACKET_SIZE-2:0];
+                                    slow_ctrl_packet_index <= '0;
+                                    slow_ctrl_packet_available <= 1'b1;
+                                end else begin
+                                    slow_ctrl_packet[slow_ctrl_packet_index +: UART_PACKET_SIZE-1] <= uart_data[UART_PACKET_SIZE-2:0];
+                                    slow_ctrl_packet_index <= slow_ctrl_packet_index + UART_PACKET_SIZE-1; // 7 bit per time
+                                    slow_ctrl_packet_available <= 1'b0;
                                 end
                             end
-                            `SET_DAC_CMD: begin
-                                if (~uart_valid & uart_valid_last) begin
-                                    if (uart_data[DAC_UART_DATA_POS+1] == LAST_UART_PACKET) begin
-                                        // last 3 bits
-                                        dac_packet[DAC_PACKET_LENGTH-1-3 +: 3] <= uart_data[DAC_UART_DATA_LAST_POS:DATA_END_POS];
-                                        dac_packet_index <= '0;
-                                        dac_packet_available <= 1'b1;
-                                    end else begin
-                                        dac_packet[dac_packet_index +: DATA_SIZE-1] <= uart_data[DAC_UART_DATA_POS:DATA_END_POS];
-                                        dac_packet_index <= dac_packet_index + DATA_SIZE-1; // 7 bit per time
-                                        dac_packet_available <= 1'b0;
-                                    end
+                        end
+                        `SET_DAC_CMD: begin
+                            if (uart_valid & ~uart_valid_last) begin
+                                if (uart_data[UART_PACKET_SIZE-1] == LAST_UART_PACKET) begin
+                                    // last 3 bits
+                                    dac_packet[DAC_PACKET_LENGTH-1-3 +: 3] <= uart_data[2:0];
+                                    dac_packet_index <= '0;
+                                    dac_packet_available <= 1'b1;
+                                end else begin
+                                    dac_packet[dac_packet_index +: UART_PACKET_SIZE-1] <= uart_data[UART_PACKET_SIZE-2:0];
+                                    dac_packet_index <= dac_packet_index + UART_PACKET_SIZE-1; // 7 bit per time
+                                    dac_packet_available <= 1'b0;
                                 end
                             end
-                            `SET_PIXEL_CMD: begin
-                                // set row/col number
-                                case (signal)
-                                    `PIXEL_ROW_CODE:
-                                        pixel_row <= uart_data[DATA_START_POS:DATA_END_POS];
-                                    `PIXEL_COL_CODE:
-                                        pixel_col <= uart_data[DATA_START_POS:DATA_END_POS];
-                                endcase
-                            end
-                        endcase
-                    end
+                        end
+                        `SET_PIXEL_CMD: begin
+                            // set row/col number
+                            case (signal)
+                                `PIXEL_ROW_CODE:
+                                    pixel_row <= uart_data;
+                                `PIXEL_COL_CODE:
+                                    pixel_col <= uart_data;
+                            endcase
+                        end
+                    endcase
                 end
                 CMD_SEND_SLOW: begin
                     // this way we are checking on the falling edge and no ck is sent after the signal is on
@@ -794,13 +752,10 @@ module pFREYA_IF(
                     slow_ctrl_packet_sent <= 1'b1;
             end
         end
-        else begin
-            slow_ctrl_in <= 1'b0;
-        end
     end
 
     // if slow ctrl is posedge then data need to be transmitted
-    always_ff @(posedge ck) begin: dac_data_send
+    always_ff @(posedge ck) begin: dac_data_sen
         if (~dac_sync_n) begin
             if (dac_sck == 1'b0 && dac_sck_cnt == dac_sck_div-1) begin
                 if (dac_packet_index < DAC_PACKET_LENGTH) begin
@@ -816,9 +771,6 @@ module pFREYA_IF(
                 if (dac_packet_index >= DAC_PACKET_LENGTH)
                     dac_packet_sent <= 1'b1;
             end
-        end
-        else begin
-            dac_sdin <= 1'b0;
         end
     end
 

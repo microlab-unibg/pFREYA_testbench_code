@@ -18,9 +18,9 @@
 // Additional Comments:
 // 
 //////////////////////////////////////////////////////////////////////////////////
-`include "pFREYA_defs.sv"
+`include "pFREYA_defs_uart_exposed.sv"
 
-module pFREYA_DAQ
+module pFREYA_DAQ_uart_exposed
 #(parameter CKS_PER_BIT=87)
 (
     // ASIC signals
@@ -37,23 +37,21 @@ module pFREYA_DAQ
     output slow_ctrl_in, slow_ctrl_reset_n, slow_ctrl_ck,
     // Internal signals
     input  daq_ck, btn_reset,
+    input  cmd_available, data_available,
+    // for UART
+    output  [UART_PACKET_SIZE-1:0] uart_data,
+    output  uart_valid,
 
     // UART signals
+    input  uart_ck,
     input  rx_ser,
+    //output [UART_PACKET_SIZE-1:0] rx_byte, -> uart_data
+    //output rx_dv, -> uart_valid
 
-    output tx_ser
+    input  tx_dv,
+    input  [UART_PACKET_SIZE-1:0] tx_byte,
+    output tx_done, tx_active, tx_ser
 );
-
-    // for UART
-    logic uart_ck;
-    logic [CK_CNT_N-1:0] uart_cnt;
-    parameter uart_div = 10; // Base clock 100 MHz, UART 10 MHz
-
-    logic [UART_PACKET_SIZE-1:0] uart_data;
-    logic uart_valid;
-    logic tx_done, tx_active;
-    logic tx_dv;
-    logic [UART_PACKET_SIZE-1:0] tx_byte;
 
     // Simple UART
     uart_IF #(.CKS_PER_BIT(CKS_PER_BIT)) uart_IF_inst (
@@ -69,7 +67,7 @@ module pFREYA_DAQ
     );
 
     // pFREYA_ASIC interface
-    pFREYA_IF pFREYA_IF_inst (
+    pFREYA_IF_uart_exposed pFREYA_IF_uart_exposed_inst (
         .dac_sdin           (dac_sdin),
         .dac_sync_n         (dac_sync_n),
         .dac_sck            (dac_sck),
@@ -92,30 +90,8 @@ module pFREYA_DAQ
         .ck                 (daq_ck),
         .reset              (btn_reset),
         .uart_data          (uart_data),
-        .uart_valid         (uart_valid)
+        .uart_valid         (uart_valid),
+        .cmd_available      (cmd_available),
+        .data_available     (data_available)
     );
-
-    // UART clock generation
-    always_ff @(posedge daq_ck, posedge btn_reset) begin: uart_ck_generation
-        if (btn_reset) begin
-            uart_ck <= 1'b1;
-            uart_cnt <= -1;
-        end
-        else if (uart_cnt == uart_div-1) begin
-            uart_ck <= ~uart_ck;
-            uart_cnt <= '0;
-        end
-        else begin
-            uart_ck <= uart_ck;
-            uart_cnt <= uart_cnt + 1'b1;
-        end
-    end
-
-    always_ff @(posedge daq_ck, posedge btn_reset) begin: reset_daq
-        if (btn_reset) begin
-            // reset all registers
-            tx_dv <= 1'b0;
-            tx_byte <= 1'b0;
-        end
-    end
 endmodule

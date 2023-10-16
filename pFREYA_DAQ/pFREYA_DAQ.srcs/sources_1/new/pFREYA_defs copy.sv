@@ -28,33 +28,30 @@
     parameter N_SHAP_MODE = 2;  // N of SHAP mode bits
 
     // CK counter sizes
-    parameter CK_CNT_N  = 7;
+    parameter CK_CNT_N  = 8;
 
     // Slow ctrl default values
-    // 7 * 8 * 2 = 112 is the length of the word. It can be sent by 14 8-bit packets but 2 bits
-    //   are needed to identify the cmd and last packet. So 19 6-bit packets will be used (last will be 4 bits).
-    // SLOW_CTRL UART packet is |1(1)|LAST(1)|DATA(6)| where LAST is 1 if this is the last packet, else 0
+    // 7 * 8 * 2 = 112 is the length of the word. It can be sent by 14 8-bit packets but a bit
+    //   is needed to identify the last packet. So 16 7-bit packets will be used.
+    // SLOW_CTRL UART packet is |LAST(1)|DATA(7)| where LAST is 1 if this is the last packet, else 0
     // SLOW_CTRL packet is |DATA(112)|
     parameter SLOW_CTRL_PACKET_LENGTH = 112;
-    parameter SLOW_CTRL_UART_DATA_POS = 5;
-    parameter SLOW_CTRL_UART_DATA_LAST_POS = 3;
+    parameter SLOW_CTRL_IDX_N = 7;
     parameter LAST_UART_PACKET = 1'b1;
     parameter NOTLAST_UART_PACKET = 1'b0;
 
     // DAC config default values
-    // 24 is the length of the word. It can be sent by 3 8-bit packets but 2 bits
-    //   are needed to identify the cmd and last packet. So 4 6-bit packets will be used (no last).
-    // DAC UART packet is |1(1)|LAST(1)|DATA(6)| where LAST is 1 if this is the last packet, else 0
+    // 24 is the length of the word. It can be sent by 3 8-bit packets but a bit
+    //   is needed to identify the last packet. So 4 7-bit packets will be used.
+    // DAC UART packet is |LAST(1)|DATA(7)| where LAST is 1 if this is the last packet, else 0
     // DAC ADDRESS byte is |ADDR_PRESET(4)|ADDR(3)|R/W(1)| (not used, for I2C)
     // DAC full packet is |CMD_PADDING(4)|CMD(4)|DATA(16)|
     // see below (macro) for addrs and cmds
     //parameter DAC_ADDR_PACKET_LENGTH = 8; // only for I2C
     parameter DAC_PACKET_LENGTH = 24;
-    parameter DAC_UART_DATA_POS = 5;
-    parameter DAC_UART_DATA_LAST_POS = 0;
 
     // fast ctrl feature sizes
-    parameter FAST_CTRL_N = 7;
+    parameter FAST_CTRL_N = 8;
     parameter FAST_CTRL_FLAG_N = 2;
 
     // pixel selection sizes
@@ -63,18 +60,15 @@
 
     // UART command properties
     parameter UART_PACKET_SIZE = 8;
-    // Header
-    parameter CMD_PACKET = 1'b0;
-    parameter DATA_PACKET = 1'b1;
-    // CMD packet is |0(1)|CMD_CODE(4)|SIGNAL_CODE(3)|
+    // CMD packet is |CMD_CODE(4)|SIGNAL_CODE(3)|PADDING(1)|
     parameter CMD_CODE_SIZE    = 4;
-    parameter CMD_START_POS    = 6;
-    parameter CMD_END_POS      = 3;
-    parameter SIGNAL_START_POS = 2;
-    parameter SIGNAL_END_POS   = 0;
-    // DATA packet is |1(1)|DATA(7)|
-    parameter DATA_SIZE        = 7;
-    parameter DATA_START_POS   = 6;
+    parameter CMD_START_POS    = 7;
+    parameter CMD_END_POS      = 4;
+    parameter SIGNAL_START_POS = 3;
+    parameter SIGNAL_END_POS   = 1;
+    // DATA packet is |DATA(8)|
+    parameter DATA_SIZE        = 8;
+    parameter DATA_START_POS   = 7;
     parameter DATA_END_POS     = 0;
     // fast control state (for generation)
     parameter FAST_CTRL_DELAY = 2'b00;
