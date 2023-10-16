@@ -12,15 +12,18 @@
       </db_ref>
    </db_ref_list>
    <zoom_setting>
-      <ZoomStartTime time="578.000 ns"></ZoomStartTime>
-      <ZoomEndTime time="988.501 ns"></ZoomEndTime>
-      <Cursor1Time time="905.000 ns"></Cursor1Time>
+      <ZoomStartTime time="0.000000 us"></ZoomStartTime>
+      <ZoomEndTime time="4,125.000001 us"></ZoomEndTime>
+      <Cursor1Time time="676.035000 us"></Cursor1Time>
    </zoom_setting>
    <column_width_setting>
-      <NameColumnWidth column_width="152"></NameColumnWidth>
+      <NameColumnWidth column_width="148"></NameColumnWidth>
       <ValueColumnWidth column_width="58"></ValueColumnWidth>
    </column_width_setting>
    <WVObjectSize size="98" />
+   <wave_markers>
+      <marker time="675984250" label="" />
+   </wave_markers>
    <wvobject fp_name="/tb_pFREYA_DAQ/pFREYA_DAQ_inst/pFREYA_IF_inst/adc_ck" type="logic">
       <obj_property name="ElementShortName">adc_ck</obj_property>
       <obj_property name="ObjectShortName">adc_ck</obj_property>

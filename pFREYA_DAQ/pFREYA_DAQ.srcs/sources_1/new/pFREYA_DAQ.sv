@@ -47,7 +47,8 @@ module pFREYA_DAQ
     // for UART
     logic uart_ck;
     logic [CK_CNT_N-1:0] uart_cnt;
-    parameter uart_div = 10; // Base clock 100 MHz, UART 10 MHz
+    // Base clock 100 MHz, UART 10 MHz. It's 5 not 5 cause its counting just on the rising edge, therefore counting to 1 is the same as dividing by 2.
+    parameter uart_div = 5;
 
     logic [UART_PACKET_SIZE-1:0] uart_data;
     logic uart_valid;
