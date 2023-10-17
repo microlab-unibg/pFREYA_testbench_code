@@ -36,13 +36,15 @@ module pFREYA_DAQ
     output logic sh_phi1d_sup, sh_phi1d_inf,
     output logic slow_ctrl_in, slow_ctrl_reset_n, slow_ctrl_ck,
     // Internal signals
-    input  logic daq_ck, btn_reset,
+    input  logic btn_reset,
 
     // UART signals
-    input  logic uart_ck,
     input  logic rx_ser,
+    output logic tx_ser,
 
-    output logic tx_ser
+    // sys clk
+    input  logic sys_clk_p,
+    input  logic sys_clk_n
 );
 
     // for UART
@@ -56,6 +58,9 @@ module pFREYA_DAQ
     logic tx_done, tx_active;
     logic tx_dv;
     logic [UART_PACKET_SIZE-1:0] tx_byte;
+
+    // clock wizard
+    wire locked;
 
     // Simple UART
     uart_IF #(.CKS_PER_BIT(CKS_PER_BIT)) uart_IF_inst (
@@ -97,21 +102,17 @@ module pFREYA_DAQ
         .uart_valid         (uart_valid)
     );
 
-    // UART clock generation
-    // always_ff @(posedge daq_ck, posedge btn_reset) begin: uart_ck_generation
-    //     if (btn_reset) begin
-    //         uart_ck <= 1'b1;
-    //         uart_cnt <= -1;
-    //     end
-    //     else if (uart_cnt == uart_div-1) begin
-    //         uart_ck <= ~uart_ck;
-    //         uart_cnt <= '0;
-    //     end
-    //     else begin
-    //         uart_ck <= uart_ck;
-    //         uart_cnt <= uart_cnt + 1'b1;
-    //     end
-    // end
+    clk_wiz_clocks clk_wiz_clocks_inst (
+        // Clock out ports
+        .daq_ck(daq_ck),     // output daq_ck
+        .uart_ck(uart_ck),     // output uart_ck
+        // Status and control signals
+        .reset(btn_reset), // input reset
+        .locked(locked),       // output locked
+        // Clock in ports
+        .clk_in1_p(sys_clk_p),    // input clk_in1_p
+        .clk_in1_n(sys_clk_n)    // input clk_in1_n
+    );
 
     always_ff @(posedge daq_ck, posedge btn_reset) begin: reset_daq
         if (btn_reset) begin

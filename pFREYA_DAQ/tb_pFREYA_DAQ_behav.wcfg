@@ -12,15 +12,15 @@
       </db_ref>
    </db_ref_list>
    <zoom_setting>
-      <ZoomStartTime time="716.052500 us"></ZoomStartTime>
-      <ZoomEndTime time="4,631.052501 us"></ZoomEndTime>
-      <Cursor1Time time="1,431.052500 us"></Cursor1Time>
+      <ZoomStartTime time="0.000000000 ms"></ZoomStartTime>
+      <ZoomEndTime time="7.950000001 ms"></ZoomEndTime>
+      <Cursor1Time time="0.104985993 ms"></Cursor1Time>
    </zoom_setting>
    <column_width_setting>
-      <NameColumnWidth column_width="190"></NameColumnWidth>
+      <NameColumnWidth column_width="178"></NameColumnWidth>
       <ValueColumnWidth column_width="58"></ValueColumnWidth>
    </column_width_setting>
-   <WVObjectSize size="98" />
+   <WVObjectSize size="101" />
    <wvobject fp_name="/tb_pFREYA_DAQ/pFREYA_DAQ_inst/pFREYA_IF_inst/adc_ck" type="logic">
       <obj_property name="ElementShortName">adc_ck</obj_property>
       <obj_property name="ObjectShortName">adc_ck</obj_property>
@@ -405,12 +405,24 @@
       <obj_property name="ElementShortName">uart_ck</obj_property>
       <obj_property name="ObjectShortName">uart_ck</obj_property>
    </wvobject>
+   <wvobject fp_name="/tb_pFREYA_DAQ/pFREYA_DAQ_inst/daq_ck" type="logic">
+      <obj_property name="ElementShortName">daq_ck</obj_property>
+      <obj_property name="ObjectShortName">daq_ck</obj_property>
+   </wvobject>
    <wvobject fp_name="/tb_pFREYA_DAQ/pFREYA_DAQ_inst/uart_data" type="array">
       <obj_property name="ElementShortName">uart_data[7:0]</obj_property>
       <obj_property name="ObjectShortName">uart_data[7:0]</obj_property>
    </wvobject>
-   <wvobject fp_name="/tb_pFREYA_DAQ/uart_to_send" type="array">
-      <obj_property name="ElementShortName">uart_to_send[7:0]</obj_property>
-      <obj_property name="ObjectShortName">uart_to_send[7:0]</obj_property>
+   <wvobject fp_name="/tb_pFREYA_DAQ/pFREYA_DAQ_inst/uart_valid" type="logic">
+      <obj_property name="ElementShortName">uart_valid</obj_property>
+      <obj_property name="ObjectShortName">uart_valid</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_pFREYA_DAQ/pFREYA_DAQ_inst/sys_clk_n" type="logic">
+      <obj_property name="ElementShortName">sys_clk_n</obj_property>
+      <obj_property name="ObjectShortName">sys_clk_n</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_pFREYA_DAQ/pFREYA_DAQ_inst/sys_clk_p" type="logic">
+      <obj_property name="ElementShortName">sys_clk_p</obj_property>
+      <obj_property name="ObjectShortName">sys_clk_p</obj_property>
    </wvobject>
 </wave_config>
