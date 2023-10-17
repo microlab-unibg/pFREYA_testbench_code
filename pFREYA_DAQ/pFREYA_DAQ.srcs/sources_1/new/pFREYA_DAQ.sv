@@ -24,31 +24,32 @@ module pFREYA_DAQ
 #(parameter CKS_PER_BIT=87)
 (
     // ASIC signals
-    output dac_sdin, dac_sync_n, dac_sck,
-    output sel_init_n,
-    output sel_ckcol, sel_ckrow,
-    input  ser_out,
-    output ser_read, ser_reset_n,
-    output ser_ck,
-    output inj_stb,
-    output csa_reset_n,
-    output adc_ck, adc_start,
-    output sh_phi1d_sup, sh_phi1d_inf,
-    output slow_ctrl_in, slow_ctrl_reset_n, slow_ctrl_ck,
+    output logic dac_sdin, dac_sync_n, dac_sck,
+    output logic sel_init_n,
+    output logic sel_ckcol, sel_ckrow,
+    input  logic ser_out,
+    output logic ser_read, ser_reset_n,
+    output logic ser_ck,
+    output logic inj_stb,
+    output logic csa_reset_n,
+    output logic adc_ck, adc_start,
+    output logic sh_phi1d_sup, sh_phi1d_inf,
+    output logic slow_ctrl_in, slow_ctrl_reset_n, slow_ctrl_ck,
     // Internal signals
-    input  daq_ck, btn_reset,
+    input  logic daq_ck, btn_reset,
 
     // UART signals
-    input  rx_ser,
+    input  logic uart_ck,
+    input  logic rx_ser,
 
-    output tx_ser
+    output logic tx_ser
 );
 
     // for UART
-    logic uart_ck;
-    logic [CK_CNT_N-1:0] uart_cnt;
-    // Base clock 100 MHz, UART 10 MHz. It's 5 not 5 cause its counting just on the rising edge, therefore counting to 1 is the same as dividing by 2.
-    parameter uart_div = 5;
+    //logic uart_ck;
+    //logic [CK_CNT_N-1:0] uart_cnt;
+    // Base clock 200 MHz, UART 10 MHz. It's 10 not 20 cause its counting just on the rising edge, therefore counting to 1 is the same as dividing by 2.
+    //parameter uart_div = 10;
 
     logic [UART_PACKET_SIZE-1:0] uart_data;
     logic uart_valid;
@@ -97,20 +98,20 @@ module pFREYA_DAQ
     );
 
     // UART clock generation
-    always_ff @(posedge daq_ck, posedge btn_reset) begin: uart_ck_generation
-        if (btn_reset) begin
-            uart_ck <= 1'b1;
-            uart_cnt <= -1;
-        end
-        else if (uart_cnt == uart_div-1) begin
-            uart_ck <= ~uart_ck;
-            uart_cnt <= '0;
-        end
-        else begin
-            uart_ck <= uart_ck;
-            uart_cnt <= uart_cnt + 1'b1;
-        end
-    end
+    // always_ff @(posedge daq_ck, posedge btn_reset) begin: uart_ck_generation
+    //     if (btn_reset) begin
+    //         uart_ck <= 1'b1;
+    //         uart_cnt <= -1;
+    //     end
+    //     else if (uart_cnt == uart_div-1) begin
+    //         uart_ck <= ~uart_ck;
+    //         uart_cnt <= '0;
+    //     end
+    //     else begin
+    //         uart_ck <= uart_ck;
+    //         uart_cnt <= uart_cnt + 1'b1;
+    //     end
+    // end
 
     always_ff @(posedge daq_ck, posedge btn_reset) begin: reset_daq
         if (btn_reset) begin

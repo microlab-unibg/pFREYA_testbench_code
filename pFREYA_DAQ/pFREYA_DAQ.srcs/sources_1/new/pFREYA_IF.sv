@@ -86,9 +86,9 @@ module pFREYA_IF(
     // control logic
     logic slow_ctrl_packet_available, slow_ctrl_packet_sent, dac_packet_available, dac_packet_sent, sel_ckcol_sent, sel_ckrow_sent;
     // data
-    logic [FAST_CTRL_N-1:0] slow_ctrl_packet_index;
+    logic [FAST_CTRL_N-1:0] slow_ctrl_packet_index_send, slow_ctrl_packet_index_receive;
     logic [SLOW_CTRL_PACKET_LENGTH-1:0] slow_ctrl_packet;
-    logic [FAST_CTRL_N-1:0] dac_packet_index;
+    logic [FAST_CTRL_N-1:0] dac_packet_index_send, dac_packet_index_receive;
     logic [DAC_PACKET_LENGTH-1:0] dac_packet;
     logic [DATA_SIZE-1:0] pixel_row, pixel_col;
     logic [DATA_SIZE-1:0] signal;
@@ -716,11 +716,11 @@ module pFREYA_IF(
                                         // assign byte0 = dword[0 +: 8];    // Same as dword[7:0]
                                         // 7 bits per assignment, not 8, cause the first is just the check
                                         slow_ctrl_packet[SLOW_CTRL_PACKET_LENGTH-1-SLOW_CTRL_UART_DATA_LAST_POS +: SLOW_CTRL_UART_DATA_LAST_POS+1] <= uart_data[SLOW_CTRL_UART_DATA_LAST_POS:DATA_END_POS];
-                                        slow_ctrl_packet_index <= '0;
+                                        slow_ctrl_packet_index_receive <= '0;
                                         slow_ctrl_packet_available <= 1'b1;
                                     end else begin
-                                        slow_ctrl_packet[slow_ctrl_packet_index +: SLOW_CTRL_UART_DATA_POS+1] <= uart_data[SLOW_CTRL_UART_DATA_POS:DATA_END_POS];
-                                        slow_ctrl_packet_index <= slow_ctrl_packet_index + SLOW_CTRL_UART_DATA_POS+1; // 6 bit per time
+                                        slow_ctrl_packet[slow_ctrl_packet_index_receive +: SLOW_CTRL_UART_DATA_POS+1] <= uart_data[SLOW_CTRL_UART_DATA_POS:DATA_END_POS];
+                                        slow_ctrl_packet_index_receive <= slow_ctrl_packet_index_receive + SLOW_CTRL_UART_DATA_POS+1; // 6 bit per time
                                         slow_ctrl_packet_available <= 1'b0;
                                     end
                                 end
@@ -730,11 +730,11 @@ module pFREYA_IF(
                                     if (uart_data[DAC_UART_DATA_POS+1] == LAST_UART_PACKET) begin
                                         // last 3 bits
                                         dac_packet[DAC_PACKET_LENGTH-1-3 +: 3] <= uart_data[DAC_UART_DATA_LAST_POS:DATA_END_POS];
-                                        dac_packet_index <= '0;
+                                        dac_packet_index_receive <= '0;
                                         dac_packet_available <= 1'b1;
                                     end else begin
-                                        dac_packet[dac_packet_index +: DATA_SIZE-1] <= uart_data[DAC_UART_DATA_POS:DATA_END_POS];
-                                        dac_packet_index <= dac_packet_index + DATA_SIZE-1; // 7 bit per time
+                                        dac_packet[dac_packet_index_receive +: DATA_SIZE-1] <= uart_data[DAC_UART_DATA_POS:DATA_END_POS];
+                                        dac_packet_index_receive <= dac_packet_index_receive + DATA_SIZE-1; // 7 bit per time
                                         dac_packet_available <= 1'b0;
                                     end
                                 end
@@ -780,17 +780,17 @@ module pFREYA_IF(
     always_ff @(posedge ck) begin: slow_ctrl_data_send
         if (slow_ctrl_reset_n) begin
             if (slow_ctrl_ck == 1'b0 && slow_ctrl_cnt == slow_ctrl_div-1) begin
-                if (slow_ctrl_packet_index < SLOW_CTRL_PACKET_LENGTH) begin
-                    slow_ctrl_in <= slow_ctrl_packet[slow_ctrl_packet_index];
-                    slow_ctrl_packet_index <= slow_ctrl_packet_index + 1'b1;
+                if (slow_ctrl_packet_index_send < SLOW_CTRL_PACKET_LENGTH) begin
+                    slow_ctrl_in <= slow_ctrl_packet[slow_ctrl_packet_index_send];
+                    slow_ctrl_packet_index_send <= slow_ctrl_packet_index_send + 1'b1;
                 end else begin
                     // if everything was transmitted, reset index
-                    slow_ctrl_packet_index <= 1'b0;
+                    slow_ctrl_packet_index_send <= 1'b0;
                     slow_ctrl_in <= 1'b0;
                 end
             end
             else if (slow_ctrl_ck == 1'b1 && slow_ctrl_cnt == slow_ctrl_div-1) begin
-                if (slow_ctrl_packet_index >= SLOW_CTRL_PACKET_LENGTH)
+                if (slow_ctrl_packet_index_send >= SLOW_CTRL_PACKET_LENGTH)
                     slow_ctrl_packet_sent <= 1'b1;
             end
         end
@@ -803,17 +803,17 @@ module pFREYA_IF(
     always_ff @(posedge ck) begin: dac_data_send
         if (~dac_sync_n) begin
             if (dac_sck == 1'b0 && dac_sck_cnt == dac_sck_div-1) begin
-                if (dac_packet_index < DAC_PACKET_LENGTH) begin
-                    dac_sdin <= dac_packet[dac_packet_index];
-                    dac_packet_index <= dac_packet_index + 1'b1;
+                if (dac_packet_index_send < DAC_PACKET_LENGTH) begin
+                    dac_sdin <= dac_packet[dac_packet_index_send];
+                    dac_packet_index_send <= dac_packet_index_send + 1'b1;
                 end else begin
                     // if everything was transmitted, reset index
-                    dac_packet_index <= 1'b0;
+                    dac_packet_index_send <= 1'b0;
                     dac_sdin <= 1'b0;
                 end
             end
             else if (dac_sck == 1'b1 && dac_sck_cnt == dac_sck_div-1) begin
-                if (dac_packet_index >= DAC_PACKET_LENGTH)
+                if (dac_packet_index_send >= DAC_PACKET_LENGTH)
                     dac_packet_sent <= 1'b1;
             end
         end
@@ -830,7 +830,7 @@ module pFREYA_IF(
             sel_ckrow_cnt <= 0;
             sel_ckcol_cnt <= 0;
             sel_ckrow_sent <= 1'b0;
-            sel_ckrow_sent <= 1'b0;
+            sel_ckcol_sent <= 1'b0;
         end
         // here one triggers if sel_init_n is low
         else if (~sel_init_n) begin
@@ -925,12 +925,14 @@ function void reset_vars;
     slow_ctrl_packet_sent <= 1'b0;
     dac_packet_available <= 1'b0;
     dac_packet_sent <= 1'b0;
-    sel_ckcol_sent <= 1'b0;
-    sel_ckrow_sent <= 1'b0;
+    //sel_ckcol_sent <= 1'b0;
+    //sel_ckrow_sent <= 1'b0;
 
-    slow_ctrl_packet_index <= '0;
+    slow_ctrl_packet_index_send <= '0;
+    slow_ctrl_packet_index_receive <= '0;
     slow_ctrl_packet <= '0;
-    dac_packet_index <= '0;
+    dac_packet_index_send <= '0;
+    dac_packet_index_receive <= '0;
     dac_packet <= '0;
     pixel_row <= '0;
     pixel_col <= '0;
@@ -939,8 +941,8 @@ function void reset_vars;
 
     inj_start <= '0;
 
-    slow_ctrl_in <= '0;
-    dac_sdin <= '0;
+    //slow_ctrl_in <= '0;
+    //dac_sdin <= '0;
 endfunction
 
 // This function manages general clocks signal that will not change in time
