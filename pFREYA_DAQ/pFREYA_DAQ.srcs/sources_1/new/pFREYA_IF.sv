@@ -87,18 +87,16 @@ module pFREYA_IF(
     logic slow_ctrl_packet_available = 1'b0, slow_ctrl_packet_sent = 1'b0, dac_packet_available = 1'b0, dac_packet_sent = 1'b0, sel_ckcol_sent = 1'b0, sel_ckrow_sent = 1'b0;
     // data
     logic [FAST_CTRL_N-1:0] slow_ctrl_packet_index_send= '0, slow_ctrl_packet_index_receive= '0;
-    logic [SLOW_CTRL_REG_LENGTH-1:0] slow_ctrl_packet= '0;
+    reg [SLOW_CTRL_REG_LENGTH-1:0] slow_ctrl_packet= '0;
     logic [FAST_CTRL_N-1:0] dac_packet_index_send= '0, dac_packet_index_receive= '0;
-    logic [DAC_PACKET_REG_LENGTH-1:0] dac_packet= '0;
+    reg [DAC_PACKET_REG_LENGTH-1:0] dac_packet= '0;
     logic [DATA_SIZE-1:0] pixel_row= '0, pixel_col= '0;
     logic [DATA_SIZE-1:0] signal= '0;
     logic [CMD_CODE_SIZE-1:0] cmd= '0;
     // check UART rising edge
-    logic uart_valid_last = 1'b0;
+    logic uart_valid_last;
     // check cmd or data
-    logic cmd_available = 1'b0, data_available = 1'b0;
-
-    integer i;
+    logic cmd_available, data_available;
 
 //======================= COMB and FF ================================
 //======================= STD CLOCKS =================================
@@ -958,17 +956,9 @@ function void reset_vars;
     //slow_ctrl_in <= '0;
     //dac_sdin <= '0;
 
-    for (i=0;i<SLOW_CTRL_REG_LENGTH;i=i+1)
-        slow_ctrl_packet[i] = 0;
-    for (i=0;i<DAC_PACKET_REG_LENGTH;i=i+1)
-        dac_packet[i] = 0;
+    slow_ctrl_packet = 0;
+    dac_packet = 0;
 endfunction
-
-initial begin
-    reset_div();
-    reset_reset();
-    reset_vars();
-end
 
 // This function manages general clocks signal that will not change in time
 // DOESNT WORK IN ALWAYS APPARENTLY

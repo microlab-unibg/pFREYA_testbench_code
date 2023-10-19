@@ -74,10 +74,10 @@ def create_data_slow(data,type):
         data packet
     """
     if (type == UARTdef.LAST_UART_PACKET):
-        return (UARTdef.CMD_PACKET << UARTdef.UART_PACKET_SIZE-1) + (UARTdef.LAST_UART_PACKET << UARTdef.UART_PACKET_SIZE-2) + data
+        return UARTdef.CMD_PACKET + UARTdef.LAST_UART_PACKET + data
     else:
         # the 8'd0 at the beginning is to set bits that are not useful
-        return 0b00000000 + (UARTdef.CMD_PACKET << UARTdef.UART_PACKET_SIZE-1) + (UARTdef.NOTLAST_UART_PACKET << UARTdef.UART_PACKET_SIZE-2) + data
+        return 0b00000000 + UARTdef.CMD_PACKET + UARTdef.NOTLAST_UART_PACKET + data
 
 def convert_strvar_bin(strvar):
     """Convert StrVar to binary representation
@@ -360,11 +360,24 @@ def create_slow_ctrl_packet(gui):
         _description_
     """
     # for each pixel is the same
-    slow_ctrl_packet = gui.csa_mode_n + gui.inj_en_n + gui.shap_mode + gui.ch_en + gui.inj_mode_n
+    slow_ctrl_packet = gui.csa_mode_n.get() + gui.inj_en_n.get() + gui.shap_mode.get() + gui.ch_en.get() + gui.inj_mode_n.get()
     full_slow_ctrl_packet = ''
     for i in range(0, UARTdef.PIXEL_N):
         full_slow_ctrl_packet = full_slow_ctrl_packet + slow_ctrl_packet
     return full_slow_ctrl_packet
+
+def create_dac_packet(gui):
+    """_summary_
+
+    Parameters
+    ----------
+    gui : _type_
+        _description_
+    """
+    # for each pixel is the same
+    # implement dac_gain and ref
+    dac_packet_data = convert_strvar_bin(gui.dac["level"]) + UARTdef.DAC_DATA_REGISTER_PADDING
+    return dac_packet_data
 
 def send_slow_ctrl(gui):
     """Function to send clocks to the FPGA
@@ -393,6 +406,11 @@ def send_slow_ctrl(gui):
             data = create_data_slow(bin_data, UARTdef.NOTLAST_UART_PACKET)
             send_UART('',data)
             print(data)
+        
+        cmd = create_cmd(UARTdef.SET_CK_CMD, UARTdef.ADC_CK_CODE)
+        data = create_data(convert_strvar_bin(gui.adc_ck))
+        send_UART(cmd, data)
+        print(cmd,'\n',data)
 
         bin_data = convert_str_bin(full_slow_ctrl_packet[i*(UARTdef.SLOW_CTRL_UART_DATA_POS+1):])
         data = create_data_slow(bin_data, UARTdef.LAST_UART_PACKET)
@@ -425,7 +443,7 @@ def send_DAC(gui):
     if (not gui.dac_sck_sent):
         return 1
     
-    full_dac_packet = create_slow_ctrl_packet(gui) #str
+    full_dac_packet = create_dac_packet(gui) #str
 
     try:
         # set slow packet

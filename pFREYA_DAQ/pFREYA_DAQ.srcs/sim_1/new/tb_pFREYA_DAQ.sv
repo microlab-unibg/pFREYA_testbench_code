@@ -217,12 +217,12 @@ module tb_pFREYA_DAQ;
         uart_to_send <= '0;
 
         // DAQ - pFREYA_IF
-        // ser_out <= 1'b0;
+        //ser_out <= 1'b0;
         btn_reset <= 1'b1;
         uart_data <= '0;
         uart_valid <= 1'b0;
         // DAQ - UART
-        // rx_ser <= 1'b1;
+        rx_ser <= 1'b1;
         // tx_dv <= 1'b0;
         // tx_byte <= '0;
         cmd_available <= 1'b0;
