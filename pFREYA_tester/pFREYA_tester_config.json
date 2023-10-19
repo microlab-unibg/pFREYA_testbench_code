@@ -1,16 +1,18 @@
 {
     "__pFREYA_GUI__": true,
     "clocks": {
-        "slow_ck": "354432",
-        "sel_row_ck": "3423",
-        "sel_col_ck": "34",
-        "adc_ck": "5",
-        "dac_ck": "3243",
-        "ser_ck": "424"
+        "slow_ck": "127",
+        "sel_ck": "127",
+        "adc_ck": "127",
+        "inj_stb": "127",
+        "ser_ck": "127",
+        "dac_sck": "127"
     },
-    "test": {
-        "dac_inj_level": "3244",
-        "delay_events": "333"
+    "DAC": {
+        "source": "1",
+        "divider": "1",
+        "gain": "1",
+        "level": "420"
     },
     "slow_ctrl": {
         "csa_mode_n": "10",
@@ -24,45 +26,35 @@
         "pixel_col": "1"
     },
     "asic_ctrl": {
-        "slow_ctrl_reset_n": {
-            "delay": "4342",
-            "period": "65",
-            "width": "656"
-        },
-        "sel_init_n": {
-            "delay": "654",
-            "period": "654",
-            "width": "654"
-        },
         "csa_reset_n": {
-            "delay": "645",
-            "period": "23",
-            "width": "76"
+            "delay": "127",
+            "high": "127",
+            "low": "127"
         },
         "sh_phi1d_inf": {
-            "delay": "53",
-            "period": "654",
-            "width": "345"
+            "delay": "127",
+            "high": "127",
+            "low": "127"
         },
         "sh_phi1d_sup": {
-            "delay": "35",
-            "period": "25",
-            "width": "743"
+            "delay": "127",
+            "high": "127",
+            "low": "127"
         },
         "adc_start": {
-            "delay": "234",
-            "period": "11",
-            "width": "43"
+            "delay": "127",
+            "high": "127",
+            "low": "127"
         },
         "ser_reset_n": {
-            "delay": "4324",
-            "period": "534",
-            "width": "634"
+            "delay": "127",
+            "high": "127",
+            "low": "127"
         },
         "ser_read": {
-            "delay": "453",
-            "period": "643",
-            "width": "66"
+            "delay": "127",
+            "high": "127",
+            "low": "127"
         }
     }
 }

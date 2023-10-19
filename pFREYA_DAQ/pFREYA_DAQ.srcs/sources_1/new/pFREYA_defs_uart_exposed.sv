@@ -107,7 +107,7 @@
     `define SLOW_CTRL_CK_CODE 3'b000
     `define SEL_CK_CODE       3'b001
     `define ADC_CK_CODE       3'b010
-    `define INJ_DAC_CK_CODE   3'b011
+    `define INJ_STB_CODE   3'b011
     `define SER_CK_CODE       3'b100
     `define DAC_SCK_CODE      3'b101
     `define UNUSED_CODE       3'b111

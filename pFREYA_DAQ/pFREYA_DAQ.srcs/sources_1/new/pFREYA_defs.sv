@@ -36,6 +36,7 @@
     // SLOW_CTRL UART packet is |1(1)|LAST(1)|DATA(6)| where LAST is 1 if this is the last packet, else 0
     // SLOW_CTRL packet is |DATA(112)|
     parameter SLOW_CTRL_PACKET_LENGTH = 112;
+    parameter SLOW_CTRL_REG_LENGTH = 128;
     parameter SLOW_CTRL_UART_DATA_POS = 5;
     parameter SLOW_CTRL_UART_DATA_LAST_POS = 3;
     parameter LAST_UART_PACKET = 1'b1;
@@ -50,6 +51,7 @@
     // see below (macro) for addrs and cmds
     //parameter DAC_ADDR_PACKET_LENGTH = 8; // only for I2C
     parameter DAC_PACKET_LENGTH = 24;
+    parameter DAC_PACKET_REG_LENGTH = 32;
     parameter DAC_UART_DATA_POS = 5;
     parameter DAC_UART_DATA_LAST_POS = 0;
 
@@ -113,7 +115,7 @@
     `define SLOW_CTRL_CK_CODE 3'b000
     `define SEL_CK_CODE       3'b001
     `define ADC_CK_CODE       3'b010
-    `define INJ_DAC_CK_CODE   3'b011
+    `define INJ_STB_CODE       3'b011
     `define SER_CK_CODE       3'b100
     `define DAC_SCK_CODE      3'b101
     `define UNUSED_CODE       3'b111
@@ -123,6 +125,7 @@
     `define SH_INF_CODE            3'b001
     `define SH_SUP_CODE            3'b010
     `define ADC_START_CODE         3'b011
+    `define INJ_START              3'b100
     // Slow control map
     `define SER_RESET_N_CODE       3'b100
     `define SER_READ_CODE          3'b101

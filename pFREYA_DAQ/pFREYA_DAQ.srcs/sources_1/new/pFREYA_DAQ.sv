@@ -53,14 +53,19 @@ module pFREYA_DAQ
     // Base clock 200 MHz, UART 10 MHz. It's 10 not 20 cause its counting just on the rising edge, therefore counting to 1 is the same as dividing by 2.
     //parameter uart_div = 10;
 
-    logic [UART_PACKET_SIZE-1:0] uart_data;
-    logic uart_valid;
-    logic tx_done, tx_active;
-    logic tx_dv;
-    logic [UART_PACKET_SIZE-1:0] tx_byte;
+    wire [UART_PACKET_SIZE-1:0] uart_data;
+    wire uart_valid;
+    wire tx_done, tx_active;
+    wire tx_ser;
+    logic tx_dv = 1'b0;
+    logic [UART_PACKET_SIZE-1:0] tx_byte = 0;
 
     // clock wizard
     wire locked;
+
+    // internal
+    wire uart_ck;
+    wire daq_ck;
 
     // Simple UART
     uart_IF #(.CKS_PER_BIT(CKS_PER_BIT)) uart_IF_inst (
@@ -119,6 +124,7 @@ module pFREYA_DAQ
             // reset all registers
             tx_dv <= 1'b0;
             tx_byte <= 1'b0;
+            // tx_ser <= 1'b1;
         end
     end
 endmodule

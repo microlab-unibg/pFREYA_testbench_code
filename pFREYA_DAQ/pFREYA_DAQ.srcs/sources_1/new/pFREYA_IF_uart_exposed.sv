@@ -613,7 +613,7 @@ module pFREYA_IF_uart_exposed(
                                     sel_div <= uart_data;
                                 `ADC_CK_CODE:
                                     adc_div <= uart_data;
-                                `INJ_DAC_CK_CODE:
+                                `INJ_STB_CODE:
                                     inj_div <= uart_data;
                                 `SER_CK_CODE:
                                     ser_div <= uart_data;

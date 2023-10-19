@@ -55,48 +55,50 @@ module pFREYA_IF(
 
     // CK internal
     // generated with counters that reach a divisor
-    logic [CK_CNT_N-1:0] slow_ctrl_cnt, slow_ctrl_div;
-    logic [CK_CNT_N-1:0] sel_cnt, sel_div;
-    logic [CK_CNT_N-1:0] adc_cnt, adc_div;
-    logic [CK_CNT_N-1:0] inj_cnt, inj_div;
-    logic [CK_CNT_N-1:0] ser_cnt, ser_div;
-    logic [CK_CNT_N-1:0] dac_sck_cnt, dac_sck_div;
+    logic [CK_CNT_N-1:0] slow_ctrl_cnt = -1, slow_ctrl_div= '0;
+    logic [CK_CNT_N-1:0] sel_cnt = -1, sel_div= '0;
+    logic [CK_CNT_N-1:0] adc_cnt = -1, adc_div= '0;
+    logic [CK_CNT_N-1:0] inj_cnt = -1, inj_div= '0;
+    logic [CK_CNT_N-1:0] ser_cnt = -1, ser_div= '0;
+    logic [CK_CNT_N-1:0] dac_sck_cnt = -1, dac_sck_div= '0;
     // for selection
-    logic sel_ck; // internal clock temporisation
-    logic [PIXEL_COL_N-1:0] sel_ckcol_cnt;
-    logic [PIXEL_ROW_N-1:0] sel_ckrow_cnt;
+    logic sel_ck = 1'b0; // internal clock temporisation
+    logic [PIXEL_COL_N-1:0] sel_ckcol_cnt= '0;
+    logic [PIXEL_ROW_N-1:0] sel_ckrow_cnt= '0;
     // for injection
-    logic inj_start;
+    logic inj_start = 1'b0;
     // fast control timing
     // generated with counter that reach a divisor, where the divisor changes based on flag
     // flag value is 0 for delay, 1 for HIGH, 2 for LOW (the actual polarity is in the name of the signal)
-    logic [FAST_CTRL_FLAG_N-1:0] csa_reset_n_flag;
-    logic [FAST_CTRL_FLAG_N-1:0] sh_phi1d_inf_flag;
-    logic [FAST_CTRL_FLAG_N-1:0] sh_phi1d_sup_flag;
-    logic [FAST_CTRL_FLAG_N-1:0] adc_start_flag;
-    logic [FAST_CTRL_FLAG_N-1:0] ser_reset_n_flag;
-    logic [FAST_CTRL_FLAG_N-1:0] ser_read_flag;
-    logic [FAST_CTRL_N-1:0] csa_reset_n_cnt, csa_reset_n_delay_div, csa_reset_n_HIGH_div, csa_reset_n_LOW_div;
-    logic [FAST_CTRL_N-1:0] sh_phi1d_inf_cnt, sh_phi1d_inf_delay_div, sh_phi1d_inf_HIGH_div, sh_phi1d_inf_LOW_div;
-    logic [FAST_CTRL_N-1:0] sh_phi1d_sup_cnt, sh_phi1d_sup_delay_div, sh_phi1d_sup_HIGH_div, sh_phi1d_sup_LOW_div;
-    logic [FAST_CTRL_N-1:0] adc_start_cnt, adc_start_delay_div, adc_start_HIGH_div, adc_start_LOW_div;
-    logic [FAST_CTRL_N-1:0] ser_reset_n_cnt, ser_reset_n_delay_div, ser_reset_n_HIGH_div, ser_reset_n_LOW_div;
-    logic [FAST_CTRL_N-1:0] ser_read_cnt, ser_read_delay_div, ser_read_HIGH_div, ser_read_LOW_div;
+    logic [FAST_CTRL_FLAG_N-1:0] csa_reset_n_flag = FAST_CTRL_DELAY;
+    logic [FAST_CTRL_FLAG_N-1:0] sh_phi1d_inf_flag = FAST_CTRL_DELAY;
+    logic [FAST_CTRL_FLAG_N-1:0] sh_phi1d_sup_flag = FAST_CTRL_DELAY;
+    logic [FAST_CTRL_FLAG_N-1:0] adc_start_flag = FAST_CTRL_DELAY;
+    logic [FAST_CTRL_FLAG_N-1:0] ser_reset_n_flag = FAST_CTRL_DELAY;
+    logic [FAST_CTRL_FLAG_N-1:0] ser_read_flag = FAST_CTRL_DELAY;
+    logic [FAST_CTRL_N-1:0] csa_reset_n_cnt = -1, csa_reset_n_delay_div= '0, csa_reset_n_HIGH_div= '0, csa_reset_n_LOW_div= '0;
+    logic [FAST_CTRL_N-1:0] sh_phi1d_inf_cnt = -1, sh_phi1d_inf_delay_div= '0, sh_phi1d_inf_HIGH_div= '0, sh_phi1d_inf_LOW_div= '0;
+    logic [FAST_CTRL_N-1:0] sh_phi1d_sup_cnt = -1, sh_phi1d_sup_delay_div= '0, sh_phi1d_sup_HIGH_div= '0, sh_phi1d_sup_LOW_div= '0;
+    logic [FAST_CTRL_N-1:0] adc_start_cnt = -1, adc_start_delay_div= '0, adc_start_HIGH_div= '0, adc_start_LOW_div= '0;
+    logic [FAST_CTRL_N-1:0] ser_reset_n_cnt = -1, ser_reset_n_delay_div= '0, ser_reset_n_HIGH_div= '0, ser_reset_n_LOW_div= '0;
+    logic [FAST_CTRL_N-1:0] ser_read_cnt = -1, ser_read_delay_div= '0, ser_read_HIGH_div= '0, ser_read_LOW_div= '0;
 
     // control logic
-    logic slow_ctrl_packet_available, slow_ctrl_packet_sent, dac_packet_available, dac_packet_sent, sel_ckcol_sent, sel_ckrow_sent;
+    logic slow_ctrl_packet_available = 1'b0, slow_ctrl_packet_sent = 1'b0, dac_packet_available = 1'b0, dac_packet_sent = 1'b0, sel_ckcol_sent = 1'b0, sel_ckrow_sent = 1'b0;
     // data
-    logic [FAST_CTRL_N-1:0] slow_ctrl_packet_index_send, slow_ctrl_packet_index_receive;
-    logic [SLOW_CTRL_PACKET_LENGTH-1:0] slow_ctrl_packet;
-    logic [FAST_CTRL_N-1:0] dac_packet_index_send, dac_packet_index_receive;
-    logic [DAC_PACKET_LENGTH-1:0] dac_packet;
-    logic [DATA_SIZE-1:0] pixel_row, pixel_col;
-    logic [DATA_SIZE-1:0] signal;
-    logic [CMD_CODE_SIZE-1:0] cmd;
+    logic [FAST_CTRL_N-1:0] slow_ctrl_packet_index_send= '0, slow_ctrl_packet_index_receive= '0;
+    logic [SLOW_CTRL_REG_LENGTH-1:0] slow_ctrl_packet= '0;
+    logic [FAST_CTRL_N-1:0] dac_packet_index_send= '0, dac_packet_index_receive= '0;
+    logic [DAC_PACKET_REG_LENGTH-1:0] dac_packet= '0;
+    logic [DATA_SIZE-1:0] pixel_row= '0, pixel_col= '0;
+    logic [DATA_SIZE-1:0] signal= '0;
+    logic [CMD_CODE_SIZE-1:0] cmd= '0;
     // check UART rising edge
-    logic uart_valid_last;
+    logic uart_valid_last = 1'b0;
     // check cmd or data
-    logic cmd_available, data_available;
+    logic cmd_available = 1'b0, data_available = 1'b0;
+
+    integer i;
 
 //======================= COMB and FF ================================
 //======================= STD CLOCKS =================================
@@ -181,10 +183,11 @@ module pFREYA_IF(
             inj_stb <= 1'b0;
             inj_cnt <= -1;
         end
-        else if (~inj_start) begin
-            inj_stb <= 1'b0;
-            inj_cnt <= -1;
-        end
+        // always run it
+        // else if (~inj_start) begin
+        //     inj_stb <= 1'b0;
+        //     inj_cnt <= -1;
+        // end
         else if (inj_div == '0) begin
             inj_stb <= 1'b0;
             inj_cnt <= '0;
@@ -650,7 +653,7 @@ module pFREYA_IF(
                                         sel_div <= uart_data[DATA_START_POS:DATA_END_POS];
                                     `ADC_CK_CODE:
                                         adc_div <= uart_data[DATA_START_POS:DATA_END_POS];
-                                    `INJ_DAC_CK_CODE:
+                                    `INJ_STB_CODE:
                                         inj_div <= uart_data[DATA_START_POS:DATA_END_POS];
                                     `SER_CK_CODE:
                                         ser_div <= uart_data[DATA_START_POS:DATA_END_POS];
@@ -777,47 +780,59 @@ module pFREYA_IF(
     end
 
     // if slow ctrl is posedge then data need to be transmitted
-    always_ff @(posedge ck) begin: slow_ctrl_data_send
-        if (slow_ctrl_reset_n) begin
+    always_ff @(posedge ck, posedge reset) begin: slow_ctrl_data_send
+        if (reset) begin
+            slow_ctrl_in <= 1'b0;
+            slow_ctrl_packet_index_send <= '0;
+            slow_ctrl_packet_sent <= 1'b0;
+        end
+        else if (slow_ctrl_reset_n) begin
             if (slow_ctrl_ck == 1'b0 && slow_ctrl_cnt == slow_ctrl_div-1) begin
                 if (slow_ctrl_packet_index_send < SLOW_CTRL_PACKET_LENGTH) begin
                     slow_ctrl_in <= slow_ctrl_packet[slow_ctrl_packet_index_send];
-                    slow_ctrl_packet_index_send <= slow_ctrl_packet_index_send + 1'b1;
-                end else begin
-                    // if everything was transmitted, reset index
-                    slow_ctrl_packet_index_send <= 1'b0;
-                    slow_ctrl_in <= 1'b0;
+                    slow_ctrl_packet_index_send <= slow_ctrl_packet_index_send + 1;
                 end
             end
             else if (slow_ctrl_ck == 1'b1 && slow_ctrl_cnt == slow_ctrl_div-1) begin
-                if (slow_ctrl_packet_index_send >= SLOW_CTRL_PACKET_LENGTH)
+                if (slow_ctrl_packet_index_send >= SLOW_CTRL_PACKET_LENGTH) begin
                     slow_ctrl_packet_sent <= 1'b1;
+                    slow_ctrl_packet_index_send <= '0;
+                    slow_ctrl_in <= 1'b0;
+                end
             end
         end
         else begin
+            slow_ctrl_packet_sent <= 1'b0;
+            slow_ctrl_packet_index_send <= '0;
             slow_ctrl_in <= 1'b0;
         end
     end
 
     // if slow ctrl is posedge then data need to be transmitted
-    always_ff @(posedge ck) begin: dac_data_send
-        if (~dac_sync_n) begin
+    always_ff @(posedge ck, posedge reset) begin: dac_data_send
+        if (reset) begin
+            dac_sdin <= 1'b0;
+            dac_packet_index_send <= '0;
+            dac_packet_sent <= 1'b0;
+        end
+        else if (~dac_sync_n) begin
             if (dac_sck == 1'b0 && dac_sck_cnt == dac_sck_div-1) begin
                 if (dac_packet_index_send < DAC_PACKET_LENGTH) begin
                     dac_sdin <= dac_packet[dac_packet_index_send];
-                    dac_packet_index_send <= dac_packet_index_send + 1'b1;
-                end else begin
-                    // if everything was transmitted, reset index
-                    dac_packet_index_send <= 1'b0;
+                    dac_packet_index_send <= dac_packet_index_send + 1;
+                end 
+            end
+            else if (dac_sck == 1'b1 && dac_sck_cnt == dac_sck_div-1) begin
+                if (dac_packet_index_send >= DAC_PACKET_LENGTH) begin
+                    dac_packet_sent <= 1'b1;
+                    dac_packet_index_send <= '0;
                     dac_sdin <= 1'b0;
                 end
             end
-            else if (dac_sck == 1'b1 && dac_sck_cnt == dac_sck_div-1) begin
-                if (dac_packet_index_send >= DAC_PACKET_LENGTH)
-                    dac_packet_sent <= 1'b1;
-            end
         end
         else begin
+            dac_packet_sent <= 1'b0;
+            dac_packet_index_send <= '0;
             dac_sdin <= 1'b0;
         end
     end
@@ -922,16 +937,15 @@ endfunction
 // This function resets all the variables
 function void reset_vars;
     slow_ctrl_packet_available <= 1'b0;
-    slow_ctrl_packet_sent <= 1'b0;
+    // slow_ctrl_packet_sent <= 1'b0;
     dac_packet_available <= 1'b0;
-    dac_packet_sent <= 1'b0;
-    //sel_ckcol_sent <= 1'b0;
-    //sel_ckrow_sent <= 1'b0;
+    // dac_packet_sent <= 1'b0;
+    // sel_ckcol_sent <= 1'b0;
+    // sel_ckrow_sent <= 1'b0;
 
-    slow_ctrl_packet_index_send <= '0;
+    // slow_ctrl_packet_index_send <= '0;
     slow_ctrl_packet_index_receive <= '0;
-    slow_ctrl_packet <= '0;
-    dac_packet_index_send <= '0;
+    // dac_packet_index_send <= '0;
     dac_packet_index_receive <= '0;
     dac_packet <= '0;
     pixel_row <= '0;
@@ -943,7 +957,18 @@ function void reset_vars;
 
     //slow_ctrl_in <= '0;
     //dac_sdin <= '0;
+
+    for (i=0;i<SLOW_CTRL_REG_LENGTH;i=i+1)
+        slow_ctrl_packet[i] = 0;
+    for (i=0;i<DAC_PACKET_REG_LENGTH;i=i+1)
+        dac_packet[i] = 0;
 endfunction
+
+initial begin
+    reset_div();
+    reset_reset();
+    reset_vars();
+end
 
 // This function manages general clocks signal that will not change in time
 // DOESNT WORK IN ALWAYS APPARENTLY
