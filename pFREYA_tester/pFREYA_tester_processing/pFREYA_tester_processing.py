@@ -6,13 +6,13 @@ import math
 import time
 
 def send_UART(cmd='', data=''):
-    """Function to send UART words to FPGA
+    """Function to send UART commands and data to FPGA
 
     Parameters
     ----------
-    cmd : bytes
+    cmd : str
         Command to be sent on UART
-    data : bytes, opt
+    data : str, opt
         Data to be sent on UART
     
     Returns
@@ -28,59 +28,58 @@ def send_UART(cmd='', data=''):
     ser.close()
 
 def create_cmd(cmd_name, signal_name):
-    """Function to create a command byte starting from the command name and the signal name in binary format
+    """Function to create a command byte starting from the command name and the signal name in string format
 
     Parameters
     ----------
-    cmd_name : bytes
+    cmd_name : str
         command name
-    signal_name : bytes
+    signal_name : str
         signal name
 
     Returns
     -------
-    bytes
+    str
         command packet
     """
-    #return (UARTdef.CMD_PACKET << UARTdef.UART_PACKET_SIZE-1) + (cmd_name << UARTdef.CMD_END_POS) + (signal_name << UARTdef.SIGNAL_END_POS)
-    return str(UARTdef.CMD_PACKET) + str(cmd_name) + str(signal_name)
+    return UARTdef.CMD_PACKET + cmd_name + signal_name
 
 def create_data(data):
-    """Function to create a data byte starting from the data in binary format
+    """Function to create a data byte starting from the data in string format
 
     Parameters
     ----------
-    data : bytes
+    data : str
         data
 
     Returns
     -------
-    bytes
+    str
         data packet
     """
-    return str(UARTdef.DATA_PACKET) + str(data)
+    return UARTdef.DATA_PACKET + data
 
-def create_data_slow(data,type):
-    """Function to create a data byte starting from the data in binary format
+def create_data_slow(data, type):
+    """Function to create a slow control packet byte starting from the data in string format
 
     Parameters
     ----------
-    data : bytes
+    data : str
         data
 
     Returns
     -------
-    bytes
+    str
         data packet
     """
     if (type == UARTdef.LAST_UART_PACKET):
         return UARTdef.CMD_PACKET + UARTdef.LAST_UART_PACKET + data
     else:
         # the 8'd0 at the beginning is to set bits that are not useful
-        return 0b00000000 + UARTdef.CMD_PACKET + UARTdef.NOTLAST_UART_PACKET + data
+        return UARTdef.CMD_PACKET + UARTdef.NOTLAST_UART_PACKET + data
 
 def convert_strvar_bin(strvar):
-    """Convert StrVar to binary representation
+    """Convert StrVar to string binary representation
 
     Parameters
     ----------
@@ -89,10 +88,10 @@ def convert_strvar_bin(strvar):
 
     Returns
     -------
-    bytes
-        Binary representation of strvar
+    str
+        String representation of strvar in binary format
     """
-    return '{0:07b}'.format(int(strvar.get())) # get rid of 0b
+    return '{0:07b}'.format(int(strvar.get()))
 
 def convert_str_bin(s):
     """Convert str to binary representation
@@ -110,7 +109,7 @@ def convert_str_bin(s):
     return bin(int(s))
 
 def send_CSA_RESET_N(gui):
-    """Function to send clocks to the FPGA
+    """Function to set CSA_RESET_N fast control in the FPGA
 
     Parameters
     ----------
@@ -143,7 +142,7 @@ def send_CSA_RESET_N(gui):
     return 0
 
 def send_SH_PHI1D_INF(gui):
-    """Function to send clocks to the FPGA
+    """Function to set SHI_PHI1D_INF fast control in the FPGA
 
     Parameters
     ----------
@@ -176,7 +175,7 @@ def send_SH_PHI1D_INF(gui):
     return 0
 
 def send_SH_PHI1D_SUP(gui):
-    """Function to send clocks to the FPGA
+    """Function to set SHI_PHI1D_SUP fast control in the FPGA
 
     Parameters
     ----------
@@ -209,7 +208,7 @@ def send_SH_PHI1D_SUP(gui):
     return 0
 
 def send_ADC_START(gui):
-    """Function to send clocks to the FPGA
+    """Function to set ADC_START fast control in the FPGA
 
     Parameters
     ----------
@@ -242,7 +241,7 @@ def send_ADC_START(gui):
     return 0
 
 def send_clocks(gui):
-    """Function to send clocks to the FPGA
+    """Function to set clocks in the FPGA
 
     Parameters
     ----------
@@ -293,7 +292,7 @@ def send_clocks(gui):
     return 0
 
 def send_asic_ctrl(gui):
-    """Function to send clocks to the FPGA
+    """Function to set ASIC controls (fast controls) in the FPGA
 
     Parameters
     ----------
@@ -311,7 +310,7 @@ def send_asic_ctrl(gui):
     send_ADC_START(gui)
 
 def send_pixel(gui):
-    """Function to send clocks to the FPGA
+    """Function to set and send pixel selection in the FPGA
 
     Parameters
     ----------
@@ -352,35 +351,56 @@ def send_pixel(gui):
     return 0
 
 def create_slow_ctrl_packet(gui):
-    """_summary_
+    """Function to create the slow control packet needed in the FPGA
 
     Parameters
     ----------
-    gui : _type_
-        _description_
+    gui : pFREYA_GUI
+        The structure containing all the data related to the tester.
+
+    Returns
+    ----------
+    str
+        Full slow control packet as a string representing a binary.
     """
     # for each pixel is the same
-    slow_ctrl_packet = gui.csa_mode_n.get() + gui.inj_en_n.get() + gui.shap_mode.get() + gui.ch_en.get() + gui.inj_mode_n.get()
+    slow_ctrl_packet = convert_strvar_bin(gui.csa_mode_n) + convert_strvar_bin(gui.inj_en_n) + \
+        convert_strvar_bin(gui.shap_mode) + convert_strvar_bin(gui.ch_en) + convert_strvar_bin(gui.inj_mode_n)
     full_slow_ctrl_packet = ''
     for i in range(0, UARTdef.PIXEL_N):
         full_slow_ctrl_packet = full_slow_ctrl_packet + slow_ctrl_packet
     return full_slow_ctrl_packet
 
-def create_dac_packet(gui):
-    """_summary_
+def create_dac_packet(gui, type):
+    """Function to create the slow control packet needed in the FPGA
 
     Parameters
     ----------
-    gui : _type_
-        _description_
+    gui : pFREYA_GUI
+        The structure containing all the data related to the tester.
+    type : str
+        Type of DAC packet to be created as integer.
+
+    Returns
+    ----------
+    str
+        DAC packet as a string representing a binary.
     """
-    # for each pixel is the same
-    # implement dac_gain and ref
-    dac_packet_data = convert_strvar_bin(gui.dac["level"]) + UARTdef.DAC_DATA_REGISTER_PADDING
+    if (type == UARTdef.DAC_CMD_CONFIG):
+        dac_packet_data = UARTdef.DAC_DATA_CONFIG_PADDING + convert_strvar_bin(gui.dac['source']) + \
+                          UARTdef.DAC_DATA_CONFIG_PADDING + UARTdef.DAC_DATA_CONFIG_PWDWN_DIS
+    elif (type == UARTdef.DAC_CMD_GAIN):
+        dac_packet_data = UARTdef.DAC_DATA_GAIN_PADDING + convert_strvar_bin(gui.dac['divisor']) + \
+                          UARTdef.DAC_DATA_GAIN_PADDING + convert_strvar_bin(gui.dac['gain'])
+    elif (type == UARTdef.DAC_CMD_DATA):
+        dac_packet_data = convert_strvar_bin(gui.dac['level']) + UARTdef.DAC_DATA_REGISTER_PADDING
+    else:
+        raise RuntimeError('Not a known DAC command or not implemented.')
+    
     return dac_packet_data
 
 def send_slow_ctrl(gui):
-    """Function to send clocks to the FPGA
+    """Function to send clocks in the FPGA
 
     Parameters
     ----------
@@ -427,8 +447,34 @@ def send_slow_ctrl(gui):
     
     return 0
 
+def send_UART_DAC(dac_packet):
+    """Function to send single DAC packets in UART mode
+
+    Parameters
+    ----------
+    dac_packet : str
+        DAC packet to be sent on UART
+    """
+    cmd = create_cmd(UARTdef.SET_DAC_CMD, UARTdef.UNUSED_CODE)
+    send_UART(cmd)
+    for i in range(0,math.floor(UARTdef.DAC_PACKET_LENGTH/(UARTdef.DAC_UART_DATA_POS+1))-1): # -1 due to last packet different
+        bin_data = convert_str_bin(dac_packet[i*(UARTdef.DAC_UART_DATA_POS+1):(i+1)*(UARTdef.DAC_UART_DATA_POS+1)-1])
+        data = create_data_slow(bin_data, UARTdef.NOTLAST_UART_PACKET)
+        send_UART('',data)
+        print(data)
+
+    bin_data = convert_str_bin(dac_packet[i*(UARTdef.DAC_UART_DATA_POS+1):])
+    data = create_data_slow(bin_data, UARTdef.LAST_UART_PACKET)
+    send_UART('',data)
+    print(data)
+
+    # send DAC
+    cmd = create_cmd(UARTdef.SEND_DAC_CMD, UARTdef.UNUSED_CODE)
+    send_UART(cmd)
+    print(cmd)
+
 def send_DAC(gui):
-    """Function to send clocks to the FPGA
+    """Function to DAC configuration in the FPGA
 
     Parameters
     ----------
@@ -443,28 +489,14 @@ def send_DAC(gui):
     if (not gui.dac_sck_sent):
         return 1
     
-    full_dac_packet = create_dac_packet(gui) #str
+    dac_config_packet = create_dac_packet(gui,UARTdef.DAC_CMD_CONFIG)
+    dac_gain_packet = create_dac_packet(gui,UARTdef.DAC_CMD_GAIN)
+    dac_data_packet = create_dac_packet(gui,UARTdef.DAC_CMD_DATA)
 
     try:
-        # set slow packet
-        cmd = create_cmd(UARTdef.SET_SLOW_CTRL_CMD, UARTdef.UNUSED_CODE)
-        send_UART(cmd)
-        for i in range(0,math.floor(UARTdef.DAC_PACKET_LENGTH/(UARTdef.DAC_UART_DATA_POS+1))-1): # -1 due to last packet different
-            bin_data = convert_str_bin(full_dac_packet[i*(UARTdef.DAC_UART_DATA_POS+1):(i+1)*(UARTdef.DAC_UART_DATA_POS+1)-1])
-            data = create_data_slow(bin_data, UARTdef.NOTLAST_UART_PACKET)
-            send_UART('',data)
-            print(data)
-
-        bin_data = convert_str_bin(full_dac_packet[i*(UARTdef.DAC_UART_DATA_POS+1):])
-        data = create_data_slow(bin_data, UARTdef.LAST_UART_PACKET)
-        send_UART('',data)
-        print(data)
-
-        # send slow
-        cmd = create_cmd(UARTdef.SEND_SLOW_CTRL_CMD, UARTdef.UNUSED_CODE)
-        data = create_data(convert_strvar_bin(gui.pixel_col))
-        send_UART(cmd)
-        print(cmd)
+        send_UART_DAC(dac_config_packet)
+        send_UART_DAC(dac_gain_packet)
+        send_UART_DAC(dac_data_packet)
     except:
         return 1
     
