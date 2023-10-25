@@ -8,12 +8,11 @@ import json
 import serial
 
 import pFREYA_tester_processing.pFREYA_tester_processing as pYtp
+import pFREYA_tester_processing.UART_definitions as UARTdef
 
 # === CONSTANTS ===
 # The other constants have been moved to the config file
 FPGA_COM_DEF = "XILINX"
-N_BIT_DATA = 7
-N_BIT_DAC = 12
 
 # === GUI FUNCTIONS ===
 def load_config():
@@ -54,19 +53,18 @@ def show_about():
 def check_fpga_clocks(strvar):
     value = strvar.get()
     if (not value.isnumeric()):
-        messagebox.showerror('FPGA Period Error', f'FPGA Period must be a number between 1 and {2**N_BIT_DATA-1}.')
-    elif (int(value) < 1 or int(value) > 2**N_BIT_DATA):
-        messagebox.showerror('FPGA Period Error', f'FPGA Period must be between 1 and {2**N_BIT_DATA-1}.')
+        messagebox.showerror('FPGA Period Error', f'FPGA Period must be a number between 1 and {2**UARTdef.DATA_SIZE-1}.')
+    elif (int(value) < 1 or int(value) > 2**UARTdef.DATA_SIZE-1):
+        messagebox.showerror('FPGA Period Error', f'FPGA Period must be between 1 and {2**UARTdef.DATA_SIZE-1}.')
 
 def check_dac_level(strvar):
     value = strvar.get()
     if (not value.isnumeric()):
-        messagebox.showerror('DAC Level Error', f'DAC must be a number between 0 and {2**N_BIT_DAC-1}.')
-    elif (int(value) < 0 or int(value) > 2**N_BIT_DAC):
-        messagebox.showerror('DAC Level Error', f'DAC must be between 0 and {2**N_BIT_DAC-1}.')
+        messagebox.showerror('DAC Level Error', f'DAC must be a number between 0 and {2**UARTdef.DAC_BITS-1}.')
+    elif (int(value) < 0 or int(value) > 2**UARTdef.DAC_BITS-1):
+        messagebox.showerror('DAC Level Error', f'DAC must be between 0 and {2**UARTdef.DAC_BITS-1}.')
 
 def check_pixel(strvar,type):
-    print(type)
     value = strvar.get()
     if (not value.isnumeric()):
         messagebox.showerror('FPGA Pixel Error', f'Pixel row or col must be a number (0-7, 0-1).')
@@ -76,6 +74,13 @@ def check_pixel(strvar,type):
     else:
         if (int(value) < 0 or int(value) > 1):
             messagebox.showerror('FPGA Pixel Error', f'Pixel row must be a number (0-1).')
+
+def check_pixel_to_inj(strvar):
+    value = strvar.get()
+    if (not value.isnumeric()):
+        messagebox.showerror('FPGA Pixel to Inj Error', f'Pixel to inject must be a number (0-{UARTdef.PIXEL_N-1}).')
+    elif (int(value) < 0 or int(value) > UARTdef.PIXEL_N-1):
+        messagebox.showerror('FPGA Pixel to Inj Error', f'Pixel to inject must be a number (0-{UARTdef.PIXEL_N-1}).')
 
 def check_slow_ctrl(strvar,n_bit_expected):
     value = strvar.get()
@@ -116,6 +121,7 @@ class pFREYA_GUI():
         self.shap_mode = StringVar(value=json_config.get("slow_ctrl","").get("shap_mode",""))
         self.ch_en = StringVar(value=json_config.get("slow_ctrl","").get("ch_en",""))
         self.inj_mode_n = StringVar(value=json_config.get("slow_ctrl","").get("inj_mode_n",""))
+        self.pixel_to_inj = StringVar(value=json_config.get("slow_ctrl","").get("pixel_to_inj",""))
 
         # pixel selection
         self.pixel_row = StringVar(value=json_config.get("pixel_sel","").get("pixel_row",""))
@@ -313,10 +319,13 @@ current_entry = ttk.Entry(sc_lframe, textvariable=gui.csa_mode_n, width=2)
 current_entry.bind("<FocusOut>", lambda x: check_slow_ctrl(gui.csa_mode_n,2))
 current_entry.grid(column=1, row=row_idx, padx=5)
 row_idx += 1
-ttk.Label(sc_lframe, text="INJ_EN_N:").grid(column=0, row=row_idx, sticky=E)
+current_label = ttk.Label(sc_lframe, text="INJ_EN_N:")
+current_label.grid(column=0, row=row_idx, sticky=E)
+current_label.configure(state='disable')
 current_entry = ttk.Entry(sc_lframe, textvariable=gui.inj_en_n, width=1)
 current_entry.bind("<FocusOut>", lambda x: check_slow_ctrl(gui.inj_en_n,1))
 current_entry.grid(column=1, row=row_idx, padx=5)
+current_entry.configure(state='disable')
 row_idx += 1
 ttk.Label(sc_lframe, text="SHAP_MODE:").grid(column=0, row=row_idx, sticky=E)
 current_entry = ttk.Entry(sc_lframe, textvariable=gui.shap_mode, width=2)
@@ -333,6 +342,11 @@ current_entry = ttk.Entry(sc_lframe, textvariable=gui.inj_mode_n, width=1)
 current_entry.bind("<FocusOut>", lambda x: check_slow_ctrl(gui.inj_mode_n,1))
 current_entry.grid(column=1, row=row_idx, padx=5)
 row_idx += 1
+ttk.Label(sc_lframe, text="Pixel to inject:").grid(column=0, row=row_idx, sticky=E)
+current_entry = ttk.Entry(sc_lframe, textvariable=gui.pixel_to_inj, width=2)
+current_entry.bind("<FocusOut>", lambda x: check_pixel_to_inj(gui.pixel_to_inj))
+current_entry.grid(column=1, row=row_idx, padx=5)
+row_idx += 1
 ttk.Button(sc_lframe, text="Send slow ctrl", command=lambda: pYtp.send_slow_ctrl(gui)).grid(column=1, columnspan=2, row=row_idx, pady=[30,0], sticky=SE)
 
 # DAC configuration
@@ -341,16 +355,16 @@ ts_lframe.grid(column=2, row=0, padx=5, pady=30, sticky=NSEW)
 row_idx = 0
 col_idx = 0
 ttk.Label(ts_lframe, text="VREF source:").grid(column=col_idx, row=row_idx, sticky=W)
-ttk.Radiobutton(ts_lframe, text="EXT", variable=gui.dac["source"], value=0).grid(column=col_idx+1, row=row_idx, pady=5, padx=5)
-ttk.Radiobutton(ts_lframe, text="INT", variable=gui.dac["source"], value=1).grid(column=col_idx+2, row=row_idx, pady=5, padx=5)
+ttk.Radiobutton(ts_lframe, text="EXT", variable=gui.dac["source"], value=UARTdef.DAC_DATA_CONFIG_REF_EXT).grid(column=col_idx+1, row=row_idx, pady=5, padx=5)
+ttk.Radiobutton(ts_lframe, text="INT", variable=gui.dac["source"], value=UARTdef.DAC_DATA_CONFIG_REF_INT).grid(column=col_idx+2, row=row_idx, pady=5, padx=5)
 row_idx += 1
 ttk.Label(ts_lframe, text="VREF divider:").grid(column=col_idx, row=row_idx, sticky=W)
-ttk.Radiobutton(ts_lframe, text="1", variable=gui.dac["divider"], value=1).grid(column=col_idx+1, row=row_idx, pady=5, padx=5)
-ttk.Radiobutton(ts_lframe, text="2", variable=gui.dac["divider"], value=2).grid(column=col_idx+2, row=row_idx, pady=5, padx=5)
+ttk.Radiobutton(ts_lframe, text="1", variable=gui.dac["divider"], value=UARTdef.DAC_DATA_GAIN_DIV1).grid(column=col_idx+1, row=row_idx, pady=5, padx=5)
+ttk.Radiobutton(ts_lframe, text="2", variable=gui.dac["divider"], value=UARTdef.DAC_DATA_GAIN_DIV2).grid(column=col_idx+2, row=row_idx, pady=5, padx=5)
 row_idx += 1
 ttk.Label(ts_lframe, text="VREF gain:").grid(column=col_idx, row=row_idx, sticky=W)
-ttk.Radiobutton(ts_lframe, text="1", variable=gui.dac["gain"], value=1).grid(column=col_idx+1, row=row_idx, pady=5, padx=5)
-ttk.Radiobutton(ts_lframe, text="2", variable=gui.dac["gain"], value=2).grid(column=col_idx+2, row=row_idx, pady=5, padx=5)
+ttk.Radiobutton(ts_lframe, text="1", variable=gui.dac["gain"], value=UARTdef.DAC_DATA_GAIN_BUF1).grid(column=col_idx+1, row=row_idx, pady=5, padx=5)
+ttk.Radiobutton(ts_lframe, text="2", variable=gui.dac["gain"], value=UARTdef.DAC_DATA_GAIN_BUF2).grid(column=col_idx+2, row=row_idx, pady=5, padx=5)
 row_idx += 1
 ttk.Label(ts_lframe, text="DAC level:").grid(column=col_idx, row=row_idx, sticky=W)
 current_entry = ttk.Entry(ts_lframe, textvariable=gui.dac["level"], width=4)

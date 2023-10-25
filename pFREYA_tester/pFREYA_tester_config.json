@@ -10,8 +10,8 @@
     },
     "DAC": {
         "source": "1",
-        "divider": "1",
-        "gain": "1",
+        "divider": "0",
+        "gain": "0",
         "level": "420"
     },
     "slow_ctrl": {
@@ -19,7 +19,8 @@
         "inj_en_n": "0",
         "shap_mode": "10",
         "ch_en": "1",
-        "inj_mode_n": "1"
+        "inj_mode_n": "1",
+        "pixel_to_inj": "0"
     },
     "pixel_sel": {
         "pixel_row": "3",

@@ -43,6 +43,7 @@ module pFREYA_IF(
     // state machine code
     (* syn_encoding = "one-hot" *) enum logic [5:0] {
         RESET,
+        CMD_SYNC_TIME_BASE,
         CMD_EVAL,
         CMD_ERR,
         CMD_READ_DATA,
@@ -84,7 +85,7 @@ module pFREYA_IF(
     logic [FAST_CTRL_N-1:0] ser_read_cnt = -1, ser_read_delay_div= '0, ser_read_HIGH_div= '0, ser_read_LOW_div= '0;
 
     // control logic
-    logic slow_ctrl_packet_available = 1'b0, slow_ctrl_packet_sent = 1'b0, dac_packet_available = 1'b0, dac_packet_sent = 1'b0, sel_ckcol_sent = 1'b0, sel_ckrow_sent = 1'b0;
+    logic slow_ctrl_packet_available = 1'b0, slow_ctrl_packet_sent = 1'b0, dac_packet_available = 1'b0, dac_packet_sent = 1'b0, sel_ckcol_sent = 1'b0, sel_ckrow_sent = 1'b0, sync_time_base_flag = 1'b0;
     // data
     logic [FAST_CTRL_N-1:0] slow_ctrl_packet_index_send= '0, slow_ctrl_packet_index_receive= '0;
     reg [SLOW_CTRL_REG_LENGTH-1:0] slow_ctrl_packet= '0;
@@ -107,12 +108,12 @@ module pFREYA_IF(
             slow_ctrl_ck <= 1'b0;
             slow_ctrl_cnt <= -1;
         end
-        // the second check is to assure that the last HIGH is the same semiperiod as the others
-        else if (~slow_ctrl_reset_n & slow_ctrl_ck == 1'b0) begin
+        else if (slow_ctrl_div == '0 || sync_time_base_flag) begin
             slow_ctrl_ck <= 1'b0;
             slow_ctrl_cnt <= -1;
         end
-        else if (slow_ctrl_div == '0) begin
+        // the second check is to assure that the last HIGH is the same semiperiod as the others
+        else if (~slow_ctrl_reset_n & slow_ctrl_ck == 1'b0) begin
             slow_ctrl_ck <= 1'b0;
             slow_ctrl_cnt <= -1;
         end
@@ -132,12 +133,7 @@ module pFREYA_IF(
             sel_ck <= 1'b0;
             sel_cnt <= -1;
         end
-        // the second check is to assure that the last HIGH is the same semiperiod as the others
-        else if (sel_init_n) begin
-            sel_ck <= 1'b0;
-            sel_cnt <= -1;
-        end
-        else if (sel_div == '0) begin
+        else if (sel_init_n || sel_div == '0 || sync_time_base_flag) begin
             sel_ck <= 1'b0;
             sel_cnt <= -1;
         end
@@ -157,13 +153,9 @@ module pFREYA_IF(
             adc_ck <= 1'b0;
             adc_cnt <= -1;
         end
-        else if (~adc_start) begin
+        else if (~adc_start || adc_div == '0 || sync_time_base_flag) begin
             adc_ck <= 1'b0;
             adc_cnt <= -1;
-        end
-        else if (adc_div == '0) begin
-            adc_ck <= 1'b0;
-            adc_cnt <= '0;
         end
         else if (adc_cnt == adc_div-1) begin
             adc_ck <= ~adc_ck;
@@ -181,14 +173,9 @@ module pFREYA_IF(
             inj_stb <= 1'b0;
             inj_cnt <= -1;
         end
-        // always run it
-        // else if (~inj_start) begin
-        //     inj_stb <= 1'b0;
-        //     inj_cnt <= -1;
-        // end
-        else if (inj_div == '0) begin
+        else if (inj_div == '0 || sync_time_base_flag) begin
             inj_stb <= 1'b0;
-            inj_cnt <= '0;
+            inj_cnt <= -1;
         end
         else if (inj_cnt == inj_div-1) begin
             inj_stb <= ~inj_stb;
@@ -206,13 +193,9 @@ module pFREYA_IF(
             ser_ck <= 1'b0;
             ser_cnt <= -1;
         end
-        else if (~ser_reset_n) begin
+        else if (~ser_reset_n || ser_div == '0 || sync_time_base_flag) begin
             ser_ck <= 1'b0;
             ser_cnt <= -1;
-        end
-        else if (ser_div == '0) begin
-            ser_ck <= 1'b0;
-            ser_cnt <= '0;
         end
         else if (ser_cnt == ser_div-1) begin
             ser_ck <= ~ser_ck;
@@ -230,13 +213,9 @@ module pFREYA_IF(
             dac_sck <= 1'b0;
             dac_sck_cnt <= -1;
         end
-        else if (dac_sync_n) begin
+        else if (dac_sync_n || dac_sck_div == '0 || sync_time_base_flag) begin
             dac_sck <= 1'b0;
             dac_sck_cnt <= -1;
-        end
-        else if (dac_sck_div == '0) begin
-            dac_sck <= 1'b0;
-            dac_sck_cnt <= '0;
         end
         else if (dac_sck_cnt == dac_sck_div-1) begin
             dac_sck <= ~dac_sck;
@@ -257,14 +236,9 @@ module pFREYA_IF(
             csa_reset_n_cnt <= -1;
             csa_reset_n_flag <= FAST_CTRL_DELAY;
         end
-        else if (csa_reset_n_flag == FAST_CTRL_DELAY &&
-                 csa_reset_n_delay_div == '0) begin
-            csa_reset_n <= 1'b0;
-            csa_reset_n_cnt <= -1;
-            csa_reset_n_flag <= FAST_CTRL_DELAY;
-        end
-        else if (csa_reset_n_HIGH_div == '0 ||
-                 csa_reset_n_LOW_div == '0    ) begin
+        else if (sync_time_base_flag ||
+            (csa_reset_n_flag == FAST_CTRL_DELAY && csa_reset_n_delay_div == '0) ||
+            (csa_reset_n_HIGH_div == '0 || csa_reset_n_LOW_div == '0)) begin
             csa_reset_n <= 1'b0;
             csa_reset_n_cnt <= -1;
             csa_reset_n_flag <= FAST_CTRL_DELAY;
@@ -299,14 +273,9 @@ module pFREYA_IF(
             sh_phi1d_inf_cnt <= -1;
             sh_phi1d_inf_flag <= FAST_CTRL_DELAY;
         end
-        else if (sh_phi1d_inf_flag == FAST_CTRL_DELAY &&
-                 sh_phi1d_inf_delay_div == '0) begin
-            sh_phi1d_inf <= 1'b0;
-            sh_phi1d_inf_cnt <= -1;
-            sh_phi1d_inf_flag <= FAST_CTRL_DELAY;
-        end
-        else if (sh_phi1d_inf_HIGH_div == '0 ||
-                 sh_phi1d_inf_LOW_div == '0    ) begin
+        else if (sync_time_base_flag ||
+            (sh_phi1d_inf_flag == FAST_CTRL_DELAY && sh_phi1d_inf_delay_div == '0) ||
+            (sh_phi1d_inf_HIGH_div == '0 || sh_phi1d_inf_LOW_div == '0)) begin
             sh_phi1d_inf <= 1'b0;
             sh_phi1d_inf_cnt <= -1;
             sh_phi1d_inf_flag <= FAST_CTRL_DELAY;
@@ -341,14 +310,9 @@ module pFREYA_IF(
             sh_phi1d_sup_cnt <= -1;
             sh_phi1d_sup_flag <= FAST_CTRL_DELAY;
         end
-        else if (sh_phi1d_sup_flag == FAST_CTRL_DELAY &&
-                 sh_phi1d_sup_delay_div == '0) begin
-            sh_phi1d_sup <= 1'b0;
-            sh_phi1d_sup_cnt <= -1;
-            sh_phi1d_sup_flag <= FAST_CTRL_DELAY;
-        end
-        else if (sh_phi1d_sup_HIGH_div == '0 ||
-                 sh_phi1d_sup_LOW_div == '0    ) begin
+        else if (sync_time_base_flag ||
+            (sh_phi1d_sup_flag == FAST_CTRL_DELAY && sh_phi1d_sup_delay_div == '0) ||
+            (sh_phi1d_sup_HIGH_div == '0 || sh_phi1d_sup_LOW_div == '0)) begin
             sh_phi1d_sup <= 1'b0;
             sh_phi1d_sup_cnt <= -1;
             sh_phi1d_sup_flag <= FAST_CTRL_DELAY;
@@ -383,14 +347,9 @@ module pFREYA_IF(
             adc_start_cnt <= -1;
             adc_start_flag <= FAST_CTRL_DELAY;
         end
-        else if (adc_start_flag == FAST_CTRL_DELAY &&
-                 adc_start_delay_div == '0) begin
-            adc_start <= 1'b0;
-            adc_start_cnt <= -1;
-            adc_start_flag <= FAST_CTRL_DELAY;
-        end
-        else if (adc_start_HIGH_div == '0 ||
-                 adc_start_LOW_div == '0    ) begin
+        else if (sync_time_base_flag ||
+            (adc_start_flag == FAST_CTRL_DELAY && adc_start_delay_div == '0) ||
+            (adc_start_HIGH_div == '0 || adc_start_LOW_div == '0)) begin
             adc_start <= 1'b0;
             adc_start_cnt <= -1;
             adc_start_flag <= FAST_CTRL_DELAY;
@@ -425,14 +384,9 @@ module pFREYA_IF(
             ser_reset_n_cnt <= -1;
             ser_reset_n_flag <= FAST_CTRL_DELAY;
         end
-        else if (ser_reset_n_flag == FAST_CTRL_DELAY &&
-                 ser_reset_n_delay_div == '0) begin
-            ser_reset_n <= 1'b0;
-            ser_reset_n_cnt <= -1;
-            ser_reset_n_flag <= FAST_CTRL_DELAY;
-        end
-        else if (ser_reset_n_HIGH_div == '0 ||
-                 ser_reset_n_LOW_div == '0    ) begin
+        else if (sync_time_base_flag ||
+            (ser_reset_n_flag == FAST_CTRL_DELAY && ser_reset_n_delay_div == '0) ||
+            (ser_reset_n_HIGH_div == '0 || ser_reset_n_LOW_div == '0)) begin
             ser_reset_n <= 1'b0;
             ser_reset_n_cnt <= -1;
             ser_reset_n_flag <= FAST_CTRL_DELAY;
@@ -467,14 +421,9 @@ module pFREYA_IF(
             ser_read_cnt <= -1;
             ser_read_flag <= FAST_CTRL_DELAY;
         end
-        else if (ser_read_flag == FAST_CTRL_DELAY &&
-                 ser_read_delay_div == '0) begin
-            ser_read <= 1'b0;
-            ser_read_cnt <= -1;
-            ser_read_flag <= FAST_CTRL_DELAY;
-        end
-        else if (ser_read_HIGH_div == '0 ||
-                 ser_read_LOW_div == '0    ) begin
+        else if (sync_time_base_flag || 
+            (ser_read_flag == FAST_CTRL_DELAY && ser_read_delay_div == '0) ||
+            (ser_read_HIGH_div == '0 || ser_read_LOW_div == '0)) begin
             ser_read <= 1'b0;
             ser_read_cnt <= -1;
             ser_read_flag <= FAST_CTRL_DELAY;
@@ -531,6 +480,12 @@ module pFREYA_IF(
                         // next send sel pixel
                         `SEND_PIXEL_SEL_CMD:
                             next <= CMD_SEL_PIX;
+                        // next sync time base
+                        `SYNC_TIME_BASE:
+                            next <= CMD_SYNC_TIME_BASE;
+                        // next reset fpga
+                        `RESET_FPGA:
+                            next <= RESET;
                         // if the command is not known error
                         default:
                             next <= CMD_ERR;
@@ -571,6 +526,8 @@ module pFREYA_IF(
                     next <= CMD_EVAL;
                 else
                     next <= CMD_SEL_PIX;
+            CMD_SYNC_TIME_BASE:
+                next <= CMD_EVAL;
             default:
                 next <= CMD_ERR;
         endcase
@@ -638,6 +595,8 @@ module pFREYA_IF(
                         cmd <= uart_data[CMD_START_POS:CMD_END_POS];
                         signal <= uart_data[SIGNAL_START_POS:SIGNAL_END_POS];
                     end
+                    // make sure the time_base_flag is off
+                    sync_time_base_flag <= 1'b0;
                 end
                 CMD_SET: begin
                     if (data_available) begin
@@ -773,6 +732,8 @@ module pFREYA_IF(
                     else
                         sel_init_n <= 1'b0;
                 end
+                CMD_SYNC_TIME_BASE:
+                    sync_time_base_flag <= 1'b1;
             endcase
         end
     end

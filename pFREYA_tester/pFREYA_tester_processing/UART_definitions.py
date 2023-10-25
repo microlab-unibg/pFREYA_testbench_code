@@ -178,4 +178,5 @@ DAC_DATA_TRIGGER_SOFT_RESET  = '1010'
 # DAC_DATA_REGISTER is RW. = 'XXXX_XXXX_XXXX_0000
 # no bits are reserved, 16 bits are data, left-aligned. For DAC6051 the last 4 bits are 0 since it is 12-bit.
 # Make sure there is enough voltage headroom for the right div and gain.
+DAC_BITS = 12
 DAC_DATA_REGISTER_PADDING = '0000'

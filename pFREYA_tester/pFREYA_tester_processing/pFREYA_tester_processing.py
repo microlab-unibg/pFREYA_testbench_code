@@ -78,20 +78,23 @@ def create_data_slow(data, type):
         # the 8'd0 at the beginning is to set bits that are not useful
         return UARTdef.CMD_PACKET + UARTdef.NOTLAST_UART_PACKET + data
 
-def convert_strvar_bin(strvar):
+def convert_strvar_bin(strvar, n_bits):
     """Convert StrVar to string binary representation
 
     Parameters
     ----------
     strvar : StrVar
         strvar
+    n_bits : int
+        number of bits of binary representation
 
     Returns
     -------
     str
         String representation of strvar in binary format
     """
-    return '{0:07b}'.format(int(strvar.get()))
+    s = '{0:0' + str(n_bits) + 'b}'
+    return s.format(int(strvar.get()))
 
 def convert_str_bin(s):
     """Convert str to binary representation
@@ -123,17 +126,17 @@ def send_CSA_RESET_N(gui):
     """
     try:
         cmd = create_cmd(UARTdef.SET_DELAY_CMD, UARTdef.CSA_RESET_N_CODE)
-        data = create_data(convert_strvar_bin(gui.csa_reset_n['delay']))
+        data = create_data(convert_strvar_bin(gui.csa_reset_n['delay'],UARTdef.DATA_SIZE))
         send_UART(cmd, data)
         print(cmd,'\n',data)
 
         cmd = create_cmd(UARTdef.SET_HIGH_CMD, UARTdef.CSA_RESET_N_CODE)
-        data = create_data(convert_strvar_bin(gui.csa_reset_n['high']))
+        data = create_data(convert_strvar_bin(gui.csa_reset_n['high'],UARTdef.DATA_SIZE))
         send_UART(cmd, data)
         print(cmd,'\n',data)
 
         cmd = create_cmd(UARTdef.SET_LOW_CMD, UARTdef.CSA_RESET_N_CODE)
-        data = create_data(convert_strvar_bin(gui.csa_reset_n['low']))
+        data = create_data(convert_strvar_bin(gui.csa_reset_n['low'],UARTdef.DATA_SIZE))
         send_UART(cmd, data)
         print(cmd,'\n',data)
     except:
@@ -156,17 +159,17 @@ def send_SH_PHI1D_INF(gui):
     """
     try:
         cmd = create_cmd(UARTdef.SET_DELAY_CMD, UARTdef.SH_INF_CODE)
-        data = create_data(convert_strvar_bin(gui.sh_phi1d_inf['delay']))
+        data = create_data(convert_strvar_bin(gui.sh_phi1d_inf['delay'],UARTdef.DATA_SIZE))
         send_UART(cmd, data)
         print(cmd,'\n',data)
 
         cmd = create_cmd(UARTdef.SET_HIGH_CMD, UARTdef.SH_INF_CODE)
-        data = create_data(convert_strvar_bin(gui.sh_phi1d_inf['high']))
+        data = create_data(convert_strvar_bin(gui.sh_phi1d_inf['high'],UARTdef.DATA_SIZE))
         send_UART(cmd, data)
         print(cmd,'\n',data)
 
         cmd = create_cmd(UARTdef.SET_LOW_CMD, UARTdef.SH_INF_CODE)
-        data = create_data(convert_strvar_bin(gui.sh_phi1d_inf['low']))
+        data = create_data(convert_strvar_bin(gui.sh_phi1d_inf['low'],UARTdef.DATA_SIZE))
         send_UART(cmd, data)
         print(cmd,'\n',data)
     except:
@@ -189,17 +192,17 @@ def send_SH_PHI1D_SUP(gui):
     """
     try:
         cmd = create_cmd(UARTdef.SET_DELAY_CMD, UARTdef.SH_SUP_CODE)
-        data = create_data(convert_strvar_bin(gui.sh_phi1d_sup['delay']))
+        data = create_data(convert_strvar_bin(gui.sh_phi1d_sup['delay'],UARTdef.DATA_SIZE))
         send_UART(cmd, data)
         print(cmd,'\n',data)
 
         cmd = create_cmd(UARTdef.SET_HIGH_CMD, UARTdef.SH_SUP_CODE)
-        data = create_data(convert_strvar_bin(gui.sh_phi1d_sup['high']))
+        data = create_data(convert_strvar_bin(gui.sh_phi1d_sup['high'],UARTdef.DATA_SIZE))
         send_UART(cmd, data)
         print(cmd,'\n',data)
 
         cmd = create_cmd(UARTdef.SET_LOW_CMD, UARTdef.SH_SUP_CODE)
-        data = create_data(convert_strvar_bin(gui.sh_phi1d_sup['low']))
+        data = create_data(convert_strvar_bin(gui.sh_phi1d_sup['low'],UARTdef.DATA_SIZE))
         send_UART(cmd, data)
         print(cmd,'\n',data)
     except:
@@ -222,17 +225,17 @@ def send_ADC_START(gui):
     """
     try:
         cmd = create_cmd(UARTdef.SET_DELAY_CMD, UARTdef.ADC_START_CODE)
-        data = create_data(convert_strvar_bin(gui.adc_start['delay']))
+        data = create_data(convert_strvar_bin(gui.adc_start['delay'],UARTdef.DATA_SIZE))
         send_UART(cmd, data)
         print(cmd,'\n',data)
 
         cmd = create_cmd(UARTdef.SET_HIGH_CMD, UARTdef.ADC_START_CODE)
-        data = create_data(convert_strvar_bin(gui.adc_start['high']))
+        data = create_data(convert_strvar_bin(gui.adc_start['high'],UARTdef.DATA_SIZE))
         send_UART(cmd, data)
         print(cmd,'\n',data)
 
         cmd = create_cmd(UARTdef.SET_LOW_CMD, UARTdef.ADC_START_CODE)
-        data = create_data(convert_strvar_bin(gui.adc_start['low']))
+        data = create_data(convert_strvar_bin(gui.adc_start['low'],UARTdef.DATA_SIZE))
         send_UART(cmd, data)
         print(cmd,'\n',data)
     except:
@@ -255,35 +258,35 @@ def send_clocks(gui):
     """
     try:
         cmd = create_cmd(UARTdef.SET_CK_CMD, UARTdef.SLOW_CTRL_CK_CODE)
-        data = create_data(convert_strvar_bin(gui.slow_ck))
+        data = create_data(convert_strvar_bin(gui.slow_ck,UARTdef.DATA_SIZE))
         send_UART(cmd, data)
         print(cmd,'\n',data)
         gui.slow_ck_sent = True
 
         cmd = create_cmd(UARTdef.SET_CK_CMD, UARTdef.SEL_CK_CODE)
-        data = create_data(convert_strvar_bin(gui.sel_ck))
+        data = create_data(convert_strvar_bin(gui.sel_ck,UARTdef.DATA_SIZE))
         send_UART(cmd, data)
         print(cmd,'\n',data)
         gui.sel_ck_sent = True
 
         cmd = create_cmd(UARTdef.SET_CK_CMD, UARTdef.ADC_CK_CODE)
-        data = create_data(convert_strvar_bin(gui.adc_ck))
+        data = create_data(convert_strvar_bin(gui.adc_ck,UARTdef.DATA_SIZE))
         send_UART(cmd, data)
         print(cmd,'\n',data)
 
         cmd = create_cmd(UARTdef.SET_CK_CMD, UARTdef.INJ_STB_CODE)
-        data = create_data(convert_strvar_bin(gui.inj_stb))
+        data = create_data(convert_strvar_bin(gui.inj_stb,UARTdef.DATA_SIZE))
         send_UART(cmd, data)
         print(cmd,'\n',data)
 
         cmd = create_cmd(UARTdef.SET_CK_CMD, UARTdef.DAC_SCK_CODE)
-        data = create_data(convert_strvar_bin(gui.dac_sck))
+        data = create_data(convert_strvar_bin(gui.dac_sck,UARTdef.DATA_SIZE))
         send_UART(cmd, data)
         print(cmd,'\n',data)
         gui.dac_sck_sent = True
 
         cmd = create_cmd(UARTdef.SET_CK_CMD, UARTdef.SER_CK_CODE)
-        data = create_data(convert_strvar_bin(gui.ser_ck))
+        data = create_data(convert_strvar_bin(gui.ser_ck,UARTdef.DATA_SIZE))
         send_UART(cmd, data)
         print(cmd,'\n',data)
     except:
@@ -329,14 +332,14 @@ def send_pixel(gui):
         pass
         # set row and col
         cmd = create_cmd(UARTdef.SET_PIXEL_CMD, UARTdef.PIXEL_ROW_CODE)
-        data = create_data(convert_strvar_bin(gui.pixel_row))
+        data = create_data(convert_strvar_bin(gui.pixel_row,UARTdef.DATA_SIZE))
         send_UART(cmd, data)
         print(cmd,'\n',data)
 
         time.sleep(1)
 
         cmd = create_cmd(UARTdef.SET_PIXEL_CMD, UARTdef.PIXEL_COL_CODE)
-        data = create_data(convert_strvar_bin(gui.pixel_col))
+        data = create_data(convert_strvar_bin(gui.pixel_col,UARTdef.DATA_SIZE))
         send_UART(cmd, data)
         print(cmd,'\n',data)
 
@@ -364,11 +367,17 @@ def create_slow_ctrl_packet(gui):
         Full slow control packet as a string representing a binary.
     """
     # for each pixel is the same
-    slow_ctrl_packet = convert_strvar_bin(gui.csa_mode_n) + convert_strvar_bin(gui.inj_en_n) + \
-        convert_strvar_bin(gui.shap_mode) + convert_strvar_bin(gui.ch_en) + convert_strvar_bin(gui.inj_mode_n)
+    slow_ctrl_packet = gui.csa_mode_n.get() + gui.inj_en_n.get() + gui.shap_mode.get() + \
+                    gui.ch_en.get() + gui.inj_mode_n.get()
+    print(slow_ctrl_packet)
     full_slow_ctrl_packet = ''
-    for i in range(0, UARTdef.PIXEL_N):
+    for _ in range(0, UARTdef.PIXEL_N):
         full_slow_ctrl_packet = full_slow_ctrl_packet + slow_ctrl_packet
+
+    # set pixel to be injected
+    pixel_idx = int(gui.pixel_to_inj.get())*7+2 # shouldnt be hard coded
+    full_slow_ctrl_packet = full_slow_ctrl_packet[:pixel_idx] + '1' + full_slow_ctrl_packet[pixel_idx+1:]
+
     return full_slow_ctrl_packet
 
 def create_dac_packet(gui, type):
@@ -387,15 +396,18 @@ def create_dac_packet(gui, type):
         DAC packet as a string representing a binary.
     """
     if (type == UARTdef.DAC_CMD_CONFIG):
-        dac_packet_data = UARTdef.DAC_DATA_CONFIG_PADDING + convert_strvar_bin(gui.dac['source']) + \
+        dac_packet_data = UARTdef.DAC_DATA_CONFIG_PADDING + convert_strvar_bin(gui.dac['source'],1) + \
                           UARTdef.DAC_DATA_CONFIG_PADDING + UARTdef.DAC_DATA_CONFIG_PWDWN_DIS
     elif (type == UARTdef.DAC_CMD_GAIN):
-        dac_packet_data = UARTdef.DAC_DATA_GAIN_PADDING + convert_strvar_bin(gui.dac['divisor']) + \
-                          UARTdef.DAC_DATA_GAIN_PADDING + convert_strvar_bin(gui.dac['gain'])
+        dac_packet_data = UARTdef.DAC_DATA_GAIN_PADDING + convert_strvar_bin(gui.dac['divider'],1) + \
+                          UARTdef.DAC_DATA_GAIN_PADDING + convert_strvar_bin(gui.dac['gain'],1)
     elif (type == UARTdef.DAC_CMD_DATA):
-        dac_packet_data = convert_strvar_bin(gui.dac['level']) + UARTdef.DAC_DATA_REGISTER_PADDING
+        dac_packet_data = convert_strvar_bin(gui.dac['level'],12) + UARTdef.DAC_DATA_REGISTER_PADDING
     else:
         raise RuntimeError('Not a known DAC command or not implemented.')
+
+    #remove word divider
+    dac_packet_data = dac_packet_data.replace('_','')
     
     return dac_packet_data
 
@@ -426,11 +438,6 @@ def send_slow_ctrl(gui):
             data = create_data_slow(bin_data, UARTdef.NOTLAST_UART_PACKET)
             send_UART('',data)
             print(data)
-        
-        cmd = create_cmd(UARTdef.SET_CK_CMD, UARTdef.ADC_CK_CODE)
-        data = create_data(convert_strvar_bin(gui.adc_ck))
-        send_UART(cmd, data)
-        print(cmd,'\n',data)
 
         bin_data = convert_str_bin(full_slow_ctrl_packet[i*(UARTdef.SLOW_CTRL_UART_DATA_POS+1):])
         data = create_data_slow(bin_data, UARTdef.LAST_UART_PACKET)
@@ -439,7 +446,6 @@ def send_slow_ctrl(gui):
 
         # send slow
         cmd = create_cmd(UARTdef.SEND_SLOW_CTRL_CMD, UARTdef.UNUSED_CODE)
-        data = create_data(convert_strvar_bin(gui.pixel_col))
         send_UART(cmd)
         print(cmd)
     except:
