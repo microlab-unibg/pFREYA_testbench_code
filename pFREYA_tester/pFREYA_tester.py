@@ -552,7 +552,7 @@ for child in ser_lframe.winfo_children():
 
 ser_lframe = ttk.Labelframe(main_frame, text="Special FPGA controls", padding=10, width=200, height=10)
 ser_lframe.grid(column=0, row=5, columnspan=5, padx=5, sticky=NSEW)
-ttk.Button(ser_lframe, text="Sync signals", command=lambda: pYtp.send_sync_time_bases).grid(column=0, row=0, sticky=SE)
-ttk.Button(ser_lframe, text="Reset FPGA", command=lambda: pYtp.send_reset_FPGA).grid(column=1, row=0, sticky=SE)
+ttk.Button(ser_lframe, text="Sync signals", command=lambda: pYtp.send_sync_time_bases()).grid(column=0, row=0, sticky=SE)
+ttk.Button(ser_lframe, text="Reset FPGA", command=lambda: pYtp.send_reset_FPGA()).grid(column=1, row=0, sticky=SE)
 
 root.mainloop()

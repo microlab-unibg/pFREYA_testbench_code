@@ -519,6 +519,7 @@ def send_sync_time_bases():
     try:
         cmd = create_cmd(UARTdef.SYNC_TIME_BASE_CMD, UARTdef.UNUSED_CODE)
         send_UART(cmd)
+        print(cmd)
     except:
         return 1
     
@@ -535,6 +536,7 @@ def send_reset_FPGA():
     try:
         cmd = create_cmd(UARTdef.RESET_FPGA_CMD, UARTdef.UNUSED_CODE)
         send_UART(cmd)
+        print(cmd)
     except:
         return 1
     
