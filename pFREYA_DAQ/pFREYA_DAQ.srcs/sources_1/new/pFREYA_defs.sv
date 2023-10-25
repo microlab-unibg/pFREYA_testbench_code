@@ -103,8 +103,8 @@
     `define SEND_SLOW_CTRL_CMD 4'b0111   // for sending the slow ctrl to the asic
     `define SEND_DAC_CMD       4'b1000   // for sending the DAC config
     `define SEND_PIXEL_SEL_CMD 4'b1001   // for sending the pixel selection to the asic
-    `define SYNC_TIME_BASE     4'b1110   // for synchronising the signal generated to a same baseline
-    `define RESET_FPGA         4'b1111   // for resetting the FPGA just as with the button
+    `define SYNC_TIME_BASE_CMD 4'b1110   // for synchronising the signal generated to a same baseline
+    `define RESET_FPGA_CMD     4'b1111   // for resetting the FPGA just as with the button
 
     // Slow control default values
     `define CSA_MODE_N_DEF 2'b10

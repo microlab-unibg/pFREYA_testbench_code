@@ -481,10 +481,10 @@ module pFREYA_IF(
                         `SEND_PIXEL_SEL_CMD:
                             next <= CMD_SEL_PIX;
                         // next sync time base
-                        `SYNC_TIME_BASE:
+                        `SYNC_TIME_BASE_CMD:
                             next <= CMD_SYNC_TIME_BASE;
                         // next reset fpga
-                        `RESET_FPGA:
+                        `RESET_FPGA_CMD:
                             next <= RESET;
                         // if the command is not known error
                         default:

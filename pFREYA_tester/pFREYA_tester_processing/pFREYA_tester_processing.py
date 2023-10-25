@@ -507,3 +507,35 @@ def send_DAC(gui):
         return 1
     
     return 0
+
+def send_sync_time_bases():
+    """Function to send the command to sync signals on the FPGA
+    
+    Returns
+    ----------
+    int
+        0 if everything was ok, 1 otherwise.
+    """
+    try:
+        cmd = create_cmd(UARTdef.SYNC_TIME_BASE_CMD, UARTdef.UNUSED_CODE)
+        send_UART(cmd)
+    except:
+        return 1
+    
+    return 0
+
+def send_reset_FPGA():
+    """Function to send the command to reset the FPGA
+    
+    Returns
+    ----------
+    int
+        0 if everything was ok, 1 otherwise.
+    """
+    try:
+        cmd = create_cmd(UARTdef.RESET_FPGA_CMD, UARTdef.UNUSED_CODE)
+        send_UART(cmd)
+    except:
+        return 1
+    
+    return 0

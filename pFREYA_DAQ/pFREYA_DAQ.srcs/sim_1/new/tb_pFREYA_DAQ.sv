@@ -290,7 +290,7 @@ module tb_pFREYA_DAQ;
         #10000 uart_write_byte(uart_to_send);
 
         // send a command to sync time base
-        #200000 uart_to_send <= {CMD_PACKET,`SYNC_TIME_BASE,`UNUSED_CODE};
+        #200000 uart_to_send <= {CMD_PACKET,`SYNC_TIME_BASE_CMD,`UNUSED_CODE};
         #10000 cmd_available <= 1'b1;
               data_available <= 1'b0;
               uart_write_byte(uart_to_send);

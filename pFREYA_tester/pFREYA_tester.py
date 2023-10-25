@@ -347,7 +347,7 @@ current_entry = ttk.Entry(sc_lframe, textvariable=gui.pixel_to_inj, width=2)
 current_entry.bind("<FocusOut>", lambda x: check_pixel_to_inj(gui.pixel_to_inj))
 current_entry.grid(column=1, row=row_idx, padx=5)
 row_idx += 1
-ttk.Button(sc_lframe, text="Send slow ctrl", command=lambda: pYtp.send_slow_ctrl(gui)).grid(column=1, columnspan=2, row=row_idx, pady=[30,0], sticky=SE)
+ttk.Button(sc_lframe, text="Send slow ctrl", command=lambda: pYtp.send_slow_ctrl(gui)).grid(column=1, columnspan=2, row=row_idx, pady=[10,0], sticky=SE)
 
 # DAC configuration
 ts_lframe = ttk.Labelframe(main_frame, text="DAC configuration", padding=10, width=200, height=100)
@@ -549,5 +549,10 @@ ttk.Button(ser_lframe, text="Send serial").grid(column=6, columnspan=2, row=row_
 # disable last frame
 for child in ser_lframe.winfo_children():
    child.configure(state='disable')
+
+ser_lframe = ttk.Labelframe(main_frame, text="Special FPGA controls", padding=10, width=200, height=10)
+ser_lframe.grid(column=0, row=5, columnspan=5, padx=5, sticky=NSEW)
+ttk.Button(ser_lframe, text="Sync signals", command=lambda: pYtp.send_sync_time_bases).grid(column=0, row=0, sticky=SE)
+ttk.Button(ser_lframe, text="Reset FPGA", command=lambda: pYtp.send_reset_FPGA).grid(column=1, row=0, sticky=SE)
 
 root.mainloop()

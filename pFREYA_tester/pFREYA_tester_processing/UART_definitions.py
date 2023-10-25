@@ -74,6 +74,8 @@ SET_PIXEL_CMD      = '0110'   # for pixel selection
 SEND_SLOW_CTRL_CMD = '0111'   # for sending the slow ctrl to the asic
 SEND_DAC_CMD       = '1000'   # for sending the DAC config
 SEND_PIXEL_SEL_CMD = '1001'   # for sending the pixel selection to the asic
+SYNC_TIME_BASE_CMD = '1110'   # for synchronising the signal generated to a same baseline
+RESET_FPGA_CMD     = '1111'   # for resetting the FPGA just as with the button
 
 # Slow control default values
 CSA_MODE_N_DEF = '10'
