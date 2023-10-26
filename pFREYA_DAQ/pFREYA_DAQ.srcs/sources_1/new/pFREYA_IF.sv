@@ -675,7 +675,7 @@ module pFREYA_IF(
                                         // +: means starting from this bit get this much bits
                                         // assign byte0 = dword[0 +: 8];    // Same as dword[7:0]
                                         // 7 bits per assignment, not 8, cause the first is just the check
-                                        slow_ctrl_packet[SLOW_CTRL_PACKET_LENGTH-1-SLOW_CTRL_UART_DATA_LAST_POS +: SLOW_CTRL_UART_DATA_LAST_POS+1] <= uart_data[SLOW_CTRL_UART_DATA_LAST_POS:DATA_END_POS];
+                                        slow_ctrl_packet[SLOW_CTRL_PACKET_LENGTH-(SLOW_CTRL_UART_DATA_LAST_POS+1) +: SLOW_CTRL_UART_DATA_LAST_POS+1] <= uart_data[SLOW_CTRL_UART_DATA_LAST_POS:DATA_END_POS];
                                         slow_ctrl_packet_index_receive <= '0;
                                         slow_ctrl_packet_available <= 1'b1;
                                     end else begin
@@ -689,12 +689,12 @@ module pFREYA_IF(
                                 if (~uart_valid & uart_valid_last) begin
                                     if (uart_data[DAC_UART_DATA_POS+1] == LAST_UART_PACKET) begin
                                         // last 3 bits
-                                        dac_packet[DAC_PACKET_LENGTH-1-3 +: 3] <= uart_data[DAC_UART_DATA_LAST_POS:DATA_END_POS];
+                                        dac_packet[DAC_PACKET_LENGTH-(DAC_UART_DATA_LAST_POS+1) +: DAC_UART_DATA_LAST_POS+1] <= uart_data[DAC_UART_DATA_LAST_POS:DATA_END_POS];
                                         dac_packet_index_receive <= '0;
                                         dac_packet_available <= 1'b1;
                                     end else begin
                                         dac_packet[dac_packet_index_receive +: DATA_SIZE-1] <= uart_data[DAC_UART_DATA_POS:DATA_END_POS];
-                                        dac_packet_index_receive <= dac_packet_index_receive + DATA_SIZE-1; // 7 bit per time
+                                        dac_packet_index_receive <= dac_packet_index_receive + DATA_SIZE-1; // 6 bit per time
                                         dac_packet_available <= 1'b0;
                                     end
                                 end

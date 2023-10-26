@@ -53,7 +53,7 @@
     parameter DAC_PACKET_LENGTH = 24;
     parameter DAC_PACKET_REG_LENGTH = 32;
     parameter DAC_UART_DATA_POS = 5;
-    parameter DAC_UART_DATA_LAST_POS = 0;
+    parameter DAC_UART_DATA_LAST_POS = 5;
 
     // fast ctrl feature sizes
     parameter FAST_CTRL_N = 7;

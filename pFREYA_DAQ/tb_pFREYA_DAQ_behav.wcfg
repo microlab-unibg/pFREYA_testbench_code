@@ -12,15 +12,15 @@
       </db_ref>
    </db_ref_list>
    <zoom_setting>
-      <ZoomStartTime time="1,027,019.175 ns"></ZoomStartTime>
-      <ZoomEndTime time="1,027,101.076 ns"></ZoomEndTime>
-      <Cursor1Time time="1,027,080.375 ns"></Cursor1Time>
+      <ZoomStartTime time="533,057.195 ns"></ZoomStartTime>
+      <ZoomEndTime time="533,140.096 ns"></ZoomEndTime>
+      <Cursor1Time time="533,076.594 ns"></Cursor1Time>
    </zoom_setting>
    <column_width_setting>
-      <NameColumnWidth column_width="154"></NameColumnWidth>
+      <NameColumnWidth column_width="144"></NameColumnWidth>
       <ValueColumnWidth column_width="58"></ValueColumnWidth>
    </column_width_setting>
-   <WVObjectSize size="51" />
+   <WVObjectSize size="53" />
    <wvobject fp_name="/tb_pFREYA_DAQ/pFREYA_DAQ_inst/ser_out" type="logic">
       <obj_property name="ElementShortName">ser_out</obj_property>
       <obj_property name="ObjectShortName">ser_out</obj_property>
@@ -129,6 +129,10 @@
       <obj_property name="ElementShortName">uart_valid</obj_property>
       <obj_property name="ObjectShortName">uart_valid</obj_property>
    </wvobject>
+   <wvobject fp_name="/tb_pFREYA_DAQ/pFREYA_DAQ_inst/pFREYA_IF_inst/uart_valid_last" type="logic">
+      <obj_property name="ElementShortName">uart_valid_last</obj_property>
+      <obj_property name="ObjectShortName">uart_valid_last</obj_property>
+   </wvobject>
    <wvobject fp_name="/tb_pFREYA_DAQ/pFREYA_DAQ_inst/pFREYA_IF_inst/cmd_available" type="logic">
       <obj_property name="ElementShortName">cmd_available</obj_property>
       <obj_property name="ObjectShortName">cmd_available</obj_property>
@@ -144,6 +148,7 @@
    <wvobject fp_name="/tb_pFREYA_DAQ/pFREYA_DAQ_inst/uart_data" type="array">
       <obj_property name="ElementShortName">uart_data[7:0]</obj_property>
       <obj_property name="ObjectShortName">uart_data[7:0]</obj_property>
+      <obj_property name="isExpanded"></obj_property>
    </wvobject>
    <wvobject fp_name="/tb_pFREYA_DAQ/pFREYA_DAQ_inst/pFREYA_IF_inst/slow_ctrl_packet" type="array">
       <obj_property name="ElementShortName">slow_ctrl_packet[127:0]</obj_property>
@@ -220,6 +225,10 @@
    <wvobject fp_name="/tb_pFREYA_DAQ/pFREYA_DAQ_inst/pFREYA_IF_inst/state" type="array">
       <obj_property name="ElementShortName">state[5:0]</obj_property>
       <obj_property name="ObjectShortName">state[5:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_pFREYA_DAQ/pFREYA_DAQ_inst/pFREYA_IF_inst/next" type="array">
+      <obj_property name="ElementShortName">next[5:0]</obj_property>
+      <obj_property name="ObjectShortName">next[5:0]</obj_property>
    </wvobject>
    <wvobject fp_name="/tb_pFREYA_DAQ/pFREYA_DAQ_inst/pFREYA_IF_inst/sync_time_base_flag" type="logic">
       <obj_property name="ElementShortName">sync_time_base_flag</obj_property>
