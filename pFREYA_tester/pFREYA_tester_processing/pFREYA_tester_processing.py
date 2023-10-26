@@ -4,6 +4,7 @@ from utilities.bitstring_to_bytes import bitstring_to_bytes
 import serial
 import math
 import time
+import traceback
 
 def send_UART(cmd='', data=''):
     """Function to send UART commands and data to FPGA
@@ -73,10 +74,10 @@ def create_data_slow(data, type):
         data packet
     """
     if (type == UARTdef.LAST_UART_PACKET):
-        return UARTdef.CMD_PACKET + UARTdef.LAST_UART_PACKET + data
+        return UARTdef.DATA_PACKET + UARTdef.LAST_UART_PACKET + data
     else:
         # the 8'd0 at the beginning is to set bits that are not useful
-        return UARTdef.CMD_PACKET + UARTdef.NOTLAST_UART_PACKET + data
+        return UARTdef.DATA_PACKET + UARTdef.NOTLAST_UART_PACKET + data
 
 def convert_strvar_bin(strvar, n_bits):
     """Convert StrVar to string binary representation
@@ -139,7 +140,8 @@ def send_CSA_RESET_N(gui):
         data = create_data(convert_strvar_bin(gui.csa_reset_n['low'],UARTdef.DATA_SIZE))
         send_UART(cmd, data)
         print(cmd,'\n',data)
-    except:
+    except Exception:
+        print(traceback.format_exc())
         return 1
     
     return 0
@@ -172,7 +174,8 @@ def send_SH_PHI1D_INF(gui):
         data = create_data(convert_strvar_bin(gui.sh_phi1d_inf['low'],UARTdef.DATA_SIZE))
         send_UART(cmd, data)
         print(cmd,'\n',data)
-    except:
+    except Exception:
+        print(traceback.format_exc())
         return 1
     
     return 0
@@ -205,7 +208,8 @@ def send_SH_PHI1D_SUP(gui):
         data = create_data(convert_strvar_bin(gui.sh_phi1d_sup['low'],UARTdef.DATA_SIZE))
         send_UART(cmd, data)
         print(cmd,'\n',data)
-    except:
+    except Exception:
+        print(traceback.format_exc())
         return 1
     
     return 0
@@ -238,7 +242,8 @@ def send_ADC_START(gui):
         data = create_data(convert_strvar_bin(gui.adc_start['low'],UARTdef.DATA_SIZE))
         send_UART(cmd, data)
         print(cmd,'\n',data)
-    except:
+    except Exception:
+        print(traceback.format_exc())
         return 1
     
     return 0
@@ -262,34 +267,41 @@ def send_clocks(gui):
         send_UART(cmd, data)
         print(cmd,'\n',data)
         gui.slow_ck_sent = True
+        time.sleep(1)
 
         cmd = create_cmd(UARTdef.SET_CK_CMD, UARTdef.SEL_CK_CODE)
         data = create_data(convert_strvar_bin(gui.sel_ck,UARTdef.DATA_SIZE))
         send_UART(cmd, data)
         print(cmd,'\n',data)
         gui.sel_ck_sent = True
+        time.sleep(1)
 
         cmd = create_cmd(UARTdef.SET_CK_CMD, UARTdef.ADC_CK_CODE)
         data = create_data(convert_strvar_bin(gui.adc_ck,UARTdef.DATA_SIZE))
         send_UART(cmd, data)
         print(cmd,'\n',data)
+        time.sleep(1)
 
         cmd = create_cmd(UARTdef.SET_CK_CMD, UARTdef.INJ_STB_CODE)
         data = create_data(convert_strvar_bin(gui.inj_stb,UARTdef.DATA_SIZE))
         send_UART(cmd, data)
         print(cmd,'\n',data)
+        time.sleep(1)
 
         cmd = create_cmd(UARTdef.SET_CK_CMD, UARTdef.DAC_SCK_CODE)
         data = create_data(convert_strvar_bin(gui.dac_sck,UARTdef.DATA_SIZE))
         send_UART(cmd, data)
         print(cmd,'\n',data)
         gui.dac_sck_sent = True
+        time.sleep(1)
 
         cmd = create_cmd(UARTdef.SET_CK_CMD, UARTdef.SER_CK_CODE)
         data = create_data(convert_strvar_bin(gui.ser_ck,UARTdef.DATA_SIZE))
         send_UART(cmd, data)
         print(cmd,'\n',data)
-    except:
+        time.sleep(1)
+    except Exception:
+        print(traceback.format_exc())
         return 1
     
     return 0
@@ -308,9 +320,13 @@ def send_asic_ctrl(gui):
         0 if everything was ok, 1 otherwise.
     """
     send_CSA_RESET_N(gui)
+    time.sleep(1)
     send_SH_PHI1D_INF(gui)
+    time.sleep(1)
     send_SH_PHI1D_SUP(gui)
+    time.sleep(1)
     send_ADC_START(gui)
+    time.sleep(1)
 
 def send_pixel(gui):
     """Function to set and send pixel selection in the FPGA
@@ -335,20 +351,20 @@ def send_pixel(gui):
         data = create_data(convert_strvar_bin(gui.pixel_row,UARTdef.DATA_SIZE))
         send_UART(cmd, data)
         print(cmd,'\n',data)
-
         time.sleep(1)
 
         cmd = create_cmd(UARTdef.SET_PIXEL_CMD, UARTdef.PIXEL_COL_CODE)
         data = create_data(convert_strvar_bin(gui.pixel_col,UARTdef.DATA_SIZE))
         send_UART(cmd, data)
         print(cmd,'\n',data)
-
         time.sleep(1)
 
         # send pixel sel
         cmd = create_cmd(UARTdef.SEND_PIXEL_SEL_CMD, UARTdef.UNUSED_CODE)
         send_UART(cmd)
-    except:
+        time.sleep(1)
+    except Exception:
+        print(traceback.format_exc())
         return 1
     
     return 0
@@ -369,7 +385,6 @@ def create_slow_ctrl_packet(gui):
     # for each pixel is the same
     slow_ctrl_packet = gui.csa_mode_n.get() + gui.inj_en_n.get() + gui.shap_mode.get() + \
                     gui.ch_en.get() + gui.inj_mode_n.get()
-    print(slow_ctrl_packet)
     full_slow_ctrl_packet = ''
     for _ in range(0, UARTdef.PIXEL_N):
         full_slow_ctrl_packet = full_slow_ctrl_packet + slow_ctrl_packet
@@ -377,6 +392,9 @@ def create_slow_ctrl_packet(gui):
     # set pixel to be injected
     pixel_idx = int(gui.pixel_to_inj.get())*7+2 # shouldnt be hard coded
     full_slow_ctrl_packet = full_slow_ctrl_packet[:pixel_idx] + '1' + full_slow_ctrl_packet[pixel_idx+1:]
+    # reach a dimension multiple of DATA_POS+1
+    missing_bits = UARTdef.SLOW_CTRL_UART_DATA_POS - UARTdef.SLOW_CTRL_UART_DATA_LAST_POS
+    full_slow_ctrl_packet = '0'*missing_bits + full_slow_ctrl_packet
 
     return full_slow_ctrl_packet
 
@@ -396,13 +414,16 @@ def create_dac_packet(gui, type):
         DAC packet as a string representing a binary.
     """
     if (type == UARTdef.DAC_CMD_CONFIG):
-        dac_packet_data = UARTdef.DAC_DATA_CONFIG_PADDING + convert_strvar_bin(gui.dac['source'],1) + \
+        dac_packet_data = UARTdef.DAC_CMD_PADDING + UARTdef.DAC_CMD_CONFIG + \
+                          UARTdef.DAC_DATA_CONFIG_PADDING + convert_strvar_bin(gui.dac['source'],1) + \
                           UARTdef.DAC_DATA_CONFIG_PADDING + UARTdef.DAC_DATA_CONFIG_PWDWN_DIS
     elif (type == UARTdef.DAC_CMD_GAIN):
-        dac_packet_data = UARTdef.DAC_DATA_GAIN_PADDING + convert_strvar_bin(gui.dac['divider'],1) + \
+        dac_packet_data = UARTdef.DAC_CMD_PADDING + UARTdef.DAC_CMD_GAIN + \
+                          UARTdef.DAC_DATA_GAIN_PADDING + convert_strvar_bin(gui.dac['divider'],1) + \
                           UARTdef.DAC_DATA_GAIN_PADDING + convert_strvar_bin(gui.dac['gain'],1)
     elif (type == UARTdef.DAC_CMD_DATA):
-        dac_packet_data = convert_strvar_bin(gui.dac['level'],12) + UARTdef.DAC_DATA_REGISTER_PADDING
+        dac_packet_data = UARTdef.DAC_CMD_PADDING + UARTdef.DAC_CMD_DATA + \
+                          convert_strvar_bin(gui.dac['level'],12) + UARTdef.DAC_DATA_REGISTER_PADDING
     else:
         raise RuntimeError('Not a known DAC command or not implemented.')
 
@@ -428,27 +449,35 @@ def send_slow_ctrl(gui):
         return 1
     
     full_slow_ctrl_packet = create_slow_ctrl_packet(gui) #str
+    print(full_slow_ctrl_packet)
 
     try:
         # set slow packet
         cmd = create_cmd(UARTdef.SET_SLOW_CTRL_CMD, UARTdef.UNUSED_CODE)
         send_UART(cmd)
+        print(cmd)
+        time.sleep(1)
+
         for i in range(0,math.floor(UARTdef.SLOW_CTRL_PACKET_LENGTH/(UARTdef.SLOW_CTRL_UART_DATA_POS+1))):
-            bin_data = convert_str_bin(full_slow_ctrl_packet[i*(UARTdef.SLOW_CTRL_UART_DATA_POS+1):(i+1)*(UARTdef.SLOW_CTRL_UART_DATA_POS+1)-1])
+            bin_data = full_slow_ctrl_packet[i*(UARTdef.SLOW_CTRL_UART_DATA_POS+1):(i+1)*(UARTdef.SLOW_CTRL_UART_DATA_POS+1)]
             data = create_data_slow(bin_data, UARTdef.NOTLAST_UART_PACKET)
             send_UART('',data)
             print(data)
+            time.sleep(1)
 
-        bin_data = convert_str_bin(full_slow_ctrl_packet[i*(UARTdef.SLOW_CTRL_UART_DATA_POS+1):])
+        bin_data = full_slow_ctrl_packet[(i+1)*(UARTdef.SLOW_CTRL_UART_DATA_POS+1):]
         data = create_data_slow(bin_data, UARTdef.LAST_UART_PACKET)
         send_UART('',data)
         print(data)
+        time.sleep(1)
 
         # send slow
         cmd = create_cmd(UARTdef.SEND_SLOW_CTRL_CMD, UARTdef.UNUSED_CODE)
         send_UART(cmd)
         print(cmd)
-    except:
+        time.sleep(1)
+    except Exception:
+        print(traceback.format_exc())
         return 1
     
     return 0
@@ -463,21 +492,27 @@ def send_UART_DAC(dac_packet):
     """
     cmd = create_cmd(UARTdef.SET_DAC_CMD, UARTdef.UNUSED_CODE)
     send_UART(cmd)
+    print(cmd)
+    time.sleep(1)
+
     for i in range(0,math.floor(UARTdef.DAC_PACKET_LENGTH/(UARTdef.DAC_UART_DATA_POS+1))-1): # -1 due to last packet different
-        bin_data = convert_str_bin(dac_packet[i*(UARTdef.DAC_UART_DATA_POS+1):(i+1)*(UARTdef.DAC_UART_DATA_POS+1)-1])
+        bin_data = dac_packet[i*(UARTdef.DAC_UART_DATA_POS+1):(i+1)*(UARTdef.DAC_UART_DATA_POS+1)]
         data = create_data_slow(bin_data, UARTdef.NOTLAST_UART_PACKET)
         send_UART('',data)
         print(data)
+        time.sleep(1)
 
-    bin_data = convert_str_bin(dac_packet[i*(UARTdef.DAC_UART_DATA_POS+1):])
+    bin_data = dac_packet[(i+1)*(UARTdef.DAC_UART_DATA_POS+1):]
     data = create_data_slow(bin_data, UARTdef.LAST_UART_PACKET)
     send_UART('',data)
     print(data)
+    time.sleep(1)
 
     # send DAC
     cmd = create_cmd(UARTdef.SEND_DAC_CMD, UARTdef.UNUSED_CODE)
     send_UART(cmd)
     print(cmd)
+    time.sleep(1)
 
 def send_DAC(gui):
     """Function to DAC configuration in the FPGA
@@ -498,12 +533,17 @@ def send_DAC(gui):
     dac_config_packet = create_dac_packet(gui,UARTdef.DAC_CMD_CONFIG)
     dac_gain_packet = create_dac_packet(gui,UARTdef.DAC_CMD_GAIN)
     dac_data_packet = create_dac_packet(gui,UARTdef.DAC_CMD_DATA)
+    print(dac_config_packet,dac_gain_packet,dac_data_packet)
 
     try:
         send_UART_DAC(dac_config_packet)
+        time.sleep(1)
         send_UART_DAC(dac_gain_packet)
+        time.sleep(1)
         send_UART_DAC(dac_data_packet)
-    except:
+        time.sleep(1)
+    except Exception:
+        print(traceback.format_exc())
         return 1
     
     return 0
@@ -520,7 +560,9 @@ def send_sync_time_bases():
         cmd = create_cmd(UARTdef.SYNC_TIME_BASE_CMD, UARTdef.UNUSED_CODE)
         send_UART(cmd)
         print(cmd)
-    except:
+        time.sleep(1)
+    except Exception:
+        print(traceback.format_exc())
         return 1
     
     return 0
@@ -537,7 +579,9 @@ def send_reset_FPGA():
         cmd = create_cmd(UARTdef.RESET_FPGA_CMD, UARTdef.UNUSED_CODE)
         send_UART(cmd)
         print(cmd)
-    except:
+        time.sleep(1)
+    except Exception:
+        print(traceback.format_exc())
         return 1
     
     return 0
