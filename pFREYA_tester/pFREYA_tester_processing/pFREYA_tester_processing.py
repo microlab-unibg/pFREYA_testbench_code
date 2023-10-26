@@ -394,7 +394,7 @@ def create_slow_ctrl_packet(gui):
     full_slow_ctrl_packet = full_slow_ctrl_packet[:pixel_idx] + '1' + full_slow_ctrl_packet[pixel_idx+1:]
     # reach a dimension multiple of DATA_POS+1
     missing_bits = UARTdef.SLOW_CTRL_UART_DATA_POS - UARTdef.SLOW_CTRL_UART_DATA_LAST_POS
-    full_slow_ctrl_packet = '0'*missing_bits + full_slow_ctrl_packet
+    full_slow_ctrl_packet = full_slow_ctrl_packet + '0'*missing_bits #trailing cause each 6 bits will be reversed when sending data
 
     return full_slow_ctrl_packet
 
@@ -460,12 +460,14 @@ def send_slow_ctrl(gui):
 
         for i in range(0,math.floor(UARTdef.SLOW_CTRL_PACKET_LENGTH/(UARTdef.SLOW_CTRL_UART_DATA_POS+1))):
             bin_data = full_slow_ctrl_packet[i*(UARTdef.SLOW_CTRL_UART_DATA_POS+1):(i+1)*(UARTdef.SLOW_CTRL_UART_DATA_POS+1)]
+            bin_data = bin_data[::-1] # needed to comply with verilog tb / how reg work
             data = create_data_slow(bin_data, UARTdef.NOTLAST_UART_PACKET)
             send_UART('',data)
             print(data)
             time.sleep(1)
 
         bin_data = full_slow_ctrl_packet[(i+1)*(UARTdef.SLOW_CTRL_UART_DATA_POS+1):]
+        bin_data = bin_data[::-1]
         data = create_data_slow(bin_data, UARTdef.LAST_UART_PACKET)
         send_UART('',data)
         print(data)
@@ -497,12 +499,14 @@ def send_UART_DAC(dac_packet):
 
     for i in range(0,math.floor(UARTdef.DAC_PACKET_LENGTH/(UARTdef.DAC_UART_DATA_POS+1))-1): # -1 due to last packet different
         bin_data = dac_packet[i*(UARTdef.DAC_UART_DATA_POS+1):(i+1)*(UARTdef.DAC_UART_DATA_POS+1)]
+        bin_data = bin_data[::-1] # as above
         data = create_data_slow(bin_data, UARTdef.NOTLAST_UART_PACKET)
         send_UART('',data)
         print(data)
         time.sleep(1)
 
     bin_data = dac_packet[(i+1)*(UARTdef.DAC_UART_DATA_POS+1):]
+    bin_data = bin_data[::-1]
     data = create_data_slow(bin_data, UARTdef.LAST_UART_PACKET)
     send_UART('',data)
     print(data)
