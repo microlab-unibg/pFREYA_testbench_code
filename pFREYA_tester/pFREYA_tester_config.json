@@ -16,7 +16,7 @@
     },
     "slow_ctrl": {
         "csa_mode_n": "10",
-        "inj_en_n": "0",
+        "inj_en_n": "1",
         "shap_mode": "10",
         "ch_en": "1",
         "inj_mode_n": "1",

@@ -391,7 +391,7 @@ def create_slow_ctrl_packet(gui):
 
     # set pixel to be injected
     pixel_idx = int(gui.pixel_to_inj.get())*7+2 # shouldnt be hard coded
-    full_slow_ctrl_packet = full_slow_ctrl_packet[:pixel_idx] + '1' + full_slow_ctrl_packet[pixel_idx+1:]
+    full_slow_ctrl_packet = full_slow_ctrl_packet[:pixel_idx] + '0' + full_slow_ctrl_packet[pixel_idx+1:]
     # reach a dimension multiple of DATA_POS+1
     missing_bits = UARTdef.SLOW_CTRL_UART_DATA_POS - UARTdef.SLOW_CTRL_UART_DATA_LAST_POS
     full_slow_ctrl_packet = full_slow_ctrl_packet + '0'*missing_bits #trailing cause each 6 bits will be reversed when sending data
