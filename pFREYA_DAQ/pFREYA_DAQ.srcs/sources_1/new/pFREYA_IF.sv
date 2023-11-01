@@ -68,6 +68,8 @@ module pFREYA_IF(
     logic [PIXEL_ROW_N-1:0] sel_ckrow_cnt= '0;
     // for injection
     logic inj_start = 1'b0;
+    // for slow ctrl
+    logic slow_ctrl_mask_n = 1'b0;
     // fast control timing
     // generated with counter that reach a divisor, where the divisor changes based on flag
     // flag value is 0 for delay, 1 for HIGH, 2 for LOW (the actual polarity is in the name of the signal)
@@ -113,7 +115,7 @@ module pFREYA_IF(
             slow_ctrl_cnt <= -1;
         end
         // the second check is to assure that the last HIGH is the same semiperiod as the others
-        else if (~slow_ctrl_reset_n & slow_ctrl_ck == 1'b0) begin
+        else if (~slow_ctrl_mask_n & slow_ctrl_ck == 1'b0) begin
             slow_ctrl_ck <= 1'b0;
             slow_ctrl_cnt <= -1;
         end
@@ -713,10 +715,14 @@ module pFREYA_IF(
                 end
                 CMD_SEND_SLOW: begin
                     // this way we are checking on the falling edge and no ck is sent after the signal is on
-                    if (slow_ctrl_packet_sent)
-                        slow_ctrl_reset_n <= 1'b0;
-                    else
+                    if (slow_ctrl_packet_sent) begin
+                        slow_ctrl_mask_n <= 1'b0;
                         slow_ctrl_reset_n <= 1'b1;
+                    end
+                    else begin
+                        slow_ctrl_mask_n <= 1'b1;
+                        slow_ctrl_reset_n <= 1'b1;
+                    end
                 end
                 CMD_SEND_DAC: begin
                     // this way we are checking on the falling edge and no ck is sent after the signal is on
@@ -745,7 +751,7 @@ module pFREYA_IF(
             slow_ctrl_packet_index_send <= '0;
             slow_ctrl_packet_sent <= 1'b0;
         end
-        else if (slow_ctrl_reset_n) begin
+        else if (slow_ctrl_mask_n) begin
             if (slow_ctrl_ck == 1'b0 && slow_ctrl_cnt == slow_ctrl_div-1) begin
                 if (slow_ctrl_packet_index_send < SLOW_CTRL_PACKET_LENGTH) begin
                     slow_ctrl_in <= slow_ctrl_packet[slow_ctrl_packet_index_send];
@@ -887,6 +893,7 @@ endfunction
 
 // This function resets all the resets
 function void reset_reset;
+    slow_ctrl_mask_n <= 1'b0;
     slow_ctrl_reset_n <= 1'b0;
     dac_sync_n <= 1'b1;
     sel_init_n <= 1'b1;
