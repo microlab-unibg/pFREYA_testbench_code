@@ -1,0 +1,3 @@
+[submodule "pFREYA_instrument_comms/TeledyneLeCroyPy"]
+	path = pFREYA_instrument_comms/TeledyneLeCroyPy
+	url = https://github.com/pollostrazon/TeledyneLeCroyPy.git
