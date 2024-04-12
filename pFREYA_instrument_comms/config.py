@@ -177,12 +177,23 @@ def config(channel: str, n_steps: int, cfg_bits: list) -> None:
             max_current = 1e-6 # A
             corr_fact = 1 #105.8/103.2
     match shap_bits:
-        case [1,0]: peaking_time = 405 # ns (from mean dyn), 432 ns (from max dyn), 432 ns (from theory)
-        case [0,0]: peaking_time = 220 # ns (from mean dyn), 261 ns (from max dyn), 234 ns (from theory)
-        case [0,1]: peaking_time = 308 # ns (from mean dyn), 343 ns (from max dyn), 332 ns (from theory)
-        case [1,1]: peaking_time = 493 # ns (from mean dyn), 535 ns (from max dyn), 535 ns (from theory)
+        case [1,0]: 
+            peaking_time = 405 # ns (from mean dyn), 432 ns (from max dyn), 432 ns (from theory)
+            shap_corr_fact = .9
+        case [0,0]: 
+            peaking_time = 220 # ns (from mean dyn), 261 ns (from max dyn), 234 ns (from theory)
+            shap_corr_fact = .9
+        case [0,1]: 
+            peaking_time = 308 # ns (from mean dyn), 343 ns (from max dyn), 332 ns (from theory)
+            shap_corr_fact = .9
+        case [1,1]: 
+            peaking_time = 493 # ns (from mean dyn), 535 ns (from max dyn), 535 ns (from theory)
+            shap_corr_fact = .9
 
-    current_lev = -1 * np.linspace(min_current,max_current,n_steps)
+    if channel_name == 'csa':
+        current_lev = -1 * np.linspace(min_current,max_current,n_steps)
+    else:
+        current_lev = -1 * np.linspace(min_current,max_current,n_steps) * shap_corr_fact
     iinj_int = current_lev * (T/2-t_r) * N_pulses + offset_charge
     eq_ph = -1 * iinj_int * corr_fact * conv_kev_c / photon_energy
     config_bits_str = ''.join([str(x) for x in config_bits])
