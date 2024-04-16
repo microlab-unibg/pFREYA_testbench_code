@@ -109,7 +109,7 @@ def config_inst() -> None:
     # not setting the whole configuration for the time being, just doing the measurements
     #print(lecroy.query('TEMPLATE?'))
 
-def config(channel: str, n_steps: int, cfg_bits: list) -> None:
+def config(channel: str, n_steps: int, cfg_bits: list, cfg_inst: bool = True) -> None:
     """Function to configure parameters for tests
 
     Parameters
@@ -121,7 +121,8 @@ def config(channel: str, n_steps: int, cfg_bits: list) -> None:
     cfg_bits : int
         Configuration bits of the mode under test
     """
-    config_inst()
+    if cfg_inst:
+        config_inst()
 
     # for each step set a current level, take some data
     # next plot everything and calculate statistics
@@ -139,12 +140,15 @@ def config(channel: str, n_steps: int, cfg_bits: list) -> None:
     #     doing the same as above, one gets a correction factor of around 105.8fA/103.2fA
     global T, t_r, N_pulses, conv_kev_c, config_bits, csa_bits, shap_bits, photon_energy, offset_charge, \
         min_current, max_current, corr_fact, peaking_time, current_lev, iinj_int,  eq_ph, config_bits_str, \
-        channel_name, channel_num, num_steps, config_bits
+        channel_name, channel_num, num_steps, config_bits, lemo_gain, N_samples
 
     channel_name = channel
     channel_num = 1 if channel_name == 'csa' else 2
     num_steps = n_steps
     config_bits = cfg_bits
+    lemo_gain = 1.56/.53 if channel_name == 'csa' else 2.1/.65 # now with measurements against probe, before (from res is) 5.6/2
+    N_samples = 100
+
     T = 30e-9 # s
     t_r = 3e-9 # s
     N_pulses = 10 # adimensional
@@ -156,13 +160,13 @@ def config(channel: str, n_steps: int, cfg_bits: list) -> None:
             photon_energy = 9 # keV
             offset_charge = 8.5e-15 # C *tentative
             min_current = .07e-6 # A
-            max_current = 1.8e-6 # A
+            max_current = 1.6e-6 # A
             corr_fact = 1 #105.8/103.2
         case [0,0]:
             photon_energy = 25 # keV
             offset_charge = 8.5e-15 # C *tentative
             min_current = .07e-6 # A
-            max_current = 4.3e-6 #3.5e-6 # A
+            max_current = 4.1e-6 #3.5e-6 # A
             corr_fact = 1 #105.8/103.2
         case [1,0]:
             photon_energy = 18 # keV
@@ -179,21 +183,21 @@ def config(channel: str, n_steps: int, cfg_bits: list) -> None:
     match shap_bits:
         case [1,0]: 
             peaking_time = 405 # ns (from mean dyn), 432 ns (from max dyn), 432 ns (from theory)
-            shap_corr_fact = .9
+            inj_shap_corr_fact = 575/613 # probe out vs lemo out/gain
         case [0,0]: 
             peaking_time = 220 # ns (from mean dyn), 261 ns (from max dyn), 234 ns (from theory)
-            shap_corr_fact = .9
+            inj_shap_corr_fact = 602/627 # 
         case [0,1]: 
             peaking_time = 308 # ns (from mean dyn), 343 ns (from max dyn), 332 ns (from theory)
-            shap_corr_fact = .9
+            inj_shap_corr_fact = 585/634 # 
         case [1,1]: 
             peaking_time = 493 # ns (from mean dyn), 535 ns (from max dyn), 535 ns (from theory)
-            shap_corr_fact = .9
+            inj_shap_corr_fact = 565/572 # 
 
     if channel_name == 'csa':
         current_lev = -1 * np.linspace(min_current,max_current,n_steps)
     else:
-        current_lev = -1 * np.linspace(min_current,max_current,n_steps) * shap_corr_fact
+        current_lev = -1 * np.linspace(min_current,max_current*inj_shap_corr_fact,n_steps)
     iinj_int = current_lev * (T/2-t_r) * N_pulses + offset_charge
     eq_ph = -1 * iinj_int * corr_fact * conv_kev_c / photon_energy
     config_bits_str = ''.join([str(x) for x in config_bits])
