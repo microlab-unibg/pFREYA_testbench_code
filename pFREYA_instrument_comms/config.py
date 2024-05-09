@@ -109,7 +109,7 @@ def config_inst() -> None:
     # not setting the whole configuration for the time being, just doing the measurements
     #print(lecroy.query('TEMPLATE?'))
 
-def config(channel: str, n_steps: int, cfg_bits: list, cfg_inst: bool = True) -> None:
+def config(channel: str, lemo: str, n_steps: int, cfg_bits: list, cfg_inst: bool = True, active_probes = False) -> None:
     """Function to configure parameters for tests
 
     Parameters
@@ -140,15 +140,20 @@ def config(channel: str, n_steps: int, cfg_bits: list, cfg_inst: bool = True) ->
     #     doing the same as above, one gets a correction factor of around 105.8fA/103.2fA
     global T, t_r, N_pulses, conv_kev_c, config_bits, csa_bits, shap_bits, photon_energy, offset_charge, \
         min_current, max_current, corr_fact, peaking_time, current_lev, iinj_int,  eq_ph, config_bits_str, \
-        channel_name, channel_num, num_steps, config_bits, lemo_gain, N_samples, gain_shap
+        channel_name, channel_num, num_steps, config_bits, lemo_gain, N_samples, gain_shap, attenuation, active_prbs, lemo_name
 
     channel_name = channel
+    lemo_name = lemo
     channel_num = 1 if channel_name == 'csa' else 2
     num_steps = n_steps
     config_bits = cfg_bits
     # ==== SET CORRECT GAIN =====
     #lemo_gain = 1.56/.53 if channel_name == 'csa' else 2.1/.65 # now with measurements against probe, before (from res is) 5.6/2
-    lemo_gain = 1.56/.53
+    lemo_gain = 56*33/(56+33)/10 if channel_name == 'csa' else 56*27/(56+27)/10
+    if channel_name == 'csa':
+        lemo_gain = 56/10 if lemo == 'hi' else 56*33/(56+33)/10
+    else:
+        lemo_gain = 56/10 if lemo == 'hi' else 56*27/(56+27)/10
     N_samples = 100
 
     T = 30e-9 # s
@@ -161,8 +166,10 @@ def config(channel: str, n_steps: int, cfg_bits: list, cfg_inst: bool = True) ->
         case [0,1]:
             photon_energy = 9 # keV
             offset_charge = 8.5e-15 # C *tentative
+            #min_current = 0.03e-6 # A for active probes
             min_current = .07e-6 # A
             max_current = 1.2e-6 #1.6e-6 # A
+            #max_current = .75e-6 # active probes
             corr_fact = 1 #105.8/103.2
         case [0,0]:
             photon_energy = 25 # keV
@@ -207,6 +214,14 @@ def config(channel: str, n_steps: int, cfg_bits: list, cfg_inst: bool = True) ->
     iinj_int = current_lev * (T/2-t_r) * N_pulses + offset_charge
     eq_ph = -1 * iinj_int * corr_fact * conv_kev_c / photon_energy
     config_bits_str = ''.join([str(x) for x in config_bits])
+
+    if active_probes:
+        active_prbs = True
+        attenuation = 3.8 # 1.9 form oscilloscope
+    else:
+        active_prbs = False
+        attenuation = 1
+
     print(f'current range: {current_lev[0]}, {current_lev[-1]}')
     print(f'Injection integral (min and max): {iinj_int[0]}, {iinj_int[-1]}')
     print(f'photon energy @ {photon_energy} keV: {eq_ph[0]}, {eq_ph[-1]}')
