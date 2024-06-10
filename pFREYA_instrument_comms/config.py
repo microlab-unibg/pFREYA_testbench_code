@@ -151,9 +151,19 @@ def config(channel: str, lemo: str, n_steps: int, cfg_bits: list, cfg_inst: bool
     #lemo_gain = 1.56/.53 if channel_name == 'csa' else 2.1/.65 # now with measurements against probe, before (from res is) 5.6/2
     lemo_gain = 56*33/(56+33)/10 if channel_name == 'csa' else 56*27/(56+27)/10
     if channel_name == 'csa':
-        lemo_gain = 56/10 if lemo == 'hi' else 56*33/(56+33)/10
+        if lemo == 'hi':
+            lemo_gain = 56/10
+        elif lemo == 'lo':
+            lemo_gain = 56*33/(56+33)/10
+        else:
+            lemo_gain = 1
     else:
-        lemo_gain = 56/10 if lemo == 'hi' else 56*27/(56+27)/10
+        if lemo == 'hi':
+            lemo_gain = 56/10
+        elif lemo == 'lo':
+            lemo_gain = 56*27/(56+27)/10
+        else:
+            lemo_gain = 1
     N_samples = 100
 
     T = 30e-9 # s
@@ -168,7 +178,7 @@ def config(channel: str, lemo: str, n_steps: int, cfg_bits: list, cfg_inst: bool
             offset_charge = 8.5e-15 # C *tentative
             #min_current = 0.03e-6 # A for active probes
             min_current = .07e-6 # A
-            max_current = 1.2e-6 #1.6e-6 # A
+            max_current = 1.6e-6 #1.6e-6 # A
             #max_current = .75e-6 # active probes
             corr_fact = 1 #105.8/103.2
         case [0,0]:
