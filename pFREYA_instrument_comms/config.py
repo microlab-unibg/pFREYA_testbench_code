@@ -178,43 +178,43 @@ def config(channel: str, lemo: str, n_steps: int, cfg_bits: list, cfg_inst: bool
             offset_charge = 8.5e-15 # C *tentative
             #min_current = 0.03e-6 # A for active probes
             min_current = .07e-6 # A
-            max_current = 1.6e-6 #1.6e-6 # A
+            max_current = 1.5e-6 #1.6e-6 # A
             #max_current = .75e-6 # active probes
             corr_fact = 1 #105.8/103.2
         case [0,0]:
             photon_energy = 25 # keV
             offset_charge = 8.5e-15 # C *tentative
             min_current = .07e-6 # A
-            max_current = 4.1e-6 #3.5e-6 # A
+            max_current = 4e-6 #4.1e-6 # A
             corr_fact = 1 #105.8/103.2
         case [1,0]:
             photon_energy = 18 # keV
             offset_charge = 8.5e-15 # C *tentative
             min_current = .07e-6 # A
-            max_current = 3.5e-6 # A
+            max_current = 3.3e-6 # A
             corr_fact = 1 #105.8/103.2
         case [1,1]:
             photon_energy = 5 # keV
             offset_charge = 0 #8.5e-15 # C *tentative
-            min_current = .07e-6 # A
-            max_current = 1e-6 # A
+            min_current = .065e-6 # A
+            max_current = .86e-6 # A
             corr_fact = 1 #105.8/103.2
     match shap_bits:
         case [1,0]: 
             peaking_time = 405 # ns (from mean dyn), 432 ns (from max dyn), 432 ns (from theory)
-            inj_shap_corr_fact = 575/613 # probe out vs lemo out/gain
+            inj_shap_corr_fact = 1#575/613 # probe out vs lemo out/gain
             gain_shap = 2.416 # from measurements mV/ph
         case [0,0]: 
             peaking_time = 220 # ns (from mean dyn), 261 ns (from max dyn), 234 ns (from theory)
-            inj_shap_corr_fact = 602/627 # 
+            inj_shap_corr_fact = 1#602/627 # 
             gain_shap = 2.525 # from measurements
         case [0,1]: 
             peaking_time = 308 # ns (from mean dyn), 343 ns (from max dyn), 332 ns (from theory)
-            inj_shap_corr_fact = 585/634 # 
+            inj_shap_corr_fact = 1#585/634 # 
             gain_shap = 2.414 # from measurements
         case [1,1]: 
             peaking_time = 493 # ns (from mean dyn), 535 ns (from max dyn), 535 ns (from theory)
-            inj_shap_corr_fact = 565/572 # 
+            inj_shap_corr_fact = 1#565/572 # 
             gain_shap = 2.31 # from measurements
 
     if channel_name == 'csa':
