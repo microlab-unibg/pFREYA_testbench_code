@@ -2,7 +2,7 @@ import serial
 import serial.tools.list_ports
 import pyvisa
 import matplotlib.pyplot as plt
-from TeledyneLeCroyPy import TeledyneLeCroyPy
+import TeledyneLeCroyPy
 import numpy as np
 import pandas as pd
 import time
