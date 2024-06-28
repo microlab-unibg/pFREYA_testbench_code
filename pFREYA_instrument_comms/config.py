@@ -201,19 +201,19 @@ def config(channel: str, lemo: str, n_steps: int, cfg_bits: list, cfg_inst: bool
             corr_fact = 1 #105.8/103.2
     match shap_bits:
         case [1,0]: 
-            peaking_time = 405 # ns (from mean dyn), 432 ns (from max dyn), 432 ns (from theory)
+            peaking_time = 430 # old 405 # ns (from mean dyn), 432 ns (from max dyn), 432 ns (from theory)
             inj_shap_corr_fact = 1#575/613 # probe out vs lemo out/gain
             gain_shap = 2.416 # from measurements mV/ph
         case [0,0]: 
-            peaking_time = 220 # ns (from mean dyn), 261 ns (from max dyn), 234 ns (from theory)
+            peaking_time = 230 # old 220 # ns (from mean dyn), 261 ns (from max dyn), 234 ns (from theory)
             inj_shap_corr_fact = 1#602/627 # 
             gain_shap = 2.525 # from measurements
         case [0,1]: 
-            peaking_time = 308 # ns (from mean dyn), 343 ns (from max dyn), 332 ns (from theory)
+            peaking_time = 330 # old 308 # ns (from mean dyn), 343 ns (from max dyn), 332 ns (from theory)
             inj_shap_corr_fact = 1#585/634 # 
             gain_shap = 2.414 # from measurements
         case [1,1]: 
-            peaking_time = 493 # ns (from mean dyn), 535 ns (from max dyn), 535 ns (from theory)
+            peaking_time = 530# old 493 # ns (from mean dyn), 535 ns (from max dyn), 535 ns (from theory)
             inj_shap_corr_fact = 1#565/572 # 
             gain_shap = 2.31 # from measurements
 
