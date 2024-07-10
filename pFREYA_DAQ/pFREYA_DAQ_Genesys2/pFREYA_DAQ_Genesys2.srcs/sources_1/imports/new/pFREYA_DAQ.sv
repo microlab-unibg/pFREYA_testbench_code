@@ -142,12 +142,12 @@ module pFREYA_DAQ
         .probe18(uart_valid) // input wire [0:0]  probe18 
     );
 
-    always_ff @(posedge daq_ck, posedge btn_reset) begin: reset_daq
+    always_ff @(posedge daq_ck) begin: reset_daq
         if (btn_reset) begin
             // reset all registers
             tx_dv <= 1'b0;
             tx_byte <= 1'b0;
-            tx_ser <= 1'b1;
+            //tx_ser <= 1'b1;
         end
     end
 endmodule
