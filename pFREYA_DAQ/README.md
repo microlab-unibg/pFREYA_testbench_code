@@ -22,7 +22,7 @@ The software in the repo is written in Verilog and related dialects. The product
 - [VSCode](https://code.visualstudio.com/).
 
 ## TODO
-- [ ] Everything lol.
+- [x] Everything should now be ready.
 
 ## License
 Distributed under the MIT License. See `LICENSE.md` for more information.
