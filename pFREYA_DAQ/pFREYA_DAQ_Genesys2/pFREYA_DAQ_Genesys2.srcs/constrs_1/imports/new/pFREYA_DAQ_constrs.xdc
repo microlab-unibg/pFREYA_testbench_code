@@ -1,7 +1,7 @@
 create_clock -period 100.000 -name VIRTUAL_uart_ck_clk_wiz_clocks -waveform {0.000 50.000}
 
 set_input_delay -clock [get_clocks sys_clk_p] -min -add_delay 0.000 [get_ports btn_reset]
-set_input_delay -clock [get_clocks sys_clk_p] -max -add_delay 0.100 [get_ports btn_reset]
+set_input_delay -clock [get_clocks sys_clk_p] -max -add_delay 0.200 [get_ports btn_reset]
 set_input_delay -clock [get_clocks VIRTUAL_uart_ck_clk_wiz_clocks] -min -add_delay 0.000 [get_ports rx_ser]
 set_input_delay -clock [get_clocks VIRTUAL_uart_ck_clk_wiz_clocks] -max -add_delay 70.000 [get_ports rx_ser]
 set_output_delay -clock [get_clocks sys_clk_p] -min -add_delay -0.500 [get_ports adc_ck]
@@ -105,6 +105,9 @@ set_property PACKAGE_PIN E30 [get_ports sel_ckcol]
 set_property PACKAGE_PIN C29 [get_ports ser_out]
 set_property PACKAGE_PIN B29 [get_ports ser_reset_n]
 set_property PACKAGE_PIN F26 [get_ports inj_stb]
+
+set_property PACKAGE_PIN E18 [get_ports rx_ser]
+set_property PACKAGE_PIN B19 [get_ports tx_ser]
 set_property C_CLK_INPUT_FREQ_HZ 300000000 [get_debug_cores dbg_hub]
 set_property C_ENABLE_CLK_DIVIDER false [get_debug_cores dbg_hub]
 set_property C_USER_SCAN_CHAIN 1 [get_debug_cores dbg_hub]
