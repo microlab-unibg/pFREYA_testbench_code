@@ -1,10 +1,10 @@
 {
   "schema": "xilinx.com:schema:json_instance:1.0",
   "ip_inst": {
-    "xci_name": "ila_probes",
+    "xci_name": "ila_0",
     "component_reference": "xilinx.com:ip:ila:6.2",
     "ip_revision": "15",
-    "gen_directory": "../../../../pFREYA_DAQ_Genesys2.gen/sources_1/ip/ila_probes",
+    "gen_directory": "../../../../pFREYA_DAQ_Genesys2.gen/sources_1/ip/ila_0",
     "parameters": {
       "component_parameters": {
         "C_PROBE1023_TYPE": [ { "value": "0", "resolve_type": "user", "format": "long", "usage": "all" } ],
@@ -2057,7 +2057,7 @@
         "C_DATA_DEPTH": [ { "value": "1024", "resolve_type": "user", "format": "long", "usage": "all" } ],
         "C_NUM_OF_PROBES": [ { "value": "19", "value_src": "user", "resolve_type": "user", "format": "long", "usage": "all" } ],
         "C_XLNX_HW_PROBE_INFO": [ { "value": "DEFAULT", "resolve_type": "user", "usage": "all" } ],
-        "Component_Name": [ { "value": "ila_probes", "resolve_type": "user", "usage": "all" } ],
+        "Component_Name": [ { "value": "ila_0", "resolve_type": "user", "usage": "all" } ],
         "C_PROBE70_WIDTH": [ { "value": "1", "resolve_type": "user", "format": "long", "usage": "all" } ],
         "C_TRIGOUT_EN": [ { "value": "false", "resolve_type": "user", "format": "bool", "usage": "all" } ],
         "C_EN_STRG_QUAL": [ { "value": "0", "resolve_type": "user", "format": "long", "usage": "all" } ],
@@ -6262,7 +6262,7 @@
         "IPCONTEXT": [ { "value": "IP_Flow" } ],
         "IPREVISION": [ { "value": "15" } ],
         "MANAGED": [ { "value": "TRUE" } ],
-        "OUTPUTDIR": [ { "value": "../../../../pFREYA_DAQ_Genesys2.gen/sources_1/ip/ila_probes" } ],
+        "OUTPUTDIR": [ { "value": "../../../../pFREYA_DAQ_Genesys2.gen/sources_1/ip/ila_0" } ],
         "SELECTEDSIMMODEL": [ { "value": "" } ],
         "SHAREDDIR": [ { "value": "." } ],
         "SWVERSION": [ { "value": "2024.1" } ],
