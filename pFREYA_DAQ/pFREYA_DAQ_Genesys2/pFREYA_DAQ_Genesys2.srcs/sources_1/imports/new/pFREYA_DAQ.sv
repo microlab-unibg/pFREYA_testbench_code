@@ -110,6 +110,7 @@ module pFREYA_DAQ
         // Clock out ports
         .daq_ck(daq_ck),     // output daq_ck
         .uart_ck(uart_ck),     // output uart_ck
+        //.ila_ck(ila_ck),     // output ila_ck
         // Status and control signals
         .reset(btn_reset), // input reset
         .locked(locked),       // output locked
@@ -118,30 +119,30 @@ module pFREYA_DAQ
         .clk_in1_n(sys_clk_n)    // input clk_in1_n
     );
 
-    // Too heavy for the xc7k325t (?)
-    ila_0 ila_0_inst0 (
-        .clk(daq_ck), // input wire clk
+    // // Too heavy for the xc7k325t (?)
+    // ila_probes ila_probes_inst (
+    //     .clk(ila_ck), // input wire clk
 
-        .probe0(dac_sdin), // input wire [0:0]  probe0  
-        .probe1(dac_sync_n), // input wire [0:0]  probe1 
-        .probe2(dac_sck), // input wire [0:0]  probe2 
-        .probe3(sel_init_n), // input wire [0:0]  probe3 
-        .probe4(sel_ckcol), // input wire [0:0]  probe4 
-        .probe5(sel_ckrow), // input wire [0:0]  probe5 
-        .probe6(ser_read), // input wire [0:0]  probe6
-        .probe7(ser_reset_n), // input wire [0:0]  probe7
-        .probe8(ser_ck), // input wire [0:0]  probe8
-        .probe9(inj_stb), // input wire [0:0]  probe9
-        .probe10(csa_reset_n), // input wire [0:0]  probe10
-        .probe11(adc_ck), // input wire [0:0]  probe11
-        .probe12(adc_start), // input wire [0:0]  probe12
-        .probe13(sh_phi1d_sup), // input wire [0:0]  probe13 
-        .probe14(sh_phi1d_inf), // input wire [0:0]  probe14
-        .probe15(slow_ctrl_in), // input wire [0:0]  probe15 
-        .probe16(slow_ctrl_reset_n), // input wire [0:0]  probe16 
-        .probe17(slow_ctrl_ck), // input wire [0:0]  probe17
-        .probe18(uart_valid) // input wire [0:0]  probe18 
-    );
+    //     .probe0(dac_sdin), // input wire [0:0]  probe0  
+    //     .probe1(dac_sync_n), // input wire [0:0]  probe1 
+    //     .probe2(dac_sck), // input wire [0:0]  probe2 
+    //     .probe3(sel_init_n), // input wire [0:0]  probe3 
+    //     .probe4(sel_ckcol), // input wire [0:0]  probe4 
+    //     .probe5(sel_ckrow), // input wire [0:0]  probe5 
+    //     .probe6(ser_read), // input wire [0:0]  probe6
+    //     .probe7(ser_reset_n), // input wire [0:0]  probe7
+    //     .probe8(ser_ck), // input wire [0:0]  probe8
+    //     .probe9(inj_stb), // input wire [0:0]  probe9
+    //     .probe10(csa_reset_n), // input wire [0:0]  probe10
+    //     .probe11(adc_ck), // input wire [0:0]  probe11
+    //     .probe12(adc_start), // input wire [0:0]  probe12
+    //     .probe13(sh_phi1d_sup), // input wire [0:0]  probe13 
+    //     .probe14(sh_phi1d_inf), // input wire [0:0]  probe14
+    //     .probe15(slow_ctrl_in), // input wire [0:0]  probe15 
+    //     .probe16(slow_ctrl_reset_n), // input wire [0:0]  probe16 
+    //     .probe17(slow_ctrl_ck), // input wire [0:0]  probe17
+    //     .probe18(uart_valid) // input wire [0:0]  probe18 
+    // );
 
     always_ff @(posedge daq_ck) begin: reset_daq
         if (btn_reset) begin

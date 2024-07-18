@@ -86,6 +86,7 @@ set_property SLEW SLOW [get_ports slow_ctrl_ck]
 set_property SLEW SLOW [get_ports slow_ctrl_in]
 set_property SLEW SLOW [get_ports slow_ctrl_reset_n]
 set_property SLEW SLOW [get_ports tx_ser]
+
 set_property PACKAGE_PIN H30 [get_ports dac_sdin]
 set_property PACKAGE_PIN G30 [get_ports dac_sync_n]
 set_property PACKAGE_PIN H26 [get_ports sel_init_n]
@@ -108,3 +109,5 @@ set_property PACKAGE_PIN F26 [get_ports inj_stb]
 
 set_property PACKAGE_PIN E18 [get_ports rx_ser]
 set_property PACKAGE_PIN B19 [get_ports tx_ser]
+
+#connect_debug_port dbg_hub/clk [get_nets ila_ck]
