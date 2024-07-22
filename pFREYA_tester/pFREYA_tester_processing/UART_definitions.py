@@ -17,6 +17,7 @@ CK_CNT_N  = 7
 #   are needed to identify the cmd and last packet. So 19 6-bit packets will be used (last will be 4 bits).
 # SLOW_CTRL UART packet is |1(1)|LAST(1)|DATA(6)| where LAST is 1 if this is the last packet, else 0
 # SLOW_CTRL packet is |DATA(112)|
+SLOW_CTRL_N_BITS = 7
 SLOW_CTRL_PACKET_LENGTH = 112
 SLOW_CTRL_UART_DATA_POS = 5
 SLOW_CTRL_UART_DATA_LAST_POS = 3
