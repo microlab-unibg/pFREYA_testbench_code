@@ -107,11 +107,12 @@ set_property PACKAGE_PIN C29 [get_ports ser_out]
 set_property PACKAGE_PIN B29 [get_ports ser_reset_n]
 set_property PACKAGE_PIN F26 [get_ports inj_stb]
 
-set_property PACKAGE_PIN Y23 [get_ports rx_ser]
-set_property PACKAGE_PIN Y20 [get_ports tx_ser]
+set_property PACKAGE_PIN Y20 [get_ports rx_ser]
 
 #connect_debug_port dbg_hub/clk [get_nets ila_ck]
 
 set_property DRIVE 12 [get_ports tx_ser]
 set_property PULLTYPE PULLUP [get_ports tx_ser]
 set_property PULLTYPE PULLUP [get_ports rx_ser]
+
+set_property PACKAGE_PIN Y23 [get_ports tx_ser]
