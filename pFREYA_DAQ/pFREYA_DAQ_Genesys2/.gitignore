@@ -1,7 +1,13 @@
 # Vivado folders
-pFREYA_DAQ_Genesys2.cache
-pFREYA_DAQ_Genesys2.hw
-pFREYA_DAQ_Genesys2.ip_user_files
-pFREYA_DAQ_Genesys2.sim
-pFREYA_DAQ_Genesys2.runs
-pFREYA_DAQ_Genesys2.gen
+pFREYA_DAQ_genesys2.cache
+pFREYA_DAQ_genesys2.hw
+pFREYA_DAQ_genesys2.ip_user_files
+pFREYA_DAQ_genesys2.sim
+pFREYA_DAQ_genesys2.runs/*
+pFREYA_DAQ_genesys2.gen
+pFREYA_DAQ_genesys2.ioplanning
+
+!pFREYA_DAQ_genesys2.runs/impl_1
+pFREYA_DAQ_genesys2.runs/impl_1/*
+!pFREYA_DAQ_genesys2.runs/impl_1/pFREYA_DAQ.bit
+!pFREYA_DAQ_genesys2.runs/impl_1/pFREYA_DAQ.ltx

@@ -121,7 +121,7 @@ module pFREYA_DAQ
 
     // // Too heavy for the xc7k325t (?)
     // ila_probes ila_probes_inst (
-    //     .clk(ila_ck), // input wire clk
+    //     .clk(daq_ck), // input wire clk
 
     //     .probe0(dac_sdin), // input wire [0:0]  probe0  
     //     .probe1(dac_sync_n), // input wire [0:0]  probe1 
