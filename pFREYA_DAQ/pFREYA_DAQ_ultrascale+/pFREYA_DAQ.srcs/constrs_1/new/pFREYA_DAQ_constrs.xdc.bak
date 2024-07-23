@@ -4,7 +4,7 @@ set_property PACKAGE_PIN AA17 [get_ports dac_sync_n]
 set_property PACKAGE_PIN AB17 [get_ports dac_sck]
 set_property PACKAGE_PIN AC17 [get_ports sel_ckcol]
 set_property PACKAGE_PIN AA20 [get_ports sel_init_n]
-set_property PACKAGE_PIN AF23 [get_ports sel_ckrow]
+set_property PACKAGE_PIN AB20 [get_ports sel_ckrow] # before AF23 (error)
 set_property PACKAGE_PIN AE17 [get_ports ser_out]
 set_property PACKAGE_PIN AF17 [get_ports ser_reset_n]
 set_property PACKAGE_PIN AD16 [get_ports ser_read]
