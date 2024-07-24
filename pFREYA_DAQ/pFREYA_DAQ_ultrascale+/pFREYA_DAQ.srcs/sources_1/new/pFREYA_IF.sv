@@ -903,15 +903,15 @@ endfunction
 // This function resets all the variables
 function void reset_vars;
     slow_ctrl_packet_available <= 1'b0;
-    // slow_ctrl_packet_sent <= 1'b0;
+    slow_ctrl_packet_sent <= 1'b0;
     dac_packet_available <= 1'b0;
-    // dac_packet_sent <= 1'b0;
-    // sel_ckcol_sent <= 1'b0;
-    // sel_ckrow_sent <= 1'b0;
+    dac_packet_sent <= 1'b0;
+    sel_ckcol_sent <= 1'b0;
+    sel_ckrow_sent <= 1'b0;
 
-    // slow_ctrl_packet_index_send <= '0;
+    slow_ctrl_packet_index_send <= '0;
     slow_ctrl_packet_index_receive <= '0;
-    // dac_packet_index_send <= '0;
+    dac_packet_index_send <= '0;
     dac_packet_index_receive <= '0;
     dac_packet <= '0;
     pixel_row <= '0;
@@ -921,8 +921,8 @@ function void reset_vars;
 
     inj_start <= '0;
 
-    //slow_ctrl_in <= '0;
-    //dac_sdin <= '0;
+    slow_ctrl_in <= '0;
+    dac_sdin <= '0;
 
     slow_ctrl_packet = 0;
     dac_packet = 0;
