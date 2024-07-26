@@ -578,18 +578,132 @@ module pFREYA_IF(
     // what to do on each state
     always_ff @(posedge ck, posedge reset) begin: state_machine_set_output
         if (reset) begin
-            // reset all registers
-            reset_reset();
-            reset_div();
-            reset_vars();
+            // reset all div
+            slow_ctrl_div <= '0;
+            adc_div <= '0;
+            ser_div <= '0;
+            sel_div <= '0;
+            inj_div <= '0;
+            dac_sck_div <= '0;
+                                    
+            csa_reset_n_delay_div <= '0;
+            sh_phi1d_inf_delay_div <= '0;
+            sh_phi1d_sup_delay_div <= '0;
+            adc_start_delay_div <= '0;
+            ser_reset_n_delay_div <= '0;
+            ser_read_delay_div <= '0;
+            
+            csa_reset_n_HIGH_div <= '0;
+            sh_phi1d_inf_HIGH_div <= '0;
+            sh_phi1d_sup_HIGH_div <= '0;
+            adc_start_HIGH_div <= '0;
+            ser_reset_n_HIGH_div <= '0;
+            ser_read_HIGH_div <= '0;
+
+            csa_reset_n_LOW_div <= '0;
+            sh_phi1d_inf_LOW_div <= '0;
+            sh_phi1d_sup_LOW_div <= '0;
+            adc_start_LOW_div <= '0;
+            ser_reset_n_LOW_div <= '0;
+            ser_read_LOW_div <= '0;
+            
+            // reset all resets
+            slow_ctrl_mask_n <= 1'b0;
+            slow_ctrl_reset_n <= 1'b0;
+            dac_sync_n <= 1'b1;
+            sel_init_n <= 1'b1;
+            inj_start <= 1'b0;
+
+            // reset all vars
+            slow_ctrl_packet_available <= 1'b0;
+            slow_ctrl_packet_sent <= 1'b0;
+            dac_packet_available <= 1'b0;
+            dac_packet_sent <= 1'b0;
+            sel_ckcol_sent <= 1'b0;
+            sel_ckrow_sent <= 1'b0;
+
+            slow_ctrl_packet_index_send <= '0;
+            slow_ctrl_packet_index_receive <= '0;
+            dac_packet_index_send <= '0;
+            dac_packet_index_receive <= '0;
+            dac_packet <= '0;
+            pixel_row <= '0;
+            pixel_col <= '0;
+            cmd <= '0;
+            signal <= '0;
+
+            inj_start <= '0;
+
+            slow_ctrl_in <= '0;
+            dac_sdin <= '0;
+
+            slow_ctrl_packet = 0;
+            dac_packet = 0;
         end
         else begin
             case (state)
                 RESET: begin
-                    // reset all registers
-                    reset_reset();
-                    reset_div();
-                    reset_vars();
+                    // reset all div
+                    slow_ctrl_div <= '0;
+                    adc_div <= '0;
+                    ser_div <= '0;
+                    sel_div <= '0;
+                    inj_div <= '0;
+                    dac_sck_div <= '0;
+                                            
+                    csa_reset_n_delay_div <= '0;
+                    sh_phi1d_inf_delay_div <= '0;
+                    sh_phi1d_sup_delay_div <= '0;
+                    adc_start_delay_div <= '0;
+                    ser_reset_n_delay_div <= '0;
+                    ser_read_delay_div <= '0;
+                    
+                    csa_reset_n_HIGH_div <= '0;
+                    sh_phi1d_inf_HIGH_div <= '0;
+                    sh_phi1d_sup_HIGH_div <= '0;
+                    adc_start_HIGH_div <= '0;
+                    ser_reset_n_HIGH_div <= '0;
+                    ser_read_HIGH_div <= '0;
+
+                    csa_reset_n_LOW_div <= '0;
+                    sh_phi1d_inf_LOW_div <= '0;
+                    sh_phi1d_sup_LOW_div <= '0;
+                    adc_start_LOW_div <= '0;
+                    ser_reset_n_LOW_div <= '0;
+                    ser_read_LOW_div <= '0;
+                    
+                    // reset all resets
+                    slow_ctrl_mask_n <= 1'b0;
+                    slow_ctrl_reset_n <= 1'b0;
+                    dac_sync_n <= 1'b1;
+                    sel_init_n <= 1'b1;
+                    inj_start <= 1'b0;
+
+                    // reset all vars
+                    slow_ctrl_packet_available <= 1'b0;
+                    slow_ctrl_packet_sent <= 1'b0;
+                    dac_packet_available <= 1'b0;
+                    dac_packet_sent <= 1'b0;
+                    sel_ckcol_sent <= 1'b0;
+                    sel_ckrow_sent <= 1'b0;
+
+                    slow_ctrl_packet_index_send <= '0;
+                    slow_ctrl_packet_index_receive <= '0;
+                    dac_packet_index_send <= '0;
+                    dac_packet_index_receive <= '0;
+                    dac_packet <= '0;
+                    pixel_row <= '0;
+                    pixel_col <= '0;
+                    cmd <= '0;
+                    signal <= '0;
+
+                    inj_start <= '0;
+
+                    slow_ctrl_in <= '0;
+                    dac_sdin <= '0;
+
+                    slow_ctrl_packet = 0;
+                    dac_packet = 0;
                 end
                 CMD_EVAL: begin
                     // evaluate command if available
@@ -860,73 +974,73 @@ module pFREYA_IF(
 //======================= END COMB and FF ================================
 
 //======================= FUNCTIONS ======================================
-// This function resets all the dividers
-function void reset_div;
-    slow_ctrl_div <= '0;
-    adc_div <= '0;
-    ser_div <= '0;
-    sel_div <= '0;
-    inj_div <= '0;
-    dac_sck_div <= '0;
+// // This function resets all the dividers
+// function void reset_div;
+//     slow_ctrl_div <= '0;
+//     adc_div <= '0;
+//     ser_div <= '0;
+//     sel_div <= '0;
+//     inj_div <= '0;
+//     dac_sck_div <= '0;
                             
-    csa_reset_n_delay_div <= '0;
-    sh_phi1d_inf_delay_div <= '0;
-    sh_phi1d_sup_delay_div <= '0;
-    adc_start_delay_div <= '0;
-    ser_reset_n_delay_div <= '0;
-    ser_read_delay_div <= '0;
+//     csa_reset_n_delay_div <= '0;
+//     sh_phi1d_inf_delay_div <= '0;
+//     sh_phi1d_sup_delay_div <= '0;
+//     adc_start_delay_div <= '0;
+//     ser_reset_n_delay_div <= '0;
+//     ser_read_delay_div <= '0;
     
-    csa_reset_n_HIGH_div <= '0;
-    sh_phi1d_inf_HIGH_div <= '0;
-    sh_phi1d_sup_HIGH_div <= '0;
-    adc_start_HIGH_div <= '0;
-    ser_reset_n_HIGH_div <= '0;
-    ser_read_HIGH_div <= '0;
+//     csa_reset_n_HIGH_div <= '0;
+//     sh_phi1d_inf_HIGH_div <= '0;
+//     sh_phi1d_sup_HIGH_div <= '0;
+//     adc_start_HIGH_div <= '0;
+//     ser_reset_n_HIGH_div <= '0;
+//     ser_read_HIGH_div <= '0;
 
-    csa_reset_n_LOW_div <= '0;
-    sh_phi1d_inf_LOW_div <= '0;
-    sh_phi1d_sup_LOW_div <= '0;
-    adc_start_LOW_div <= '0;
-    ser_reset_n_LOW_div <= '0;
-    ser_read_LOW_div <= '0;
-endfunction
+//     csa_reset_n_LOW_div <= '0;
+//     sh_phi1d_inf_LOW_div <= '0;
+//     sh_phi1d_sup_LOW_div <= '0;
+//     adc_start_LOW_div <= '0;
+//     ser_reset_n_LOW_div <= '0;
+//     ser_read_LOW_div <= '0;
+// endfunction
 
-// This function resets all the resets
-function void reset_reset;
-    slow_ctrl_mask_n <= 1'b0;
-    slow_ctrl_reset_n <= 1'b0;
-    dac_sync_n <= 1'b1;
-    sel_init_n <= 1'b1;
-    inj_start <= 1'b0;
-endfunction
+// // This function resets all the resets
+// function void reset_reset;
+//     slow_ctrl_mask_n <= 1'b0;
+//     slow_ctrl_reset_n <= 1'b0;
+//     dac_sync_n <= 1'b1;
+//     sel_init_n <= 1'b1;
+//     inj_start <= 1'b0;
+// endfunction
 
-// This function resets all the variables
-function void reset_vars;
-    slow_ctrl_packet_available <= 1'b0;
-    slow_ctrl_packet_sent <= 1'b0;
-    dac_packet_available <= 1'b0;
-    dac_packet_sent <= 1'b0;
-    sel_ckcol_sent <= 1'b0;
-    sel_ckrow_sent <= 1'b0;
+// // This function resets all the variables
+// function void reset_vars;
+//     slow_ctrl_packet_available <= 1'b0;
+//     slow_ctrl_packet_sent <= 1'b0;
+//     dac_packet_available <= 1'b0;
+//     dac_packet_sent <= 1'b0;
+//     sel_ckcol_sent <= 1'b0;
+//     sel_ckrow_sent <= 1'b0;
 
-    slow_ctrl_packet_index_send <= '0;
-    slow_ctrl_packet_index_receive <= '0;
-    dac_packet_index_send <= '0;
-    dac_packet_index_receive <= '0;
-    dac_packet <= '0;
-    pixel_row <= '0;
-    pixel_col <= '0;
-    cmd <= '0;
-    signal <= '0;
+//     slow_ctrl_packet_index_send <= '0;
+//     slow_ctrl_packet_index_receive <= '0;
+//     dac_packet_index_send <= '0;
+//     dac_packet_index_receive <= '0;
+//     dac_packet <= '0;
+//     pixel_row <= '0;
+//     pixel_col <= '0;
+//     cmd <= '0;
+//     signal <= '0;
 
-    inj_start <= '0;
+//     inj_start <= '0;
 
-    slow_ctrl_in <= '0;
-    dac_sdin <= '0;
+//     slow_ctrl_in <= '0;
+//     dac_sdin <= '0;
 
-    slow_ctrl_packet = 0;
-    dac_packet = 0;
-endfunction
+//     slow_ctrl_packet = 0;
+//     dac_packet = 0;
+// endfunction
 
 // This function manages general clocks signal that will not change in time
 // DOESNT WORK IN ALWAYS APPARENTLY

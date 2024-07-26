@@ -147,7 +147,7 @@ module pFREYA_DAQ
             // reset all registers
             tx_dv <= 1'b0;
             tx_byte <= 1'b0;
-            tx_ser <= 1'b1;
+            //tx_ser <= 1'b1;
         end
     end
 endmodule
