@@ -25,8 +25,11 @@ module tb_pFREYA_DAQ;
     //parameter GENERAL_CK_PERIOD = 50; // 200 MHz
     
     // UART params
+    // Testbench uses a 10 MHz clock
+    // Want to interface to 115200 baud UART
+    // 10000000 / 115200 = 87 Clocks Per Bit.
     parameter UART_CKS_PER_BIT = 87;
-    parameter UART_CK_PERIOD = 1000;
+    parameter UART_CK_PERIOD = 1000; // in 100 ps time base
     parameter UART_BIT_PERIOD = 86000;
 
     // sys clk
@@ -156,7 +159,7 @@ module tb_pFREYA_DAQ;
         input [32-1:0] slow_pkt_rnd;
         integer i;
 
-        logic [5:0] slow_pkt = 6'b101010;
+        logic [5:0] slow_pkt = 6'b100010;
         begin
             // Send slow ctrl packet
             // must be done 18 times (see defs) with 0 as first bit

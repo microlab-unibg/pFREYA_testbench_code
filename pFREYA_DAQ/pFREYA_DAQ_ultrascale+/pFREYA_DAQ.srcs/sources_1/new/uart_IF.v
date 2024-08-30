@@ -31,7 +31,9 @@ module uart_IF
 
     input tx_dv,
     input [7:0] tx_byte,
-    output tx_done, tx_active, tx_ser
+    output tx_done,
+    output tx_active,
+    output tx_ser
 );
     
     // Simple UART

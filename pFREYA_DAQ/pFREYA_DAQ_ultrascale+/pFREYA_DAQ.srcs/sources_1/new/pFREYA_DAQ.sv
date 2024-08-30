@@ -24,17 +24,25 @@ module pFREYA_DAQ
 #(parameter CKS_PER_BIT=87)
 (
     // ASIC signals
-    output logic dac_sdin, dac_sync_n, dac_sck,
+    output logic dac_sdin,
+    output logic dac_sync_n,
+    output logic dac_sck,
     output logic sel_init_n,
-    output logic sel_ckcol, sel_ckrow,
+    output logic sel_ckcol,
+    output logic sel_ckrow,
     input  logic ser_out,
-    output logic ser_read, ser_reset_n,
+    output logic ser_read,
+    output logic ser_reset_n,
     output logic ser_ck,
     output logic inj_stb,
     output logic csa_reset_n,
-    output logic adc_ck, adc_start,
-    output logic sh_phi1d_sup, sh_phi1d_inf,
-    output logic slow_ctrl_in, slow_ctrl_reset_n, slow_ctrl_ck,
+    output logic adc_ck,
+    output logic adc_start,
+    output logic sh_phi1d_sup,
+    output logic sh_phi1d_inf,
+    output logic slow_ctrl_in,
+    output logic slow_ctrl_reset_n,
+    output logic slow_ctrl_ck,
     // Internal signals
     input  logic btn_reset,
 

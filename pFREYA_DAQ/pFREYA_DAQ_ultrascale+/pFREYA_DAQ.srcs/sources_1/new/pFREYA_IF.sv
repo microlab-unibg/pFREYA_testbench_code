@@ -22,46 +22,61 @@
 `include "pFREYA_defs.sv"
 
 module pFREYA_IF(
-        output logic dac_sdin, dac_sync_n, dac_sck,
+        output logic dac_sdin, 
+        output logic dac_sync_n, 
+        output logic dac_sck,
         output logic sel_init_n,
-        output logic sel_ckcol, sel_ckrow,
+        output logic sel_ckcol, 
+        output logic sel_ckrow,
         input  logic ser_out,
-        output logic ser_read, ser_reset_n,
+        output logic ser_read, 
+        output logic ser_reset_n,
         output logic ser_ck,
         output logic inj_stb,
         output logic csa_reset_n,
-        output logic adc_ck, adc_start,
-        output logic sh_phi1d_sup, sh_phi1d_inf,
-        output logic slow_ctrl_in, slow_ctrl_reset_n, slow_ctrl_ck,
+        output logic adc_ck,
+        output logic adc_start,
+        output logic sh_phi1d_sup,
+        output logic sh_phi1d_inf,
+        output logic slow_ctrl_in,
+        output logic slow_ctrl_reset_n,
+        output logic slow_ctrl_ck,
         // internal
-        input  logic ck, reset,
+        input  logic ck,
+        input  logic reset,
         // for UART
         input  logic [UART_PACKET_SIZE-1:0] uart_data,
         input  logic uart_valid
     );
 
     // state machine code
-    (* syn_encoding = "one-hot" *) enum logic [5:0] {
-        RESET,
-        CMD_SYNC_TIME_BASE,
-        CMD_EVAL,
+    (* syn_encoding = "one-hot" *) enum logic [9:0] {
         CMD_ERR,
+        CMD_EVAL,
         CMD_READ_DATA,
-        CMD_SET,
-        CMD_SET_LONG,
-        CMD_SEND_SLOW,
+        CMD_SEL_PIX,
         CMD_SEND_DAC,
-        CMD_SEL_PIX
+        CMD_SEND_SLOW,
+        CMD_SET_LONG,
+        CMD_SET,
+        CMD_SYNC_TIME_BASE,
+        RESET
     } state, next;
 
     // CK internal
     // generated with counters that reach a divisor
-    logic [CK_CNT_N-1:0] slow_ctrl_cnt = -1, slow_ctrl_div= '0;
-    logic [CK_CNT_N-1:0] sel_cnt = -1, sel_div= '0;
-    logic [CK_CNT_N-1:0] adc_cnt = -1, adc_div= '0;
-    logic [CK_CNT_N-1:0] inj_cnt = -1, inj_div= '0;
-    logic [CK_CNT_N-1:0] ser_cnt = -1, ser_div= '0;
-    logic [CK_CNT_N-1:0] dac_sck_cnt = -1, dac_sck_div= '0;
+    logic [CK_CNT_N-1:0] slow_ctrl_cnt = -1;
+    logic [CK_CNT_N-1:0] slow_ctrl_div= '0;
+    logic [CK_CNT_N-1:0] sel_cnt = -1;
+    logic [CK_CNT_N-1:0] sel_div= '0;
+    logic [CK_CNT_N-1:0] adc_cnt = -1;
+    logic [CK_CNT_N-1:0] adc_div= '0;
+    logic [CK_CNT_N-1:0] inj_cnt = -1;
+    logic [CK_CNT_N-1:0] inj_div= '0;
+    logic [CK_CNT_N-1:0] ser_cnt = -1;
+    logic [CK_CNT_N-1:0] ser_div= '0;
+    logic [CK_CNT_N-1:0] dac_sck_cnt = -1;
+    logic [CK_CNT_N-1:0] dac_sck_div= '0;
     // for selection
     logic sel_ck = 1'b0; // internal clock temporisation
     logic [PIXEL_COL_N-1:0] sel_ckcol_cnt= '0;
@@ -69,7 +84,7 @@ module pFREYA_IF(
     // for injection
     logic inj_start = 1'b0;
     // for slow ctrl
-    logic slow_ctrl_mask_n = 1'b0;
+    logic slow_ctrl_mask = 1'b0;
     // fast control timing
     // generated with counter that reach a divisor, where the divisor changes based on flag
     // flag value is 0 for delay, 1 for HIGH, 2 for LOW (the actual polarity is in the name of the signal)
@@ -79,27 +94,59 @@ module pFREYA_IF(
     logic [FAST_CTRL_FLAG_N-1:0] adc_start_flag = FAST_CTRL_DELAY;
     logic [FAST_CTRL_FLAG_N-1:0] ser_reset_n_flag = FAST_CTRL_DELAY;
     logic [FAST_CTRL_FLAG_N-1:0] ser_read_flag = FAST_CTRL_DELAY;
-    logic [FAST_CTRL_N-1:0] csa_reset_n_cnt = -1, csa_reset_n_delay_div= '0, csa_reset_n_HIGH_div= '0, csa_reset_n_LOW_div= '0;
-    logic [FAST_CTRL_N-1:0] sh_phi1d_inf_cnt = -1, sh_phi1d_inf_delay_div= '0, sh_phi1d_inf_HIGH_div= '0, sh_phi1d_inf_LOW_div= '0;
-    logic [FAST_CTRL_N-1:0] sh_phi1d_sup_cnt = -1, sh_phi1d_sup_delay_div= '0, sh_phi1d_sup_HIGH_div= '0, sh_phi1d_sup_LOW_div= '0;
-    logic [FAST_CTRL_N-1:0] adc_start_cnt = -1, adc_start_delay_div= '0, adc_start_HIGH_div= '0, adc_start_LOW_div= '0;
-    logic [FAST_CTRL_N-1:0] ser_reset_n_cnt = -1, ser_reset_n_delay_div= '0, ser_reset_n_HIGH_div= '0, ser_reset_n_LOW_div= '0;
-    logic [FAST_CTRL_N-1:0] ser_read_cnt = -1, ser_read_delay_div= '0, ser_read_HIGH_div= '0, ser_read_LOW_div= '0;
+    logic [FAST_CTRL_N-1:0] csa_reset_n_cnt = -1;
+    logic [FAST_CTRL_N-1:0] csa_reset_n_delay_div= '0;
+    logic [FAST_CTRL_N-1:0] csa_reset_n_HIGH_div= '0;
+    logic [FAST_CTRL_N-1:0] csa_reset_n_LOW_div= '0;
+    logic [FAST_CTRL_N-1:0] sh_phi1d_inf_cnt = -1;
+    logic [FAST_CTRL_N-1:0] sh_phi1d_inf_delay_div= '0;
+    logic [FAST_CTRL_N-1:0] sh_phi1d_inf_HIGH_div= '0;
+    logic [FAST_CTRL_N-1:0] sh_phi1d_inf_LOW_div= '0;
+    logic [FAST_CTRL_N-1:0] sh_phi1d_sup_cnt = -1;
+    logic [FAST_CTRL_N-1:0] sh_phi1d_sup_delay_div= '0;
+    logic [FAST_CTRL_N-1:0] sh_phi1d_sup_HIGH_div= '0;
+    logic [FAST_CTRL_N-1:0] sh_phi1d_sup_LOW_div= '0;
+    logic [FAST_CTRL_N-1:0] adc_start_cnt = -1;
+    logic [FAST_CTRL_N-1:0] adc_start_delay_div= '0;
+    logic [FAST_CTRL_N-1:0] adc_start_HIGH_div= '0;
+    logic [FAST_CTRL_N-1:0] adc_start_LOW_div= '0;
+    logic [FAST_CTRL_N-1:0] ser_reset_n_cnt = -1;
+    logic [FAST_CTRL_N-1:0] ser_reset_n_delay_div= '0;
+    logic [FAST_CTRL_N-1:0] ser_reset_n_HIGH_div= '0;
+    logic [FAST_CTRL_N-1:0] ser_reset_n_LOW_div= '0;
+    logic [FAST_CTRL_N-1:0] ser_read_cnt = -1;
+    logic [FAST_CTRL_N-1:0] ser_read_delay_div= '0;
+    logic [FAST_CTRL_N-1:0] ser_read_HIGH_div= '0;
+    logic [FAST_CTRL_N-1:0] ser_read_LOW_div= '0;
 
     // control logic
-    logic slow_ctrl_packet_available = 1'b0, slow_ctrl_packet_sent = 1'b0, dac_packet_available = 1'b0, dac_packet_sent = 1'b0, sel_ckcol_sent = 1'b0, sel_ckrow_sent = 1'b0, sync_time_base_flag = 1'b0;
+    logic slow_ctrl_packet_available = 1'b0;
+    logic slow_ctrl_packet_sent = 1'b0;
+    logic dac_packet_available = 1'b0;
+    logic dac_packet_sent = 1'b0;
+    logic sel_ckcol_sent = 1'b0;
+    logic sel_ckrow_sent = 1'b0;
+    logic sync_time_base_flag = 1'b0;
     // data
-    logic [FAST_CTRL_N-1:0] slow_ctrl_packet_index_send= '0, slow_ctrl_packet_index_receive= '0;
+    logic [FAST_CTRL_N-1:0] slow_ctrl_packet_index_send= '0;
+    logic [FAST_CTRL_N-1:0] slow_ctrl_packet_index_receive= '0;
+
     reg [SLOW_CTRL_REG_LENGTH-1:0] slow_ctrl_packet= '0;
-    logic [FAST_CTRL_N-1:0] dac_packet_index_send= '0, dac_packet_index_receive= '0;
+
+    logic [FAST_CTRL_N-1:0] dac_packet_index_send= '0;
+    logic [FAST_CTRL_N-1:0] dac_packet_index_receive= '0;
+
     reg [DAC_PACKET_REG_LENGTH-1:0] dac_packet= '0;
-    logic [DATA_SIZE-1:0] pixel_row= '0, pixel_col= '0;
+
+    logic [DATA_SIZE-1:0] pixel_row= '0;
+    logic [DATA_SIZE-1:0] pixel_col= '0;
     logic [DATA_SIZE-1:0] signal= '0;
     logic [CMD_CODE_SIZE-1:0] cmd= '0;
     // check UART rising edge
     logic uart_valid_last;
     // check cmd or data
-    logic cmd_available, data_available;
+    logic cmd_available;
+    logic data_available;
 
 //======================= COMB and FF ================================
 //======================= STD CLOCKS =================================
@@ -115,7 +162,7 @@ module pFREYA_IF(
             slow_ctrl_cnt <= -1;
         end
         // the second check is to assure that the last HIGH is the same semiperiod as the others
-        else if (~slow_ctrl_mask_n & slow_ctrl_ck == 1'b0) begin
+        else if (!slow_ctrl_mask & slow_ctrl_ck == 1'b0) begin
             slow_ctrl_ck <= 1'b0;
             slow_ctrl_cnt <= -1;
         end
@@ -155,7 +202,7 @@ module pFREYA_IF(
             adc_ck <= 1'b0;
             adc_cnt <= -1;
         end
-        else if (~adc_start || adc_div == '0 || sync_time_base_flag) begin
+        else if (!adc_start || adc_div == '0 || sync_time_base_flag) begin
             adc_ck <= 1'b0;
             adc_cnt <= -1;
         end
@@ -195,7 +242,7 @@ module pFREYA_IF(
             ser_ck <= 1'b0;
             ser_cnt <= -1;
         end
-        else if (~ser_reset_n || ser_div == '0 || sync_time_base_flag) begin
+        else if (!ser_reset_n || ser_div == '0 || sync_time_base_flag) begin
             ser_ck <= 1'b0;
             ser_cnt <= -1;
         end
@@ -461,7 +508,7 @@ module pFREYA_IF(
             RESET:
                 next <= CMD_EVAL;
             CMD_EVAL:
-                if (~uart_valid & cmd_available) begin
+                if (!uart_valid & cmd_available) begin
                     case (cmd)
                         // if the command is a known one
                         // next read which signal to set
@@ -469,10 +516,18 @@ module pFREYA_IF(
                         `SET_DELAY_CMD,
                         `SET_HIGH_CMD,
                         `SET_LOW_CMD,
-                        `SET_SLOW_CTRL_CMD,
-                        `SET_DAC_CMD,
                         `SET_PIXEL_CMD:
                             next <= CMD_SET;
+                        `SET_SLOW_CTRL_CMD:
+                            if (slow_ctrl_packet_available)
+                                next <= CMD_EVAL;
+                            else
+                                next <= CMD_SET;
+                        `SET_DAC_CMD:
+                            if (dac_packet_available)
+                                next <= CMD_EVAL;
+                            else
+                                next <= CMD_SET;
                         // next send slow control
                         `SEND_SLOW_CTRL_CMD:
                             next <= CMD_SEND_SLOW;
@@ -500,26 +555,33 @@ module pFREYA_IF(
                 // TODO change
                 next <= CMD_ERR;
             CMD_SET:
-                if (~uart_valid & data_available) begin
-                    // for slow ctl and dac need to wait for more packets
-                    if (cmd == `SET_SLOW_CTRL_CMD && uart_data[SLOW_CTRL_UART_DATA_POS+1] != LAST_UART_PACKET)
-                        next <= CMD_SET;
-                    else if (cmd == `SET_DAC_CMD && uart_data[DAC_UART_DATA_POS+1] != LAST_UART_PACKET)
-                        next <= CMD_SET;
+                // for slow ctl and dac need to wait for more packets
+                if (cmd == `SET_SLOW_CTRL_CMD)
+                    if (slow_ctrl_packet_available)
+                        next <= CMD_EVAL;
                     else
+                        next <= CMD_SET;
+                else if (cmd == `SET_DAC_CMD)
+                    if (dac_packet_available)
+                        next <= CMD_EVAL;
+                    else
+                        next <= CMD_SET;
+                else
+                    if (data_available)
                         // if data has been read wait for new command
                         next <= CMD_EVAL;
-                end
-                else
-                    // if data is not fully read continue
-                    next <= CMD_SET;
+                    else
+                        next <= CMD_SET;
             CMD_SEND_SLOW:
-                if (slow_ctrl_packet_available & ~slow_ctrl_packet_sent)
+                if (slow_ctrl_packet_available & !slow_ctrl_packet_sent)
                     next <= CMD_SEND_SLOW;
-                else
+                else if (!slow_ctrl_mask)
+                    // this is to ensure slow_ctrl_mask goes down
                     next <= CMD_EVAL;
+                else
+                    next <= CMD_SEND_SLOW;
             CMD_SEND_DAC:
-                if (dac_packet_available & ~dac_packet_sent)
+                if (dac_packet_available & !dac_packet_sent)
                     next <= CMD_SEND_DAC;
                 else
                     next <= CMD_EVAL;
@@ -558,7 +620,7 @@ module pFREYA_IF(
             data_available <= 1'b0;
         end
         else begin
-            if (uart_valid & ~uart_valid_last) begin
+            if (uart_valid) begin
                 if (uart_data[7] == CMD_PACKET) begin
                     cmd_available <= 1'b1;
                     data_available <= 1'b0;
@@ -568,7 +630,7 @@ module pFREYA_IF(
                     data_available <= 1'b1;
                 end
             end
-            else if (~uart_valid & uart_valid_last) begin
+            else begin
                 cmd_available <= 1'b0;
                 data_available <= 1'b0;
             end
@@ -608,7 +670,7 @@ module pFREYA_IF(
             ser_read_LOW_div <= '0;
             
             // reset all resets
-            slow_ctrl_mask_n <= 1'b0;
+            slow_ctrl_mask <= 1'b0;
             slow_ctrl_reset_n <= 1'b0;
             dac_sync_n <= 1'b1;
             sel_init_n <= 1'b1;
@@ -616,15 +678,15 @@ module pFREYA_IF(
 
             // reset all vars
             slow_ctrl_packet_available <= 1'b0;
-            slow_ctrl_packet_sent <= 1'b0;
+            //slow_ctrl_packet_sent <= 1'b0;
             dac_packet_available <= 1'b0;
-            dac_packet_sent <= 1'b0;
-            sel_ckcol_sent <= 1'b0;
-            sel_ckrow_sent <= 1'b0;
+            //dac_packet_sent <= 1'b0;
+            //sel_ckcol_sent <= 1'b0;
+            //sel_ckrow_sent <= 1'b0;
 
-            slow_ctrl_packet_index_send <= '0;
+            //slow_ctrl_packet_index_send <= '0;
             slow_ctrl_packet_index_receive <= '0;
-            dac_packet_index_send <= '0;
+            //dac_packet_index_send <= '0;
             dac_packet_index_receive <= '0;
             dac_packet <= '0;
             pixel_row <= '0;
@@ -634,8 +696,8 @@ module pFREYA_IF(
 
             inj_start <= '0;
 
-            slow_ctrl_in <= '0;
-            dac_sdin <= '0;
+            //slow_ctrl_in <= '0;
+            //dac_sdin <= '0;
 
             slow_ctrl_packet = 0;
             dac_packet = 0;
@@ -673,7 +735,7 @@ module pFREYA_IF(
                     ser_read_LOW_div <= '0;
                     
                     // reset all resets
-                    slow_ctrl_mask_n <= 1'b0;
+                    slow_ctrl_mask <= 1'b0;
                     slow_ctrl_reset_n <= 1'b0;
                     dac_sync_n <= 1'b1;
                     sel_init_n <= 1'b1;
@@ -681,15 +743,15 @@ module pFREYA_IF(
 
                     // reset all vars
                     slow_ctrl_packet_available <= 1'b0;
-                    slow_ctrl_packet_sent <= 1'b0;
+                    //slow_ctrl_packet_sent <= 1'b0;
                     dac_packet_available <= 1'b0;
-                    dac_packet_sent <= 1'b0;
-                    sel_ckcol_sent <= 1'b0;
-                    sel_ckrow_sent <= 1'b0;
+                    //dac_packet_sent <= 1'b0;
+                    //sel_ckcol_sent <= 1'b0;
+                    //sel_ckrow_sent <= 1'b0;
 
-                    slow_ctrl_packet_index_send <= '0;
+                    //slow_ctrl_packet_index_send <= '0;
                     slow_ctrl_packet_index_receive <= '0;
-                    dac_packet_index_send <= '0;
+                    //dac_packet_index_send <= '0;
                     dac_packet_index_receive <= '0;
                     dac_packet <= '0;
                     pixel_row <= '0;
@@ -699,8 +761,8 @@ module pFREYA_IF(
 
                     inj_start <= '0;
 
-                    slow_ctrl_in <= '0;
-                    dac_sdin <= '0;
+                    //slow_ctrl_in <= '0;
+                    //dac_sdin <= '0;
 
                     slow_ctrl_packet = 0;
                     dac_packet = 0;
@@ -710,6 +772,10 @@ module pFREYA_IF(
                     if (cmd_available) begin
                         cmd <= uart_data[CMD_START_POS:CMD_END_POS];
                         signal <= uart_data[SIGNAL_START_POS:SIGNAL_END_POS];
+                    end
+                    else begin
+                        cmd <= cmd;
+                        signal <= signal;
                     end
                     // make sure the time_base_flag is off
                     sync_time_base_flag <= 1'b0;
@@ -786,23 +852,28 @@ module pFREYA_IF(
                                 endcase
                             end
                             `SET_SLOW_CTRL_CMD: begin
-                                if (~uart_valid & uart_valid_last) begin
+                                if (!uart_valid & uart_valid_last) begin
                                     if (uart_data[SLOW_CTRL_UART_DATA_POS+1] == LAST_UART_PACKET) begin
                                         // +: means starting from this bit get this much bits
                                         // assign byte0 = dword[0 +: 8];    // Same as dword[7:0]
                                         // 7 bits per assignment, not 8, cause the first is just the check
                                         slow_ctrl_packet[SLOW_CTRL_PACKET_LENGTH-(SLOW_CTRL_UART_DATA_LAST_POS+1) +: SLOW_CTRL_UART_DATA_LAST_POS+1] <= uart_data[SLOW_CTRL_UART_DATA_LAST_POS:DATA_END_POS];
-                                        slow_ctrl_packet_index_receive <= '0;
+                                        slow_ctrl_packet_index_receive <= slow_ctrl_packet_index_receive + SLOW_CTRL_UART_DATA_LAST_POS + 1; // 6 bit per time
                                         slow_ctrl_packet_available <= 1'b1;
                                     end else begin
                                         slow_ctrl_packet[slow_ctrl_packet_index_receive +: SLOW_CTRL_UART_DATA_POS+1] <= uart_data[SLOW_CTRL_UART_DATA_POS:DATA_END_POS];
-                                        slow_ctrl_packet_index_receive <= slow_ctrl_packet_index_receive + SLOW_CTRL_UART_DATA_POS+1; // 6 bit per time
+                                        slow_ctrl_packet_index_receive <= slow_ctrl_packet_index_receive + SLOW_CTRL_UART_DATA_POS + 1; // 6 bit per time
                                         slow_ctrl_packet_available <= 1'b0;
                                     end
                                 end
+                                else begin
+                                    slow_ctrl_packet <= slow_ctrl_packet;
+                                    slow_ctrl_packet_index_receive <= slow_ctrl_packet_index_receive; // 6 bit per time
+                                    slow_ctrl_packet_available <= slow_ctrl_packet_available;
+                                end
                             end
                             `SET_DAC_CMD: begin
-                                if (~uart_valid & uart_valid_last) begin
+                                if (!uart_valid & uart_valid_last) begin
                                     if (uart_data[DAC_UART_DATA_POS+1] == LAST_UART_PACKET) begin
                                         // last 3 bits
                                         dac_packet[DAC_PACKET_LENGTH-(DAC_UART_DATA_LAST_POS+1) +: DAC_UART_DATA_LAST_POS+1] <= uart_data[DAC_UART_DATA_LAST_POS:DATA_END_POS];
@@ -810,9 +881,14 @@ module pFREYA_IF(
                                         dac_packet_available <= 1'b1;
                                     end else begin
                                         dac_packet[dac_packet_index_receive +: DATA_SIZE-1] <= uart_data[DAC_UART_DATA_POS:DATA_END_POS];
-                                        dac_packet_index_receive <= dac_packet_index_receive + DATA_SIZE-1; // 6 bit per time
+                                        dac_packet_index_receive <= dac_packet_index_receive + DATA_SIZE + 6'd1; // 6 bit per time
                                         dac_packet_available <= 1'b0;
                                     end
+                                end
+                                else begin
+                                    dac_packet <= dac_packet;
+                                    dac_packet_index_receive <= dac_packet_index_receive; // 6 bit per time
+                                    dac_packet_available <= dac_packet_available;
                                 end
                             end
                             `SET_PIXEL_CMD: begin
@@ -822,6 +898,10 @@ module pFREYA_IF(
                                         pixel_row <= uart_data[DATA_START_POS:DATA_END_POS];
                                     `PIXEL_COL_CODE:
                                         pixel_col <= uart_data[DATA_START_POS:DATA_END_POS];
+                                    default: begin
+                                        pixel_row <= pixel_row;
+                                        pixel_col <= pixel_col;
+                                    end
                                 endcase
                             end
                         endcase
@@ -830,12 +910,12 @@ module pFREYA_IF(
                 CMD_SEND_SLOW: begin
                     // this way we are checking on the falling edge and no ck is sent after the signal is on
                     if (slow_ctrl_packet_sent) begin
-                        slow_ctrl_mask_n <= 1'b0;
                         slow_ctrl_reset_n <= 1'b1;
+                        slow_ctrl_mask <= 1'b0;
                     end
                     else begin
-                        slow_ctrl_mask_n <= 1'b1;
                         slow_ctrl_reset_n <= 1'b1;
+                        slow_ctrl_mask <= 1'b1;
                     end
                 end
                 CMD_SEND_DAC: begin
@@ -865,19 +945,35 @@ module pFREYA_IF(
             slow_ctrl_packet_index_send <= '0;
             slow_ctrl_packet_sent <= 1'b0;
         end
-        else if (slow_ctrl_mask_n) begin
+        else if (slow_ctrl_mask) begin
             if (slow_ctrl_ck == 1'b0 && slow_ctrl_cnt == slow_ctrl_div-1) begin
-                if (slow_ctrl_packet_index_send < SLOW_CTRL_PACKET_LENGTH) begin
+                if (slow_ctrl_packet_index_send != SLOW_CTRL_PACKET_LENGTH) begin
                     slow_ctrl_in <= slow_ctrl_packet[slow_ctrl_packet_index_send];
                     slow_ctrl_packet_index_send <= slow_ctrl_packet_index_send + 1;
+                    slow_ctrl_packet_sent <= 1'b0;
+                end
+                else begin
+                    slow_ctrl_in <= slow_ctrl_in;
+                    slow_ctrl_packet_index_send <= slow_ctrl_packet_index_send;
+                    slow_ctrl_packet_sent <= slow_ctrl_packet_sent;
                 end
             end
             else if (slow_ctrl_ck == 1'b1 && slow_ctrl_cnt == slow_ctrl_div-1) begin
-                if (slow_ctrl_packet_index_send >= SLOW_CTRL_PACKET_LENGTH) begin
-                    slow_ctrl_packet_sent <= 1'b1;
-                    slow_ctrl_packet_index_send <= '0;
+                if (slow_ctrl_packet_index_send == SLOW_CTRL_PACKET_LENGTH) begin
+                    slow_ctrl_packet_index_send <= SLOW_CTRL_PACKET_LENGTH;
                     slow_ctrl_in <= 1'b0;
+                    slow_ctrl_packet_sent <= 1'b1;
                 end
+                else begin
+                    slow_ctrl_packet_index_send <= slow_ctrl_packet_index_send;
+                    slow_ctrl_in <= slow_ctrl_in;
+                    slow_ctrl_packet_sent <= slow_ctrl_packet_sent;
+                end
+            end
+            else begin
+                slow_ctrl_packet_index_send <= slow_ctrl_packet_index_send;
+                slow_ctrl_in <= slow_ctrl_in;
+                slow_ctrl_packet_sent <= slow_ctrl_packet_sent;
             end
         end
         else begin
@@ -894,12 +990,16 @@ module pFREYA_IF(
             dac_packet_index_send <= '0;
             dac_packet_sent <= 1'b0;
         end
-        else if (~dac_sync_n) begin
+        else if (!dac_sync_n) begin
             if (dac_sck == 1'b0 && dac_sck_cnt == dac_sck_div-1) begin
                 if (dac_packet_index_send < DAC_PACKET_LENGTH) begin
                     dac_sdin <= dac_packet[dac_packet_index_send];
                     dac_packet_index_send <= dac_packet_index_send + 1;
                 end 
+                else begin
+                    dac_sdin <= dac_sdin;
+                    dac_packet_index_send <= dac_packet_index_send;
+                end
             end
             else if (dac_sck == 1'b1 && dac_sck_cnt == dac_sck_div-1) begin
                 if (dac_packet_index_send >= DAC_PACKET_LENGTH) begin
@@ -907,6 +1007,16 @@ module pFREYA_IF(
                     dac_packet_index_send <= '0;
                     dac_sdin <= 1'b0;
                 end
+                else begin
+                    dac_packet_sent <= dac_packet_sent;
+                    dac_packet_index_send <= dac_packet_index_send;
+                    dac_sdin <= dac_sdin;
+                end
+            end
+            else begin
+                dac_packet_sent <= dac_packet_sent;
+                dac_packet_index_send <= dac_packet_index_send;
+                dac_sdin <= dac_sdin;
             end
         end
         else begin
@@ -927,30 +1037,40 @@ module pFREYA_IF(
             sel_ckcol_sent <= 1'b0;
         end
         // here one triggers if sel_init_n is low
-        else if (~sel_init_n) begin
+        else if (!sel_init_n) begin
             // if posedge sel_ck
             if (sel_ck == 1'b0 && sel_cnt == sel_div-1) begin
                 // row
-                if (~sel_ckrow_sent) begin
+                if (!sel_ckrow_sent) begin
                     if (sel_ckrow_cnt == pixel_row) begin
                         // if everything was transmitted, reset index
                         sel_ckrow <= 1'b0;
                         sel_ckrow_cnt <= '0;
-                    end else begin
+                    end
+                    else begin
                         sel_ckrow <= ~sel_ck;
                         sel_ckrow_cnt <= sel_ckrow_cnt + 1'b1;
                     end
                 end
+                else begin
+                    sel_ckrow <= sel_ckrow;
+                    sel_ckrow_cnt <= sel_ckrow_cnt;
+                end
                 // col
-                if (~sel_ckcol_sent) begin
+                if (!sel_ckcol_sent) begin
                     if (sel_ckcol_cnt == pixel_col) begin
                         // if everything was transmitted, reset index
                         sel_ckcol <= 1'b0;
                         sel_ckcol_cnt <= '0;
-                    end else begin
+                    end
+                    else begin
                         sel_ckcol <= ~sel_ck;
                         sel_ckcol_cnt <= sel_ckcol_cnt + 1'b1;
                     end
+                end
+                else begin
+                    sel_ckcol <= sel_ckcol;
+                    sel_ckcol_cnt <= sel_ckcol_cnt;
                 end
             end
             // if negedge sel_ck
@@ -960,14 +1080,25 @@ module pFREYA_IF(
                     // if everything was transmitted, set sel_ckrow_sent
                     sel_ckrow_sent <= 1'b1;
                 end
+                else
+                    sel_ckrow_sent <= sel_ckrow_sent;
+                
                 if (sel_ckcol_cnt == pixel_col) begin
                     // if everything was transmitted, set sel_ckcol_sent
                     sel_ckcol_sent <= 1'b1;
                 end
-                if (~sel_ckrow_sent)
+                else
+                    sel_ckcol_sent <= sel_ckcol_sent;
+
+                if (!sel_ckrow_sent)
                     sel_ckrow <= ~sel_ck;
-                if (~sel_ckcol_sent)
+                else
+                    sel_ckrow <= sel_ckrow;
+
+                if (!sel_ckcol_sent)
                     sel_ckcol <= ~sel_ck;
+                else
+                    sel_ckcol <= sel_ckcol;
             end
         end
     end
@@ -1007,7 +1138,7 @@ module pFREYA_IF(
 
 // // This function resets all the resets
 // function void reset_reset;
-//     slow_ctrl_mask_n <= 1'b0;
+//     slow_ctrl_mask <= 1'b0;
 //     slow_ctrl_reset_n <= 1'b0;
 //     dac_sync_n <= 1'b1;
 //     sel_init_n <= 1'b1;
