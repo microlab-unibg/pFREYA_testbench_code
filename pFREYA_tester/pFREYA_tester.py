@@ -10,6 +10,8 @@ import serial
 import pFREYA_tester_processing.pFREYA_tester_processing as pYtp
 import pFREYA_tester_processing.UART_definitions as UARTdef
 
+import pyvisa
+
 # === CONSTANTS ===
 # The other constants have been moved to the config file
 FPGA_COM_DEF = "XILINX"
@@ -64,6 +66,13 @@ def check_dac_level(strvar):
     elif (int(value) < 0 or int(value) > 2**UARTdef.DAC_BITS-1):
         messagebox.showerror('DAC Level Error', f'DAC must be between 0 and {2**UARTdef.DAC_BITS-1}.')
 
+def check_current_level(strvar):
+    value = strvar.get()
+    if (not value.isnumeric()):
+        messagebox.showerror('Current Level Error', f'Current level must be a number between {UARTdef.CURRENT_LEVEL_MIN} and {UARTdef.CURRENT_LEVEL_MAX}.')
+    elif (int(value) < UARTdef.CURRENT_LEVEL_MIN or int(value) > UARTdef.CURRENT_LEVEL_MAX):
+        messagebox.showerror('Current Level Error', f'Current level must be between {UARTdef.CURRENT_LEVEL_MIN} and {UARTdef.CURRENT_LEVEL_MAX}.')
+
 def check_pixel(strvar,type):
     value = strvar.get()
     if (not value.isnumeric()):
@@ -114,6 +123,9 @@ class pFREYA_GUI():
         self.dac["divider"] = StringVar(value=json_config.get("DAC","").get("divider",""))
         self.dac["gain"] = StringVar(value=json_config.get("DAC","").get("gain",""))
         self.dac["level"] = StringVar(value=json_config.get("DAC","").get("level",""))
+
+        # INJ config
+        self.current_level = StringVar(value=json_config.get("INJ","").get("current_level",""))
 
         # slow control
         self.csa_mode_n = StringVar(value=json_config.get("slow_ctrl","").get("csa_mode_n",""))
@@ -181,6 +193,10 @@ class pFREYA_GUI():
         self.slow_ck_sent = False
         self.sel_ck_sent = False
         self.dac_sck_sent = False
+
+        # power source
+        rm = pyvisa.ResourceManager()
+        print(rm.list_resources())
     
     def to_json(self):
         # === START JSON DEFINITION ===
@@ -199,6 +215,9 @@ class pFREYA_GUI():
                         "divider": self.dac["divider"].get(),
                         "gain": self.dac["gain"].get(),
                         "level": self.dac["level"].get()
+                    },
+                    "INJ": {
+                        "current_level": self.current_level.get()
                     },
                     "slow_ctrl": {
                         "csa_mode_n": self.csa_mode_n.get(),
@@ -349,29 +368,41 @@ current_entry.grid(column=1, row=row_idx, padx=5)
 row_idx += 1
 ttk.Button(sc_lframe, text="Send slow ctrl", command=lambda: pYtp.send_slow_ctrl(gui)).grid(column=1, columnspan=2, row=row_idx, pady=[10,0], sticky=SE)
 
-# DAC configuration
-ts_lframe = ttk.Labelframe(main_frame, text="DAC configuration", padding=10, width=200, height=100)
+# # DAC configuration
+# ts_lframe = ttk.Labelframe(main_frame, text="DAC configuration", padding=10, width=200, height=100)
+# ts_lframe.grid(column=2, row=0, padx=5, pady=30, sticky=NSEW)
+# row_idx = 0
+# col_idx = 0
+# ttk.Label(ts_lframe, text="VREF source:").grid(column=col_idx, row=row_idx, sticky=W)
+# ttk.Radiobutton(ts_lframe, text="EXT", variable=gui.dac["source"], value=UARTdef.DAC_DATA_CONFIG_REF_EXT).grid(column=col_idx+1, row=row_idx, pady=5, padx=5)
+# ttk.Radiobutton(ts_lframe, text="INT", variable=gui.dac["source"], value=UARTdef.DAC_DATA_CONFIG_REF_INT).grid(column=col_idx+2, row=row_idx, pady=5, padx=5)
+# row_idx += 1
+# ttk.Label(ts_lframe, text="VREF divider:").grid(column=col_idx, row=row_idx, sticky=W)
+# ttk.Radiobutton(ts_lframe, text="1", variable=gui.dac["divider"], value=UARTdef.DAC_DATA_GAIN_DIV1).grid(column=col_idx+1, row=row_idx, pady=5, padx=5)
+# ttk.Radiobutton(ts_lframe, text="2", variable=gui.dac["divider"], value=UARTdef.DAC_DATA_GAIN_DIV2).grid(column=col_idx+2, row=row_idx, pady=5, padx=5)
+# row_idx += 1
+# ttk.Label(ts_lframe, text="VREF gain:").grid(column=col_idx, row=row_idx, sticky=W)
+# ttk.Radiobutton(ts_lframe, text="1", variable=gui.dac["gain"], value=UARTdef.DAC_DATA_GAIN_BUF1).grid(column=col_idx+1, row=row_idx, pady=5, padx=5)
+# ttk.Radiobutton(ts_lframe, text="2", variable=gui.dac["gain"], value=UARTdef.DAC_DATA_GAIN_BUF2).grid(column=col_idx+2, row=row_idx, pady=5, padx=5)
+# row_idx += 1
+# ttk.Label(ts_lframe, text="DAC level:").grid(column=col_idx, row=row_idx, sticky=W)
+# current_entry = ttk.Entry(ts_lframe, textvariable=gui.dac["level"], width=4)
+# current_entry.bind("<FocusOut>", lambda x: check_dac_level(gui.dac["level"]))
+# current_entry.grid(column=1, row=row_idx, padx=5)
+# row_idx += 1
+# ttk.Button(ts_lframe, text="Send DAC", command=lambda: pYtp.send_DAC(gui)).grid(column=1, columnspan=2, row=row_idx, pady=[20,0], sticky=SE)
+
+# Current level config power source
+ts_lframe = ttk.Labelframe(main_frame, text="INJ configuration", padding=10, width=200, height=100)
 ts_lframe.grid(column=2, row=0, padx=5, pady=30, sticky=NSEW)
 row_idx = 0
-col_idx = 0
-ttk.Label(ts_lframe, text="VREF source:").grid(column=col_idx, row=row_idx, sticky=W)
-ttk.Radiobutton(ts_lframe, text="EXT", variable=gui.dac["source"], value=UARTdef.DAC_DATA_CONFIG_REF_EXT).grid(column=col_idx+1, row=row_idx, pady=5, padx=5)
-ttk.Radiobutton(ts_lframe, text="INT", variable=gui.dac["source"], value=UARTdef.DAC_DATA_CONFIG_REF_INT).grid(column=col_idx+2, row=row_idx, pady=5, padx=5)
-row_idx += 1
-ttk.Label(ts_lframe, text="VREF divider:").grid(column=col_idx, row=row_idx, sticky=W)
-ttk.Radiobutton(ts_lframe, text="1", variable=gui.dac["divider"], value=UARTdef.DAC_DATA_GAIN_DIV1).grid(column=col_idx+1, row=row_idx, pady=5, padx=5)
-ttk.Radiobutton(ts_lframe, text="2", variable=gui.dac["divider"], value=UARTdef.DAC_DATA_GAIN_DIV2).grid(column=col_idx+2, row=row_idx, pady=5, padx=5)
-row_idx += 1
-ttk.Label(ts_lframe, text="VREF gain:").grid(column=col_idx, row=row_idx, sticky=W)
-ttk.Radiobutton(ts_lframe, text="1", variable=gui.dac["gain"], value=UARTdef.DAC_DATA_GAIN_BUF1).grid(column=col_idx+1, row=row_idx, pady=5, padx=5)
-ttk.Radiobutton(ts_lframe, text="2", variable=gui.dac["gain"], value=UARTdef.DAC_DATA_GAIN_BUF2).grid(column=col_idx+2, row=row_idx, pady=5, padx=5)
-row_idx += 1
-ttk.Label(ts_lframe, text="DAC level:").grid(column=col_idx, row=row_idx, sticky=W)
-current_entry = ttk.Entry(ts_lframe, textvariable=gui.dac["level"], width=4)
-current_entry.bind("<FocusOut>", lambda x: check_dac_level(gui.dac["level"]))
+ttk.Label(ts_lframe, text="Current level:").grid(column=0, row=row_idx, sticky=E)
+current_entry = ttk.Entry(ts_lframe, textvariable=gui.current_level, width=8)
+current_entry.bind("<FocusOut>", lambda x: check_current_level(gui.current_level))
 current_entry.grid(column=1, row=row_idx, padx=5)
+ttk.Label(ts_lframe, text="uA").grid(column=2, row=row_idx, sticky=E)
 row_idx += 1
-ttk.Button(ts_lframe, text="Send DAC", command=lambda: pYtp.send_DAC(gui)).grid(column=1, columnspan=2, row=row_idx, pady=[20,0], sticky=SE)
+ttk.Button(ts_lframe, text="Send INJ", command=lambda: pYtp.send_current_level(gui)).grid(column=1, columnspan=2, row=row_idx, pady=[115,0], sticky=SE)
 
 # Pixel selection
 ps_lframe = ttk.Labelframe(main_frame, text="Pixel selection", padding=10, width=200, height=100)
@@ -387,7 +418,7 @@ current_entry = ttk.Entry(ps_lframe, textvariable=gui.pixel_col, width=1)
 current_entry.bind("<FocusOut>", lambda x: check_pixel(gui.pixel_col,'col'))
 current_entry.grid(column=1, row=row_idx, padx=5)
 row_idx += 1
-ttk.Button(ps_lframe, text="Send pixel sel", command=lambda: pYtp.send_pixel(gui)).grid(column=1, columnspan=2, row=row_idx, pady=[90,0], sticky=SE)
+ttk.Button(ps_lframe, text="Send pixel sel", command=lambda: pYtp.send_pixel(gui)).grid(column=1, columnspan=2, row=row_idx, pady=[95,0], sticky=SE)
 
 # ASIC power up control
 asic_lframe = ttk.Labelframe(main_frame, text="ASIC power up control", padding=10, width=200, height=100)
