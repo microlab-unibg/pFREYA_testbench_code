@@ -1,5 +1,5 @@
 # UART parameters
-COM_PORT = 'COM4' # COM4 on the other pc
+COM_PORT = 'COM7' # COM4 on the other pc
 BAUD_RATE = 115200
 
 # general
@@ -185,5 +185,5 @@ DAC_BITS = 12
 DAC_DATA_REGISTER_PADDING = '0000'
 
 # Current level through power source
-CURRENT_LEVEL_MIN = -0.1 # uA
-CURRENT_LEVEL_MAX = 10 # uA
+CURRENT_LEVEL_MIN = -20 # uA
+CURRENT_LEVEL_MAX = 1 # uA

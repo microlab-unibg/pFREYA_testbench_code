@@ -68,9 +68,12 @@ def check_dac_level(strvar):
 
 def check_current_level(strvar):
     value = strvar.get()
-    if (not value.isnumeric()):
+    try:
+        float(value)
+    except:
         messagebox.showerror('Current Level Error', f'Current level must be a number between {UARTdef.CURRENT_LEVEL_MIN} and {UARTdef.CURRENT_LEVEL_MAX}.')
-    elif (int(value) < UARTdef.CURRENT_LEVEL_MIN or int(value) > UARTdef.CURRENT_LEVEL_MAX):
+    
+    if (float(value) < UARTdef.CURRENT_LEVEL_MIN or float(value) > UARTdef.CURRENT_LEVEL_MAX):
         messagebox.showerror('Current Level Error', f'Current level must be between {UARTdef.CURRENT_LEVEL_MIN} and {UARTdef.CURRENT_LEVEL_MAX}.')
 
 def check_pixel(strvar,type):
@@ -195,8 +198,8 @@ class pFREYA_GUI():
         self.dac_sck_sent = False
 
         # power source
-        rm = pyvisa.ResourceManager()
-        print(rm.list_resources())
+        self.rm = pyvisa.ResourceManager()
+        print(self.rm.list_resources())
     
     def to_json(self):
         # === START JSON DEFINITION ===

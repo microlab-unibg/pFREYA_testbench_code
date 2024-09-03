@@ -432,15 +432,13 @@ def create_dac_packet(gui, type):
     
     return dac_packet_data
 
-def create_current_level(gui, current_level):
+def send_current_level(gui):
     """Function to create the slow control packet needed in the FPGA
 
     Parameters
     ----------
     gui : pFREYA_GUI
         The structure containing all the data related to the tester.
-    current_level : str
-        Type of current level set as float.
 
     Returns
     ----------
@@ -449,6 +447,7 @@ def create_current_level(gui, current_level):
     """
     ps = gui.rm.open_resource('GPIB1::23::INSTR')
     print(ps.query('*IDN?'))
+    print(gui.current_level)
 
     ps.write(':OUTP:LOW FLO')
     ps.write(':OUTP:OFF:AUTO ON')
@@ -457,7 +456,7 @@ def create_current_level(gui, current_level):
     ps.write(':OUTP:RES:SHUN DEF')
     ps.write(':SOUR:FUNC:MODE CURR')
     ps.write(':SOUR:CURR:MODE FIX')
-    ps.write(':SOUR:CURR:LEV {current_level}E-6')
+    ps.write(f':SOUR:CURR:LEV {gui.current_level.get()}E-6')
     ps.write(':DISP:ENAB OFF')
     ps.write(':DISP:TEXT:DATA "pFREYA16"')
     ps.write(':DISP:TEXT:STAT ON')
@@ -474,24 +473,8 @@ def create_current_level(gui, current_level):
     Output voltage range: {ps.query(':SOUR:VOLT:RANG?')[:-1]}
     Output status: {ps.query(':OUTP:STAT?')[:-1]}
 	''')
-    if (type == UARTdef.DAC_CMD_CONFIG):
-        dac_packet_data = UARTdef.DAC_CMD_PADDING + UARTdef.DAC_CMD_CONFIG + \
-                          UARTdef.DAC_DATA_CONFIG_PADDING + convert_strvar_bin(gui.dac['source'],1) + \
-                          UARTdef.DAC_DATA_CONFIG_PADDING + UARTdef.DAC_DATA_CONFIG_PWDWN_DIS
-    elif (type == UARTdef.DAC_CMD_GAIN):
-        dac_packet_data = UARTdef.DAC_CMD_PADDING + UARTdef.DAC_CMD_GAIN + \
-                          UARTdef.DAC_DATA_GAIN_PADDING + convert_strvar_bin(gui.dac['divider'],1) + \
-                          UARTdef.DAC_DATA_GAIN_PADDING + convert_strvar_bin(gui.dac['gain'],1)
-    elif (type == UARTdef.DAC_CMD_DATA):
-        dac_packet_data = UARTdef.DAC_CMD_PADDING + UARTdef.DAC_CMD_DATA + \
-                          convert_strvar_bin(gui.dac['level'],12) + UARTdef.DAC_DATA_REGISTER_PADDING
-    else:
-        raise RuntimeError('Not a known DAC command or not implemented.')
 
-    #remove word divider
-    dac_packet_data = dac_packet_data.replace('_','')
-    
-    return dac_packet_data
+    return gui.current_level
 
 def send_slow_ctrl(gui):
     """Function to send clocks in the FPGA
