@@ -155,6 +155,8 @@ set_property PACKAGE_PIN K25 [get_ports daq_ck_out]
 set_property IOSTANDARD LVCMOS12 [get_ports daq_ck_out]
 set_property SLEW FAST [get_ports daq_ck_out]
 set_property PULLTYPE PULLDOWN [get_ports daq_ck_out]
+
+set_property OFFCHIP_TERM FP_VTT_50 [get_ports daq_ck_out]
 create_debug_core u_ila_0 ila
 set_property ALL_PROBE_SAME_MU true [get_debug_cores u_ila_0]
 set_property ALL_PROBE_SAME_MU_CNT 1 [get_debug_cores u_ila_0]
