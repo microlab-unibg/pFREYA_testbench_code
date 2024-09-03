@@ -857,8 +857,8 @@ module pFREYA_IF(
                                         // +: means starting from this bit get this much bits
                                         // assign byte0 = dword[0 +: 8];    // Same as dword[7:0]
                                         // 7 bits per assignment, not 8, cause the first is just the check
-                                        slow_ctrl_packet[SLOW_CTRL_PACKET_LENGTH-(SLOW_CTRL_UART_DATA_LAST_POS+1) +: SLOW_CTRL_UART_DATA_LAST_POS+1] <= uart_data[SLOW_CTRL_UART_DATA_LAST_POS:DATA_END_POS];
-                                        slow_ctrl_packet_index_receive <= slow_ctrl_packet_index_receive + SLOW_CTRL_UART_DATA_LAST_POS + 1; // 6 bit per time
+                                        slow_ctrl_packet[slow_ctrl_packet_index_receive +: SLOW_CTRL_UART_DATA_POS+1] <= uart_data[SLOW_CTRL_UART_DATA_POS:DATA_END_POS];
+                                        slow_ctrl_packet_index_receive <= slow_ctrl_packet_index_receive + SLOW_CTRL_UART_DATA_POS + 1; // 6 bit per time
                                         slow_ctrl_packet_available <= 1'b1;
                                     end else begin
                                         slow_ctrl_packet[slow_ctrl_packet_index_receive +: SLOW_CTRL_UART_DATA_POS+1] <= uart_data[SLOW_CTRL_UART_DATA_POS:DATA_END_POS];
@@ -942,12 +942,12 @@ module pFREYA_IF(
     always_ff @(posedge ck, posedge reset) begin: slow_ctrl_data_send
         if (reset) begin
             slow_ctrl_in <= 1'b0;
-            slow_ctrl_packet_index_send <= '0;
+            slow_ctrl_packet_index_send <= SLOW_CTRL_UART_DATA_POS - SLOW_CTRL_UART_DATA_LAST_POS; // skip the unneeded bits
             slow_ctrl_packet_sent <= 1'b0;
         end
         else if (slow_ctrl_mask) begin
             if (slow_ctrl_ck == 1'b0 && slow_ctrl_cnt == slow_ctrl_div-1) begin
-                if (slow_ctrl_packet_index_send != SLOW_CTRL_PACKET_LENGTH) begin
+                if (slow_ctrl_packet_index_send != SLOW_CTRL_PACKET_LENGTH + SLOW_CTRL_UART_DATA_POS - SLOW_CTRL_UART_DATA_LAST_POS) begin
                     slow_ctrl_in <= slow_ctrl_packet[slow_ctrl_packet_index_send];
                     slow_ctrl_packet_index_send <= slow_ctrl_packet_index_send + 1;
                     slow_ctrl_packet_sent <= 1'b0;
@@ -959,8 +959,8 @@ module pFREYA_IF(
                 end
             end
             else if (slow_ctrl_ck == 1'b1 && slow_ctrl_cnt == slow_ctrl_div-1) begin
-                if (slow_ctrl_packet_index_send == SLOW_CTRL_PACKET_LENGTH) begin
-                    slow_ctrl_packet_index_send <= SLOW_CTRL_PACKET_LENGTH;
+                if (slow_ctrl_packet_index_send == SLOW_CTRL_PACKET_LENGTH + SLOW_CTRL_UART_DATA_POS - SLOW_CTRL_UART_DATA_LAST_POS) begin
+                    slow_ctrl_packet_index_send <= SLOW_CTRL_PACKET_LENGTH + SLOW_CTRL_UART_DATA_POS - SLOW_CTRL_UART_DATA_LAST_POS;
                     slow_ctrl_in <= 1'b0;
                     slow_ctrl_packet_sent <= 1'b1;
                 end
@@ -978,7 +978,7 @@ module pFREYA_IF(
         end
         else begin
             slow_ctrl_packet_sent <= 1'b0;
-            slow_ctrl_packet_index_send <= '0;
+            slow_ctrl_packet_index_send <= SLOW_CTRL_UART_DATA_POS - SLOW_CTRL_UART_DATA_LAST_POS; // skip the unneeded bits
             slow_ctrl_in <= 1'b0;
         end
     end

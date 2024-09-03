@@ -12,15 +12,15 @@
       </db_ref>
    </db_ref_list>
    <zoom_setting>
-      <ZoomStartTime time="1,040,873.867 ns"></ZoomStartTime>
-      <ZoomEndTime time="1,041,016.868 ns"></ZoomEndTime>
-      <Cursor1Time time="1,040,974.267 ns"></Cursor1Time>
+      <ZoomStartTime time="0.000000000 ms"></ZoomStartTime>
+      <ZoomEndTime time="6.360000001 ms"></ZoomEndTime>
+      <Cursor1Time time="2.488887678 ms"></Cursor1Time>
    </zoom_setting>
    <column_width_setting>
-      <NameColumnWidth column_width="258"></NameColumnWidth>
+      <NameColumnWidth column_width="254"></NameColumnWidth>
       <ValueColumnWidth column_width="58"></ValueColumnWidth>
    </column_width_setting>
-   <WVObjectSize size="16" />
+   <WVObjectSize size="19" />
    <wvobject fp_name="/tb_pFREYA_DAQ/pFREYA_DAQ_inst/daq_ck" type="logic">
       <obj_property name="ElementShortName">daq_ck</obj_property>
       <obj_property name="ObjectShortName">daq_ck</obj_property>
@@ -84,5 +84,18 @@
    <wvobject fp_name="/tb_pFREYA_DAQ/pFREYA_DAQ_inst/pFREYA_IF_inst/slow_ctrl_mask" type="logic">
       <obj_property name="ElementShortName">slow_ctrl_mask</obj_property>
       <obj_property name="ObjectShortName">slow_ctrl_mask</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_pFREYA_DAQ/pFREYA_DAQ_inst/pFREYA_IF_inst/slow_ctrl_packet_index_receive" type="array">
+      <obj_property name="ElementShortName">slow_ctrl_packet_index_receive[6:0]</obj_property>
+      <obj_property name="ObjectShortName">slow_ctrl_packet_index_receive[6:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_pFREYA_DAQ/pFREYA_DAQ_inst/pFREYA_IF_inst/slow_ctrl_packet_index_send" type="array">
+      <obj_property name="ElementShortName">slow_ctrl_packet_index_send[6:0]</obj_property>
+      <obj_property name="ObjectShortName">slow_ctrl_packet_index_send[6:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_pFREYA_DAQ/pFREYA_DAQ_inst/pFREYA_IF_inst/slow_ctrl_packet" type="array">
+      <obj_property name="ElementShortName">slow_ctrl_packet[127:0]</obj_property>
+      <obj_property name="ObjectShortName">slow_ctrl_packet[127:0]</obj_property>
+      <obj_property name="isExpanded"></obj_property>
    </wvobject>
 </wave_config>
