@@ -106,6 +106,13 @@ set_property DRIVE 8 [get_ports slow_ctrl_in]
 set_property DRIVE 8 [get_ports slow_ctrl_reset_n]
 set_property DRIVE 8 [get_ports tx_ser]
 
+#sample
+set_property OFFCHIP_TERM FP_VTT_50 [get_ports csa_reset_n_out]
+set_property PACKAGE_PIN K26 [get_ports csa_reset_n_out]
+set_property IOSTANDARD LVCMOS12 [get_ports csa_reset_n_out]
+set_property SLEW FAST [get_ports csa_reset_n_out]
+set_property PULLTYPE PULLDOWN [get_ports csa_reset_n_out]
+#end sample
 
 create_clock -period 4.999 -name VIRTUAL_daq_ck_clk_wiz_clocks -waveform {0.000 2.500}
 create_clock -period 99.990 -name VIRTUAL_uart_ck_clk_wiz_clocks -waveform {0.000 49.995}
@@ -150,13 +157,6 @@ set_output_delay -clock [get_clocks VIRTUAL_daq_ck_clk_wiz_clocks] -max -add_del
 set_output_delay -clock [get_clocks VIRTUAL_daq_ck_clk_wiz_clocks] -min -add_delay 0.000 [get_ports slow_ctrl_reset_n]
 set_output_delay -clock [get_clocks VIRTUAL_daq_ck_clk_wiz_clocks] -max -add_delay 1.000 [get_ports slow_ctrl_reset_n]
 
-
-set_property PACKAGE_PIN K25 [get_ports daq_ck_out]
-set_property IOSTANDARD LVCMOS12 [get_ports daq_ck_out]
-set_property SLEW FAST [get_ports daq_ck_out]
-set_property PULLTYPE PULLDOWN [get_ports daq_ck_out]
-
-set_property OFFCHIP_TERM FP_VTT_50 [get_ports daq_ck_out]
 create_debug_core u_ila_0 ila
 set_property ALL_PROBE_SAME_MU true [get_debug_cores u_ila_0]
 set_property ALL_PROBE_SAME_MU_CNT 1 [get_debug_cores u_ila_0]

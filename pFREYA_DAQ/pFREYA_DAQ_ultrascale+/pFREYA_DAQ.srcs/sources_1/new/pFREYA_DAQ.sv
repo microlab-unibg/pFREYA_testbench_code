@@ -43,7 +43,8 @@ module pFREYA_DAQ
     output logic slow_ctrl_in,
     output logic slow_ctrl_reset_n,
     output logic slow_ctrl_ck,
-    output logic daq_ck_out,
+
+    output logic csa_reset_n_out,
     // Internal signals
     input  logic btn_reset,
 
@@ -117,8 +118,7 @@ module pFREYA_DAQ
 
     clk_wiz_clocks clk_wiz_clocks_inst (
         // Clock out ports
-        .daq_ck(daq_ck),             // output daq_ck (internal)
-        .daq_ck_out(daq_ck_out),     // output daq_ck (sync)
+        .daq_ck(daq_ck),             // output daq_ck
         .uart_ck(uart_ck),           // output uart_ck
         // Status and control signals
         .reset(btn_reset), // input reset
@@ -159,5 +159,12 @@ module pFREYA_DAQ
             tx_byte <= 1'b0;
             //tx_ser <= 1'b1;
         end
+    end
+
+    always_ff @(posedge daq_ck, posedge btn_reset) begin: csa_reset_n_out_creation
+        if (btn_reset)
+            csa_reset_n_out <= 1'b0;
+        else
+            csa_reset_n_out <= csa_reset_n;
     end
 endmodule
