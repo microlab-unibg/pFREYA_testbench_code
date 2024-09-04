@@ -59,6 +59,7 @@ module pFREYA_IF(
         CMD_SEND_SLOW,
         CMD_SET_LONG,
         CMD_SET,
+        CMD_RESET_SLOW_CTRL,
         CMD_SYNC_TIME_BASE,
         RESET
     } state, next;
@@ -85,6 +86,7 @@ module pFREYA_IF(
     logic inj_start = 1'b0;
     // for slow ctrl
     logic slow_ctrl_mask = 1'b0;
+    logic slow_ctrl_reset_request = 1'b0;
     // fast control timing
     // generated with counter that reach a divisor, where the divisor changes based on flag
     // flag value is 0 for delay, 1 for HIGH, 2 for LOW (the actual polarity is in the name of the signal)
@@ -537,6 +539,9 @@ module pFREYA_IF(
                         // next send sel pixel
                         `SEND_PIXEL_SEL_CMD:
                             next <= CMD_SEL_PIX;
+                        // next reset slow ctrl
+                        `RESET_SLOW_CTRL_CMD:
+                            next <= CMD_RESET_SLOW_CTRL;
                         // next sync time base
                         `SYNC_TIME_BASE_CMD:
                             next <= CMD_SYNC_TIME_BASE;
@@ -590,6 +595,8 @@ module pFREYA_IF(
                     next <= CMD_EVAL;
                 else
                     next <= CMD_SEL_PIX;
+            CMD_RESET_SLOW_CTRL:
+                next <= CMD_EVAL;
             CMD_SYNC_TIME_BASE:
                 next <= CMD_EVAL;
             default:
@@ -852,6 +859,7 @@ module pFREYA_IF(
                                 endcase
                             end
                             `SET_SLOW_CTRL_CMD: begin
+                                slow_ctrl_reset_request <= 1'b0;
                                 if (!uart_valid & uart_valid_last) begin
                                     if (uart_data[SLOW_CTRL_UART_DATA_POS+1] == LAST_UART_PACKET) begin
                                         // +: means starting from this bit get this much bits
@@ -932,6 +940,16 @@ module pFREYA_IF(
                     else
                         sel_init_n <= 1'b0;
                 end
+                CMD_RESET_SLOW_CTRL: begin
+                    slow_ctrl_packet_available <= 1'b0;
+                    slow_ctrl_packet_index_receive <= '0;
+                    slow_ctrl_packet <= '0;
+
+                    slow_ctrl_reset_n <= 1'b0;
+                    slow_ctrl_mask <= 1'b0;
+                    // cannot set directly index_send and _sent so let's use a flag
+                    slow_ctrl_reset_request <= 1'b1;
+                end
                 CMD_SYNC_TIME_BASE:
                     sync_time_base_flag <= 1'b1;
             endcase
@@ -940,7 +958,7 @@ module pFREYA_IF(
 
     // if slow ctrl is posedge then data need to be transmitted
     always_ff @(posedge ck, posedge reset) begin: slow_ctrl_data_send
-        if (reset) begin
+        if (reset || slow_ctrl_reset_request) begin
             slow_ctrl_in <= 1'b0;
             slow_ctrl_packet_index_send <= SLOW_CTRL_UART_DATA_POS - SLOW_CTRL_UART_DATA_LAST_POS; // skip the unneeded bits
             slow_ctrl_packet_sent <= 1'b0;
