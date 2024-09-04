@@ -385,6 +385,7 @@ def create_slow_ctrl_packet(gui):
     # for each pixel is the same
     slow_ctrl_packet = gui.csa_mode_n.get() + gui.inj_en_n.get() + gui.shap_mode.get() + \
                     gui.ch_en.get() + gui.inj_mode_n.get()
+    #slow_ctrl_packet = '1111111'
     full_slow_ctrl_packet = ''
     for _ in range(0, UARTdef.PIXEL_N):
         full_slow_ctrl_packet = full_slow_ctrl_packet + slow_ctrl_packet
@@ -396,7 +397,8 @@ def create_slow_ctrl_packet(gui):
     missing_bits = UARTdef.SLOW_CTRL_UART_DATA_POS - UARTdef.SLOW_CTRL_UART_DATA_LAST_POS
     full_slow_ctrl_packet = full_slow_ctrl_packet + '0'*missing_bits #trailing cause each 6 bits will be reversed when sending data
 
-    return full_slow_ctrl_packet
+    # reverse order for uart
+    return full_slow_ctrl_packet[::-1]
 
 def create_dac_packet(gui, type):
     """Function to create the slow control packet needed in the FPGA
@@ -502,10 +504,13 @@ def send_slow_ctrl(gui):
         print('CMD sent: ',cmd)
         time.sleep(1)
 
+        full_slow_ctrl_w_headers = ''
+        # reverse order for uart
         for i in range(0,math.floor(UARTdef.SLOW_CTRL_PACKET_LENGTH/(UARTdef.SLOW_CTRL_UART_DATA_POS+1))):
             bin_data = full_slow_ctrl_packet[i*(UARTdef.SLOW_CTRL_UART_DATA_POS+1):(i+1)*(UARTdef.SLOW_CTRL_UART_DATA_POS+1)]
             bin_data = bin_data[::-1] # needed to comply with verilog tb / how reg work
             data = create_data_slow(bin_data, UARTdef.NOTLAST_UART_PACKET)
+            full_slow_ctrl_w_headers = full_slow_ctrl_w_headers + data
             send_UART('',data)
             print('DATA sent: ',data)
             time.sleep(1)
@@ -513,8 +518,10 @@ def send_slow_ctrl(gui):
         bin_data = full_slow_ctrl_packet[(i+1)*(UARTdef.SLOW_CTRL_UART_DATA_POS+1):]
         bin_data = bin_data[::-1]
         data = create_data_slow(bin_data, UARTdef.LAST_UART_PACKET)
+        full_slow_ctrl_w_headers = full_slow_ctrl_w_headers + data
         send_UART('',data)
         print('DATA sent: ',data)
+        print('Whole string: ',full_slow_ctrl_w_headers)
         time.sleep(1)
 
         # send slow
