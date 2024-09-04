@@ -85,7 +85,7 @@ def check_pixel(strvar,type):
             messagebox.showerror('FPGA Pixel Error', f'Pixel row must be a number (0-7).')
     else:
         if (int(value) < 0 or int(value) > 1):
-            messagebox.showerror('FPGA Pixel Error', f'Pixel row must be a number (0-1).')
+            messagebox.showerror('FPGA Pixel Error', f'Pixel col must be a number (0-1).')
 
 def check_pixel_to_inj(strvar):
     value = strvar.get()
@@ -295,37 +295,37 @@ ck_lframe = ttk.Labelframe(main_frame, text="Clocks configuration", padding=10, 
 ck_lframe.grid(column=0, row=0, padx=5, pady=30, sticky=NSEW)
 row_idx += 1
 ttk.Label(ck_lframe, text="Slow control clock:").grid(column=0, row=row_idx, sticky=E)
-current_entry = ttk.Entry(ck_lframe, textvariable=gui.slow_ck, width=3)
+current_entry = ttk.Entry(ck_lframe, textvariable=gui.slow_ck, width=UARTdef.WIDTH_ENTRY)
 current_entry.bind("<FocusOut>", lambda x: check_fpga_clocks(gui.slow_ck))
 current_entry.grid(column=1, row=row_idx, padx=5)
 ttk.Label(ck_lframe, text="FP").grid(column=2, row=row_idx)
 row_idx += 1
 ttk.Label(ck_lframe, text="Selection clock:").grid(column=0, row=row_idx, sticky=E)
-current_entry = ttk.Entry(ck_lframe, textvariable=gui.sel_ck, width=3)
+current_entry = ttk.Entry(ck_lframe, textvariable=gui.sel_ck, width=UARTdef.WIDTH_ENTRY)
 current_entry.bind("<FocusOut>", lambda x: check_fpga_clocks (gui.sel_ck))
 current_entry.grid(column=1, row=row_idx, padx=5)
 ttk.Label(ck_lframe, text="FP").grid(column=2, row=row_idx)
 row_idx += 1
 ttk.Label(ck_lframe, text="ADC clock:").grid(column=0, row=row_idx, sticky=E)
-current_entry = ttk.Entry(ck_lframe, textvariable=gui.adc_ck, width=3)
+current_entry = ttk.Entry(ck_lframe, textvariable=gui.adc_ck, width=UARTdef.WIDTH_ENTRY)
 current_entry.bind("<FocusOut>", lambda x: check_fpga_clocks (gui.adc_ck))
 current_entry.grid(column=1, row=row_idx, padx=5)
 ttk.Label(ck_lframe, text="FP").grid(column=2, row=row_idx)
 row_idx += 1
 ttk.Label(ck_lframe, text="INJ strobe:").grid(column=0, row=row_idx, sticky=E)
-current_entry = ttk.Entry(ck_lframe, textvariable=gui.inj_stb, width=3)
+current_entry = ttk.Entry(ck_lframe, textvariable=gui.inj_stb, width=UARTdef.WIDTH_ENTRY)
 current_entry.bind("<FocusOut>", lambda x: check_fpga_clocks (gui.inj_stb))
 current_entry.grid(column=1, row=row_idx, padx=5)
 ttk.Label(ck_lframe, text="FP").grid(column=2, row=row_idx)
 row_idx += 1
 ttk.Label(ck_lframe, text="Serialiser clock:").grid(column=0, row=row_idx, sticky=E)
-current_entry = ttk.Entry(ck_lframe, textvariable=gui.ser_ck, width=3)
+current_entry = ttk.Entry(ck_lframe, textvariable=gui.ser_ck, width=UARTdef.WIDTH_ENTRY)
 current_entry.bind("<FocusOut>", lambda x: check_fpga_clocks (gui.ser_ck))
 current_entry.grid(column=1, row=row_idx, padx=5)
 ttk.Label(ck_lframe, text="FP").grid(column=2, row=row_idx)
 row_idx += 1
 ttk.Label(ck_lframe, text="DAC SPI clock:").grid(column=0, row=row_idx, sticky=E)
-current_entry = ttk.Entry(ck_lframe, textvariable=gui.dac_sck, width=3)
+current_entry = ttk.Entry(ck_lframe, textvariable=gui.dac_sck, width=UARTdef.WIDTH_ENTRY)
 current_entry.bind("<FocusOut>", lambda x: check_fpga_clocks (gui.dac_sck))
 current_entry.grid(column=1, row=row_idx, padx=5)
 ttk.Label(ck_lframe, text="FP").grid(column=2, row=row_idx)
@@ -447,19 +447,19 @@ ttk.Label(asic_lframe, text="CSA_RESET_N", width=15).grid(column=0, row=row_idx,
 row_idx += 0
 col_idx = 1
 ttk.Label(asic_lframe, text="Delay").grid(column=col_idx, row=row_idx, sticky=E)
-current_entry = ttk.Entry(asic_lframe, textvariable=gui.csa_reset_n["delay"], width=3)
+current_entry = ttk.Entry(asic_lframe, textvariable=gui.csa_reset_n["delay"], width=UARTdef.WIDTH_ENTRY)
 current_entry.bind("<FocusOut>", lambda x: check_fpga_clocks(gui.csa_reset_n["delay"]))
 current_entry.grid(column=col_idx+1, row=row_idx, padx=5)
 ttk.Label(asic_lframe, text="FP").grid(column=col_idx+2, row=row_idx, padx=[0,20])
 col_idx += 3
 ttk.Label(asic_lframe, text="High").grid(column=col_idx, row=row_idx, sticky=E)
-current_entry = ttk.Entry(asic_lframe, textvariable=gui.csa_reset_n["high"], width=3)
+current_entry = ttk.Entry(asic_lframe, textvariable=gui.csa_reset_n["high"], width=UARTdef.WIDTH_ENTRY)
 current_entry.bind("<FocusOut>", lambda x: check_fpga_clocks(gui.csa_reset_n["high"]))
 current_entry.grid(column=col_idx+1, row=row_idx, padx=5)
 ttk.Label(asic_lframe, text="FP").grid(column=col_idx+2, row=row_idx, padx=[0,20])
 col_idx += 3
 ttk.Label(asic_lframe, text="Low").grid(column=col_idx, row=row_idx, sticky=E)
-current_entry = ttk.Entry(asic_lframe, textvariable=gui.csa_reset_n["low"], width=3)
+current_entry = ttk.Entry(asic_lframe, textvariable=gui.csa_reset_n["low"], width=UARTdef.WIDTH_ENTRY)
 current_entry.bind("<FocusOut>", lambda x: check_fpga_clocks(gui.csa_reset_n["low"]))
 current_entry.grid(column=col_idx+1, row=row_idx, padx=5)
 ttk.Label(asic_lframe, text="FP").grid(column=col_idx+2, row=row_idx, padx=[0,20])
@@ -471,19 +471,19 @@ ttk.Label(asic_lframe, text="S/H phases", width=15).grid(column=0, row=row_idx, 
 row_idx += 1
 col_idx = 1
 ttk.Label(asic_lframe, text="INF: Delay").grid(column=col_idx, row=row_idx, sticky=E)
-current_entry = ttk.Entry(asic_lframe, textvariable=gui.sh_phi1d_inf["delay"], width=3)
+current_entry = ttk.Entry(asic_lframe, textvariable=gui.sh_phi1d_inf["delay"], width=UARTdef.WIDTH_ENTRY)
 current_entry.bind("<FocusOut>", lambda x: check_fpga_clocks(gui.sh_phi1d_inf["delay"]))
 current_entry.grid(column=col_idx+1, row=row_idx, padx=(1.3,0))
 ttk.Label(asic_lframe, text="FP").grid(column=col_idx+2, row=row_idx, padx=[0,20])
 col_idx += 3
 ttk.Label(asic_lframe, text="High").grid(column=col_idx, row=row_idx, sticky=E)
-current_entry = ttk.Entry(asic_lframe, textvariable=gui.sh_phi1d_inf["high"], width=3)
+current_entry = ttk.Entry(asic_lframe, textvariable=gui.sh_phi1d_inf["high"], width=UARTdef.WIDTH_ENTRY)
 current_entry.bind("<FocusOut>", lambda x: check_fpga_clocks(gui.sh_phi1d_inf["high"]))
 current_entry.grid(column=col_idx+1, row=row_idx, padx=5)
 ttk.Label(asic_lframe, text="FP").grid(column=col_idx+2, row=row_idx, padx=[0,20])
 col_idx += 3
 ttk.Label(asic_lframe, text="Low").grid(column=col_idx, row=row_idx, sticky=E)
-current_entry = ttk.Entry(asic_lframe, textvariable=gui.sh_phi1d_inf["low"], width=3)
+current_entry = ttk.Entry(asic_lframe, textvariable=gui.sh_phi1d_inf["low"], width=UARTdef.WIDTH_ENTRY)
 current_entry.bind("<FocusOut>", lambda x: check_fpga_clocks(gui.sh_phi1d_inf["low"]))
 current_entry.grid(column=col_idx+1, row=row_idx, padx=5)
 ttk.Label(asic_lframe, text="FP").grid(column=col_idx+2, row=row_idx, padx=[0,20])
@@ -493,19 +493,19 @@ ttk.Button(asic_lframe, text="Send SH_PHI1D_INF", command=lambda: pYtp.send_SH_P
 row_idx += 1
 col_idx = 1
 ttk.Label(asic_lframe, text="SUP: Delay").grid(column=col_idx, row=row_idx, sticky=E)
-current_entry = ttk.Entry(asic_lframe, textvariable=gui.sh_phi1d_sup["delay"], width=3)
+current_entry = ttk.Entry(asic_lframe, textvariable=gui.sh_phi1d_sup["delay"], width=UARTdef.WIDTH_ENTRY)
 current_entry.bind("<FocusOut>", lambda x: check_fpga_clocks(gui.sh_phi1d_sup["delay"]))
 current_entry.grid(column=col_idx+1, row=row_idx, padx=(1.3,0))
 ttk.Label(asic_lframe, text="FP").grid(column=col_idx+2, row=row_idx, padx=[0,20])
 col_idx += 3
 ttk.Label(asic_lframe, text="High").grid(column=col_idx, row=row_idx, sticky=E)
-current_entry = ttk.Entry(asic_lframe, textvariable=gui.sh_phi1d_sup["high"], width=3)
+current_entry = ttk.Entry(asic_lframe, textvariable=gui.sh_phi1d_sup["high"], width=UARTdef.WIDTH_ENTRY)
 current_entry.bind("<FocusOut>", lambda x: check_fpga_clocks(gui.sh_phi1d_sup["high"]))
 current_entry.grid(column=col_idx+1, row=row_idx, padx=5)
 ttk.Label(asic_lframe, text="FP").grid(column=col_idx+2, row=row_idx, padx=[0,20])
 col_idx += 3
 ttk.Label(asic_lframe, text="Low").grid(column=col_idx, row=row_idx, sticky=E)
-current_entry = ttk.Entry(asic_lframe, textvariable=gui.sh_phi1d_sup["low"], width=3)
+current_entry = ttk.Entry(asic_lframe, textvariable=gui.sh_phi1d_sup["low"], width=UARTdef.WIDTH_ENTRY)
 current_entry.bind("<FocusOut>", lambda x: check_fpga_clocks(gui.sh_phi1d_sup["low"]))
 current_entry.grid(column=col_idx+1, row=row_idx, padx=5)
 ttk.Label(asic_lframe, text="FP").grid(column=col_idx+2, row=row_idx, padx=[0,20])
@@ -517,20 +517,20 @@ ttk.Label(asic_lframe, text="ADC_START", width=15).grid(column=0, columnspan=3, 
 row_idx += 0
 col_idx = 1
 ttk.Label(asic_lframe, text="Delay").grid(column=col_idx, row=row_idx, sticky=E)
-current_entry = ttk.Entry(asic_lframe, textvariable=gui.adc_start["delay"], width=3)
+current_entry = ttk.Entry(asic_lframe, textvariable=gui.adc_start["delay"], width=UARTdef.WIDTH_ENTRY)
 current_entry.bind("<FocusOut>", lambda x: check_fpga_clocks(gui.adc_start["delay"]))
 current_entry.grid(column=col_idx+1, row=row_idx, padx=(1.3,0))
 ttk.Label(asic_lframe, text="FP").grid(column=col_idx+2, row=row_idx, padx=[0,20])
 col_idx += 3
 ttk.Label(asic_lframe, text="High").grid(column=col_idx, row=row_idx, sticky=E)
-ttk.Entry(asic_lframe, textvariable=gui.adc_start["high"], width=3).grid(column=col_idx+1, row=row_idx, padx=5)
-current_entry = ttk.Entry(asic_lframe, textvariable=gui.adc_start["high"], width=3)
+ttk.Entry(asic_lframe, textvariable=gui.adc_start["high"], width=UARTdef.WIDTH_ENTRY).grid(column=col_idx+1, row=row_idx, padx=5)
+current_entry = ttk.Entry(asic_lframe, textvariable=gui.adc_start["high"], width=UARTdef.WIDTH_ENTRY)
 current_entry.bind("<FocusOut>", lambda x: check_fpga_clocks(gui.adc_start["high"]))
 current_entry.grid(column=col_idx+1, row=row_idx, padx=5)
 ttk.Label(asic_lframe, text="FP").grid(column=col_idx+2, row=row_idx, padx=[0,20])
 col_idx += 3
 ttk.Label(asic_lframe, text="Low").grid(column=col_idx, row=row_idx, sticky=E)
-current_entry = ttk.Entry(asic_lframe, textvariable=gui.adc_start["low"], width=3)
+current_entry = ttk.Entry(asic_lframe, textvariable=gui.adc_start["low"], width=UARTdef.WIDTH_ENTRY)
 current_entry.bind("<FocusOut>", lambda x: check_fpga_clocks(gui.adc_start["low"]))
 current_entry.grid(column=col_idx+1, row=row_idx, padx=5)
 ttk.Label(asic_lframe, text="FP").grid(column=col_idx+2, row=row_idx, padx=[0,20])
@@ -548,15 +548,15 @@ ttk.Label(ser_lframe, text="SER_RESET_N", width=30).grid(column=0, columnspan=3,
 row_idx += 1
 col_idx = 0
 ttk.Label(ser_lframe, text="Delay").grid(column=col_idx, row=row_idx, sticky=E)
-ttk.Entry(ser_lframe, textvariable=gui.ser_reset_n["delay"], width=3).grid(column=col_idx+1, row=row_idx, padx=5)
+ttk.Entry(ser_lframe, textvariable=gui.ser_reset_n["delay"], width=UARTdef.WIDTH_ENTRY).grid(column=col_idx+1, row=row_idx, padx=5)
 ttk.Label(ser_lframe, text="FP").grid(column=col_idx+2, row=row_idx, padx=[0,20])
 col_idx += 3
 ttk.Label(ser_lframe, text="High").grid(column=col_idx, row=row_idx, sticky=E)
-ttk.Entry(ser_lframe, textvariable=gui.ser_reset_n["high"], width=3).grid(column=col_idx+1, row=row_idx, padx=5)
+ttk.Entry(ser_lframe, textvariable=gui.ser_reset_n["high"], width=UARTdef.WIDTH_ENTRY).grid(column=col_idx+1, row=row_idx, padx=5)
 ttk.Label(ser_lframe, text="FP").grid(column=col_idx+2, row=row_idx, padx=[0,20])
 col_idx += 3
 ttk.Label(ser_lframe, text="Low").grid(column=col_idx, row=row_idx, sticky=E)
-ttk.Entry(ser_lframe, textvariable=gui.ser_reset_n["low"], width=3).grid(column=col_idx+1, row=row_idx, padx=5)
+ttk.Entry(ser_lframe, textvariable=gui.ser_reset_n["low"], width=UARTdef.WIDTH_ENTRY).grid(column=col_idx+1, row=row_idx, padx=5)
 ttk.Label(ser_lframe, text="FP").grid(column=col_idx+2, row=row_idx, padx=[0,20])
 col_idx += 3
 
@@ -565,15 +565,15 @@ ttk.Label(ser_lframe, text="SER_READ", width=30).grid(column=0, columnspan=3, ro
 row_idx += 1
 col_idx = 0
 ttk.Label(ser_lframe, text="Delay").grid(column=col_idx, row=row_idx, sticky=E)
-ttk.Entry(ser_lframe, textvariable=gui.ser_read["delay"], width=3).grid(column=col_idx+1, row=row_idx, padx=5)
+ttk.Entry(ser_lframe, textvariable=gui.ser_read["delay"], width=UARTdef.WIDTH_ENTRY).grid(column=col_idx+1, row=row_idx, padx=5)
 ttk.Label(ser_lframe, text="FP").grid(column=col_idx+2, row=row_idx, padx=[0,20])
 col_idx += 3
 ttk.Label(ser_lframe, text="High").grid(column=col_idx, row=row_idx, sticky=E)
-ttk.Entry(ser_lframe, textvariable=gui.ser_read["high"], width=3).grid(column=col_idx+1, row=row_idx, padx=5)
+ttk.Entry(ser_lframe, textvariable=gui.ser_read["high"], width=UARTdef.WIDTH_ENTRY).grid(column=col_idx+1, row=row_idx, padx=5)
 ttk.Label(ser_lframe, text="FP").grid(column=col_idx+2, row=row_idx, padx=[0,20])
 col_idx += 3
 ttk.Label(ser_lframe, text="Low").grid(column=col_idx, row=row_idx, sticky=E)
-ttk.Entry(ser_lframe, textvariable=gui.ser_read["low"], width=3).grid(column=col_idx+1, row=row_idx, padx=5)
+ttk.Entry(ser_lframe, textvariable=gui.ser_read["low"], width=UARTdef.WIDTH_ENTRY).grid(column=col_idx+1, row=row_idx, padx=5)
 ttk.Label(ser_lframe, text="FP").grid(column=col_idx+2, row=row_idx, padx=[0,20])
 col_idx += 3
 

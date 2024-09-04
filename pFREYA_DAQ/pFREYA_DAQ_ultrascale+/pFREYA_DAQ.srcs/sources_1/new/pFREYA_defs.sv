@@ -28,7 +28,20 @@
     parameter N_SHAP_MODE = 2;  // N of SHAP mode bits
 
     // CK counter sizes
-    parameter CK_CNT_N  = 7;
+    parameter CK_CNT_N  = 14;
+
+    // Data default values
+    // 14 bits of reg implies need of 2 packets. Implemented as slow ctrl
+    // DATA UART packet is |1(1)|LAST(1)|DATA(6)| where LAST is 1 if this is the last packet, else 0
+    // DATA packet is |DATA(14)|
+    parameter LAST_UART_PACKET = 1'b1;
+    parameter NOTLAST_UART_PACKET = 1'b0;
+    parameter PACKET_INDEX_N = 8;
+
+    parameter DATA_PACKET_LENGTH = 14;
+    parameter DATA_REG_LENGTH = 16;
+    parameter DATA_UART_DATA_POS = 5;
+    parameter DATA_UART_DATA_LAST_POS = 4;
 
     // Slow ctrl default values
     // 7 * 8 * 2 = 112 is the length of the word. It can be sent by 14 8-bit packets but 2 bits
@@ -39,8 +52,6 @@
     parameter SLOW_CTRL_REG_LENGTH = 128;
     parameter SLOW_CTRL_UART_DATA_POS = 5;
     parameter SLOW_CTRL_UART_DATA_LAST_POS = 3;
-    parameter LAST_UART_PACKET = 1'b1;
-    parameter NOTLAST_UART_PACKET = 1'b0;
 
     // DAC config default values
     // 24 is the length of the word. It can be sent by 3 8-bit packets but 2 bits
@@ -56,7 +67,7 @@
     parameter DAC_UART_DATA_LAST_POS = 5;
 
     // fast ctrl feature sizes
-    parameter FAST_CTRL_N = 10;
+    parameter FAST_CTRL_N = 14;
     parameter FAST_CTRL_FLAG_N = 2;
 
     // pixel selection sizes
@@ -74,9 +85,9 @@
     parameter CMD_END_POS      = 3;
     parameter SIGNAL_START_POS = 2;
     parameter SIGNAL_END_POS   = 0;
-    // DATA packet is |1(1)|DATA(7)|
+    // DATA packet is |1(1)|LAST(1)|DATA(6)|
     parameter DATA_SIZE        = 7;
-    parameter DATA_START_POS   = 6;
+    parameter DATA_START_POS   = 5;
     parameter DATA_END_POS     = 0;
     // fast control state (for generation)
     parameter FAST_CTRL_DELAY = 2'b00;
@@ -103,7 +114,6 @@
     `define SEND_SLOW_CTRL_CMD  4'b0111   // for sending the slow ctrl to the asic
     `define SEND_DAC_CMD        4'b1000   // for sending the DAC config
     `define SEND_PIXEL_SEL_CMD  4'b1001   // for sending the pixel selection to the asic
-    `define RESET_SLOW_CTRL_CMD 4'b1101   // for resetting just the slow control
     `define SYNC_TIME_BASE_CMD  4'b1110   // for synchronising the signal generated to a same baseline
     `define RESET_FPGA_CMD      4'b1111   // for resetting the FPGA just as with the button
 
