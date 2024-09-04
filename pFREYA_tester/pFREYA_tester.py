@@ -55,9 +55,9 @@ def show_about():
 def check_fpga_clocks(strvar):
     value = strvar.get()
     if (not value.isnumeric()):
-        messagebox.showerror('FPGA Period Error', f'FPGA Period must be a number between 1 and {2**UARTdef.DATA_SIZE-1}.')
-    elif (int(value) < 1 or int(value) > 2**UARTdef.DATA_SIZE-1):
-        messagebox.showerror('FPGA Period Error', f'FPGA Period must be between 1 and {2**UARTdef.DATA_SIZE-1}.')
+        messagebox.showerror('FPGA Period Error', f'FPGA Period must be a number between 1 and {2**UARTdef.DATA_PACKET_LENGTH-1}.')
+    elif (int(value) < 1 or int(value) > 2**UARTdef.DATA_PACKET_LENGTH-1):
+        messagebox.showerror('FPGA Period Error', f'FPGA Period must be between 1 and {2**UARTdef.DATA_PACKET_LENGTH-1}.')
 
 def check_dac_level(strvar):
     value = strvar.get()

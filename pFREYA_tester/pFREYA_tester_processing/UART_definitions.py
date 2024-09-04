@@ -10,21 +10,31 @@ N_CSA_MODE  = 2  # N of CSA mode bits
 N_SHAP_MODE = 2  # N of SHAP mode bits
 
 # CK counter sizes
-CK_CNT_N  = 7
+CK_CNT_N  = 14
+
+# Data default values
+# 14 bits of reg implies need of 2 packets. Implemented as slow ctrl
+# DATA UART packet is |1(1)|LAST(1)|DATA(6)| where LAST is 1 if this is the last packet, else 0
+# DATA packet is |DATA(14)|
+PACKET_INDEX_N = 8
+DATA_PACKET_LENGTH = 14
+DATA_REG_LENGTH = 16
+DATA_UART_DATA_POS = 5
+DATA_UART_DATA_LAST_POS = 4
+
+WIDTH_ENTRY = len(str(2**DATA_PACKET_LENGTH))
 
 # Slow ctrl default values
 # 7 * 8 * 2 = 112 is the length of the word. It can be sent by 14 8-bit packets but 2 bits
 #   are needed to identify the cmd and last packet. So 19 6-bit packets will be used (last will be 4 bits).
 # SLOW_CTRL UART packet is |1(1)|LAST(1)|DATA(6)| where LAST is 1 if this is the last packet, else 0
 # SLOW_CTRL packet is |DATA(112)|
-SLOW_CTRL_N_BITS = 10
+SLOW_CTRL_N_BITS = 7
 SLOW_CTRL_PACKET_LENGTH = 112
 SLOW_CTRL_UART_DATA_POS = 5
 SLOW_CTRL_UART_DATA_LAST_POS = 3
 LAST_UART_PACKET = '1'
 NOTLAST_UART_PACKET = '0'
-
-WIDTH_ENTRY = len(str(2**SLOW_CTRL_N_BITS))
 
 # DAC config default values
 # 24 is the length of the word. It can be sent by 3 8-bit packets but 2 bits
@@ -39,7 +49,7 @@ DAC_UART_DATA_POS = 5
 DAC_UART_DATA_LAST_POS = 5
 
 # fast ctrl feature sizes
-FAST_CTRL_N = 7
+FAST_CTRL_N = 14
 FAST_CTRL_FLAG_N = 2
 
 # pixel selection sizes
@@ -57,9 +67,9 @@ CMD_START_POS    = 6
 CMD_END_POS      = 3
 SIGNAL_START_POS = 2
 SIGNAL_END_POS   = 0
-# DATA packet is |1(1)|DATA(7)|
-DATA_SIZE        = 7
-DATA_START_POS   = 6
+# DATA packet is |1(1)|LAST(1)|DATA(6)|
+DATA_SIZE        = 6
+DATA_START_POS   = 5
 DATA_END_POS     = 0
 # fast control state (for generation)
 FAST_CTRL_DELAY = '00'
@@ -77,7 +87,6 @@ SET_PIXEL_CMD       = '0110'   # for pixel selection
 SEND_SLOW_CTRL_CMD  = '0111'   # for sending the slow ctrl to the asic
 SEND_DAC_CMD        = '1000'   # for sending the DAC config
 SEND_PIXEL_SEL_CMD  = '1001'   # for sending the pixel selection to the asic
-RESET_SLOW_CTRL_CMD = '1101'   # for resetting just the slow control
 SYNC_TIME_BASE_CMD  = '1110'   # for synchronising the signal generated to a same baseline
 RESET_FPGA_CMD      = '1111'   # for resetting the FPGA just as with the button
 

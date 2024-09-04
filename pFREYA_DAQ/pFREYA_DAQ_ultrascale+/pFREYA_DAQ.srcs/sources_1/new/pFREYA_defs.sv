@@ -86,7 +86,7 @@
     parameter SIGNAL_START_POS = 2;
     parameter SIGNAL_END_POS   = 0;
     // DATA packet is |1(1)|LAST(1)|DATA(6)|
-    parameter DATA_SIZE        = 7;
+    parameter DATA_SIZE        = 6;
     parameter DATA_START_POS   = 5;
     parameter DATA_END_POS     = 0;
     // fast control state (for generation)
