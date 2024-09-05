@@ -58,8 +58,8 @@ def create_data(data):
     str
         data packet
     """
-    for i in range(math.floor(UARTdef.DATA_PACKET/UARTdef.DATA_UART_DATA_POS),0,-1):
-        yield UARTdef.DATA_PACKET + data[(i-1)*UARTdef.DATA_UART_DATA_POS:i*UARTdef.DATA_UART_DATA_POS]
+    for i in range(math.floor(int(UARTdef.DATA_REG_LENGTH)/(int(UARTdef.DATA_UART_DATA_POS)+1)),0,-1):
+        yield UARTdef.DATA_PACKET + data[(i-1)*(UARTdef.DATA_UART_DATA_POS+1):i*(UARTdef.DATA_UART_DATA_POS+1)]
 
 def create_data_slow(data, type):
     """Function to create a slow control packet byte starting from the data in string format

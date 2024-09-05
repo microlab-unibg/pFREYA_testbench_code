@@ -10,14 +10,14 @@ N_CSA_MODE  = 2  # N of CSA mode bits
 N_SHAP_MODE = 2  # N of SHAP mode bits
 
 # CK counter sizes
-CK_CNT_N  = 14
+CK_CNT_N  = 12
 
 # Data default values
-# 14 bits of reg implies need of 2 packets. Implemented as slow ctrl
+# 12 bits of reg implies need of 2 packets. Implemented as slow ctrl
 # DATA UART packet is |1(1)|LAST(1)|DATA(6)| where LAST is 1 if this is the last packet, else 0
-# DATA packet is |DATA(14)|
+# DATA packet is |DATA(12)|
 PACKET_INDEX_N = 8
-DATA_PACKET_LENGTH = 14
+DATA_PACKET_LENGTH = 12
 DATA_REG_LENGTH = 16
 DATA_UART_DATA_POS = 5
 DATA_UART_DATA_LAST_POS = 4
@@ -49,7 +49,7 @@ DAC_UART_DATA_POS = 5
 DAC_UART_DATA_LAST_POS = 5
 
 # fast ctrl feature sizes
-FAST_CTRL_N = 14
+FAST_CTRL_N = 12
 FAST_CTRL_FLAG_N = 2
 
 # pixel selection sizes
