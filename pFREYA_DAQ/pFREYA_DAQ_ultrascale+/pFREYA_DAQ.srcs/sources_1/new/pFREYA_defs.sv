@@ -28,17 +28,17 @@
     parameter N_SHAP_MODE = 2;  // N of SHAP mode bits
 
     // CK counter sizes
-    parameter CK_CNT_N  = 14;
+    parameter CK_CNT_N  = 12;
 
     // Data default values
-    // 14 bits of reg implies need of 2 packets. Implemented as slow ctrl
+    // 12 bits of reg implies need of 2 packets. Implemented as slow ctrl
     // DATA UART packet is |1(1)|LAST(1)|DATA(6)| where LAST is 1 if this is the last packet, else 0
-    // DATA packet is |DATA(14)|
+    // DATA packet is |DATA(12)|
     parameter LAST_UART_PACKET = 1'b1;
     parameter NOTLAST_UART_PACKET = 1'b0;
     parameter PACKET_INDEX_N = 8;
 
-    parameter DATA_PACKET_LENGTH = 14;
+    parameter DATA_PACKET_LENGTH = 12;
     parameter DATA_REG_LENGTH = 16;
     parameter DATA_UART_DATA_POS = 5;
     parameter DATA_UART_DATA_LAST_POS = 4;
@@ -67,7 +67,7 @@
     parameter DAC_UART_DATA_LAST_POS = 5;
 
     // fast ctrl feature sizes
-    parameter FAST_CTRL_N = 14;
+    parameter FAST_CTRL_N = 12;
     parameter FAST_CTRL_FLAG_N = 2;
 
     // pixel selection sizes
