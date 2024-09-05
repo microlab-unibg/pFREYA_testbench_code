@@ -58,7 +58,8 @@ def create_data(data):
     str
         data packet
     """
-    return UARTdef.DATA_PACKET + data
+    for i in range(math.floor(UARTdef.DATA_PACKET/UARTdef.DATA_UART_DATA_POS),0,-1):
+        yield UARTdef.DATA_PACKET + data[(i-1)*UARTdef.DATA_UART_DATA_POS:i*UARTdef.DATA_UART_DATA_POS]
 
 def create_data_slow(data, type):
     """Function to create a slow control packet byte starting from the data in string format
@@ -127,19 +128,25 @@ def send_CSA_RESET_N(gui):
     """
     try:
         cmd = create_cmd(UARTdef.SET_DELAY_CMD, UARTdef.CSA_RESET_N_CODE)
-        data = create_data(convert_strvar_bin(gui.csa_reset_n['delay'],UARTdef.DATA_SIZE))
-        send_UART(cmd, data)
-        print('CMD sent: ',cmd,'\nData sent: ',data)
+        send_UART(cmd,'')
+        print('CMD sent: ',cmd)
+        for data in create_data(convert_strvar_bin(gui.csa_reset_n['delay'],UARTdef.DATA_REG_LENGTH)):
+            send_UART('', data)
+            print('\nData sent: ',data)
 
         cmd = create_cmd(UARTdef.SET_HIGH_CMD, UARTdef.CSA_RESET_N_CODE)
-        data = create_data(convert_strvar_bin(gui.csa_reset_n['high'],UARTdef.DATA_SIZE))
-        send_UART(cmd, data)
-        print('CMD sent: ',cmd,'\nData sent: ',data)
+        send_UART(cmd,'')
+        print('CMD sent: ',cmd)
+        for data in create_data(convert_strvar_bin(gui.csa_reset_n['high'],UARTdef.DATA_REG_LENGTH)):
+            send_UART('', data)
+            print('\nData sent: ',data)
 
         cmd = create_cmd(UARTdef.SET_LOW_CMD, UARTdef.CSA_RESET_N_CODE)
-        data = create_data(convert_strvar_bin(gui.csa_reset_n['low'],UARTdef.DATA_SIZE))
-        send_UART(cmd, data)
-        print('CMD sent: ',cmd,'\nData sent: ',data)
+        send_UART(cmd,'')
+        print('CMD sent: ',cmd)
+        for data in create_data(convert_strvar_bin(gui.csa_reset_n['low'],UARTdef.DATA_REG_LENGTH)):
+            send_UART('', data)
+            print('\nData sent: ',data)
     except Exception:
         print(traceback.format_exc())
         return 1
@@ -161,19 +168,25 @@ def send_SH_PHI1D_INF(gui):
     """
     try:
         cmd = create_cmd(UARTdef.SET_DELAY_CMD, UARTdef.SH_INF_CODE)
-        data = create_data(convert_strvar_bin(gui.sh_phi1d_inf['delay'],UARTdef.DATA_SIZE))
-        send_UART(cmd, data)
-        print('CMD sent: ',cmd,'\nData sent: ',data)
+        send_UART(cmd,'')
+        print('CMD sent: ',cmd)
+        for data in create_data(convert_strvar_bin(gui.sh_phi1d_inf['delay'],UARTdef.DATA_REG_LENGTH)):
+            send_UART('', data)
+            print('\nData sent: ',data)
 
         cmd = create_cmd(UARTdef.SET_HIGH_CMD, UARTdef.SH_INF_CODE)
-        data = create_data(convert_strvar_bin(gui.sh_phi1d_inf['high'],UARTdef.DATA_SIZE))
-        send_UART(cmd, data)
-        print('CMD sent: ',cmd,'\nData sent: ',data)
+        send_UART(cmd,'')
+        print('CMD sent: ',cmd)
+        for data in create_data(convert_strvar_bin(gui.sh_phi1d_inf['high'],UARTdef.DATA_REG_LENGTH)):
+            send_UART('', data)
+            print('\nData sent: ',data)
 
         cmd = create_cmd(UARTdef.SET_LOW_CMD, UARTdef.SH_INF_CODE)
-        data = create_data(convert_strvar_bin(gui.sh_phi1d_inf['low'],UARTdef.DATA_SIZE))
-        send_UART(cmd, data)
-        print('CMD sent: ',cmd,'\nData sent: ',data)
+        send_UART(cmd,'')
+        print('CMD sent: ',cmd)
+        for data in create_data(convert_strvar_bin(gui.sh_phi1d_inf['low'],UARTdef.DATA_REG_LENGTH)):
+            send_UART('', data)
+            print('\nData sent: ',data)
     except Exception:
         print(traceback.format_exc())
         return 1
@@ -195,19 +208,25 @@ def send_SH_PHI1D_SUP(gui):
     """
     try:
         cmd = create_cmd(UARTdef.SET_DELAY_CMD, UARTdef.SH_SUP_CODE)
-        data = create_data(convert_strvar_bin(gui.sh_phi1d_sup['delay'],UARTdef.DATA_SIZE))
-        send_UART(cmd, data)
-        print('CMD sent: ',cmd,'\nData sent: ',data)
+        send_UART(cmd,'')
+        print('CMD sent: ',cmd)
+        for data in create_data(convert_strvar_bin(gui.sh_phi1d_sup['delay'],UARTdef.DATA_REG_LENGTH)):
+            send_UART('', data)
+            print('\nData sent: ',data)
 
         cmd = create_cmd(UARTdef.SET_HIGH_CMD, UARTdef.SH_SUP_CODE)
-        data = create_data(convert_strvar_bin(gui.sh_phi1d_sup['high'],UARTdef.DATA_SIZE))
-        send_UART(cmd, data)
-        print('CMD sent: ',cmd,'\nData sent: ',data)
+        send_UART(cmd,'')
+        print('CMD sent: ',cmd)
+        for data in create_data(convert_strvar_bin(gui.sh_phi1d_sup['high'],UARTdef.DATA_REG_LENGTH)):
+            send_UART('', data)
+            print('\nData sent: ',data)
 
         cmd = create_cmd(UARTdef.SET_LOW_CMD, UARTdef.SH_SUP_CODE)
-        data = create_data(convert_strvar_bin(gui.sh_phi1d_sup['low'],UARTdef.DATA_SIZE))
-        send_UART(cmd, data)
-        print('CMD sent: ',cmd,'\nData sent: ',data)
+        send_UART(cmd,'')
+        print('CMD sent: ',cmd)
+        for data in create_data(convert_strvar_bin(gui.sh_phi1d_sup['low'],UARTdef.DATA_REG_LENGTH)):
+            send_UART('', data)
+            print('\nData sent: ',data)
     except Exception:
         print(traceback.format_exc())
         return 1
@@ -229,19 +248,25 @@ def send_ADC_START(gui):
     """
     try:
         cmd = create_cmd(UARTdef.SET_DELAY_CMD, UARTdef.ADC_START_CODE)
-        data = create_data(convert_strvar_bin(gui.adc_start['delay'],UARTdef.DATA_SIZE))
-        send_UART(cmd, data)
-        print('CMD sent: ',cmd,'\nData sent: ',data)
+        send_UART(cmd,'')
+        print('CMD sent: ',cmd)
+        for data in create_data(convert_strvar_bin(gui.adc_start['delay'],UARTdef.DATA_REG_LENGTH)):
+            send_UART('', data)
+            print('\nData sent: ',data)
 
         cmd = create_cmd(UARTdef.SET_HIGH_CMD, UARTdef.ADC_START_CODE)
-        data = create_data(convert_strvar_bin(gui.adc_start['high'],UARTdef.DATA_SIZE))
-        send_UART(cmd, data)
-        print('CMD sent: ',cmd,'\nData sent: ',data)
+        send_UART(cmd,'')
+        print('CMD sent: ',cmd)
+        for data in create_data(convert_strvar_bin(gui.adc_start['high'],UARTdef.DATA_REG_LENGTH)):
+            send_UART('', data)
+            print('\nData sent: ',data)
 
         cmd = create_cmd(UARTdef.SET_LOW_CMD, UARTdef.ADC_START_CODE)
-        data = create_data(convert_strvar_bin(gui.adc_start['low'],UARTdef.DATA_SIZE))
-        send_UART(cmd, data)
-        print('CMD sent: ',cmd,'\nData sent: ',data)
+        send_UART(cmd,'')
+        print('CMD sent: ',cmd)
+        for data in create_data(convert_strvar_bin(gui.adc_start['low'],UARTdef.DATA_REG_LENGTH)):
+            send_UART('', data)
+            print('\nData sent: ',data)
     except Exception:
         print(traceback.format_exc())
         return 1
@@ -263,42 +288,54 @@ def send_clocks(gui):
     """
     try:
         cmd = create_cmd(UARTdef.SET_CK_CMD, UARTdef.SLOW_CTRL_CK_CODE)
-        data = create_data(convert_strvar_bin(gui.slow_ck,UARTdef.DATA_SIZE))
-        send_UART(cmd, data)
-        print('CMD sent: ',cmd,'\nData sent: ',data)
+        send_UART(cmd,'')
+        print('CMD sent: ',cmd)
+        for data in create_data(convert_strvar_bin(gui.slow_ck,UARTdef.DATA_REG_LENGTH)):
+            send_UART('', data)
+            print('\nData sent: ',data)
         gui.slow_ck_sent = True
         time.sleep(1)
 
         cmd = create_cmd(UARTdef.SET_CK_CMD, UARTdef.SEL_CK_CODE)
-        data = create_data(convert_strvar_bin(gui.sel_ck,UARTdef.DATA_SIZE))
-        send_UART(cmd, data)
-        print('CMD sent: ',cmd,'\nData sent: ',data)
+        send_UART(cmd,'')
+        print('CMD sent: ',cmd)
+        for data in create_data(convert_strvar_bin(gui.sel_ck,UARTdef.DATA_REG_LENGTH)):
+            send_UART('', data)
+            print('\nData sent: ',data)
         gui.sel_ck_sent = True
         time.sleep(1)
 
         cmd = create_cmd(UARTdef.SET_CK_CMD, UARTdef.ADC_CK_CODE)
-        data = create_data(convert_strvar_bin(gui.adc_ck,UARTdef.DATA_SIZE))
-        send_UART(cmd, data)
-        print('CMD sent: ',cmd,'\nData sent: ',data)
+        send_UART(cmd,'')
+        print('CMD sent: ',cmd)
+        for data in create_data(convert_strvar_bin(gui.adc_ck,UARTdef.DATA_REG_LENGTH)):
+            send_UART('', data)
+            print('\nData sent: ',data)
         time.sleep(1)
 
         cmd = create_cmd(UARTdef.SET_CK_CMD, UARTdef.INJ_STB_CODE)
-        data = create_data(convert_strvar_bin(gui.inj_stb,UARTdef.DATA_SIZE))
-        send_UART(cmd, data)
-        print('CMD sent: ',cmd,'\nData sent: ',data)
+        send_UART(cmd,'')
+        print('CMD sent: ',cmd)
+        for data in create_data(convert_strvar_bin(gui.inj_stb,UARTdef.DATA_REG_LENGTH)):
+            send_UART('', data)
+            print('\nData sent: ',data)
         time.sleep(1)
 
         cmd = create_cmd(UARTdef.SET_CK_CMD, UARTdef.DAC_SCK_CODE)
-        data = create_data(convert_strvar_bin(gui.dac_sck,UARTdef.DATA_SIZE))
-        send_UART(cmd, data)
-        print('CMD sent: ',cmd,'\nData sent: ',data)
+        send_UART(cmd,'')
+        print('CMD sent: ',cmd)
+        for data in create_data(convert_strvar_bin(gui.dac_sck,UARTdef.DATA_REG_LENGTH)):
+            send_UART('', data)
+            print('\nData sent: ',data)
         gui.dac_sck_sent = True
         time.sleep(1)
 
         cmd = create_cmd(UARTdef.SET_CK_CMD, UARTdef.SER_CK_CODE)
-        data = create_data(convert_strvar_bin(gui.ser_ck,UARTdef.DATA_SIZE))
-        send_UART(cmd, data)
-        print('CMD sent: ',cmd,'\nData sent: ',data)
+        send_UART(cmd,'')
+        print('CMD sent: ',cmd)
+        for data in create_data(convert_strvar_bin(gui.ser_ck,UARTdef.DATA_REG_LENGTH)):
+            send_UART('', data)
+            print('\nData sent: ',data)
         time.sleep(1)
     except Exception:
         print(traceback.format_exc())
@@ -348,13 +385,13 @@ def send_pixel(gui):
         pass
         # set row and col
         cmd = create_cmd(UARTdef.SET_PIXEL_CMD, UARTdef.PIXEL_ROW_CODE)
-        data = create_data(convert_strvar_bin(gui.pixel_row,UARTdef.DATA_SIZE))
+        data = create_data(convert_strvar_bin(gui.pixel_row,UARTdef.DATA_REG_LENGTH))
         send_UART(cmd, data)
         print('CMD sent: ',cmd,'\nData sent: ',data)
         time.sleep(1)
 
         cmd = create_cmd(UARTdef.SET_PIXEL_CMD, UARTdef.PIXEL_COL_CODE)
-        data = create_data(convert_strvar_bin(gui.pixel_col,UARTdef.DATA_SIZE))
+        data = create_data(convert_strvar_bin(gui.pixel_col,UARTdef.DATA_REG_LENGTH))
         send_UART(cmd, data)
         print('CMD sent: ',cmd,'\nData sent: ',data)
         time.sleep(1)
