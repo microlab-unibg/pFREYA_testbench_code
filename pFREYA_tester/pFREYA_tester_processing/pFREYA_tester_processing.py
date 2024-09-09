@@ -63,7 +63,7 @@ def create_data(data):
             (UARTdef.LAST_UART_PACKET if i == 1 else UARTdef.NOTLAST_UART_PACKET) + \
             data[(i-1)*(UARTdef.DATA_UART_DATA_POS+1):i*(UARTdef.DATA_UART_DATA_POS+1)]
 
-def create_data_slow(data, type):
+def create_data_slow(data):
     """Function to create a slow control packet byte starting from the data in string format
 
     Parameters
@@ -76,11 +76,16 @@ def create_data_slow(data, type):
     str
         data packet
     """
-    if (type == UARTdef.LAST_UART_PACKET):
-        return UARTdef.DATA_PACKET + UARTdef.LAST_UART_PACKET + data
-    else:
-        # the 8'd0 at the beginning is to set bits that are not useful
-        return UARTdef.DATA_PACKET + UARTdef.NOTLAST_UART_PACKET + data
+    for i in range(math.floor(int(UARTdef.SLOW_CTRL_PACKET_LENGTH)/(int(UARTdef.SLOW_CTRL_UART_DATA_POS)+1)),0,-1):
+        yield UARTdef.DATA_PACKET + \
+            (UARTdef.LAST_UART_PACKET if i == 1 else UARTdef.NOTLAST_UART_PACKET) + \
+            data[(i-1)*(UARTdef.SLOW_CTRL_UART_DATA_POS+1):i*(UARTdef.SLOW_CTRL_UART_DATA_POS+1)]
+
+    #if (type == UARTdef.LAST_UART_PACKET):
+    #    return UARTdef.DATA_PACKET + UARTdef.LAST_UART_PACKET + data
+    #else:
+    #    # the 8'd0 at the beginning is to set bits that are not useful
+    #    return UARTdef.DATA_PACKET + UARTdef.NOTLAST_UART_PACKET + data
 
 def convert_strvar_bin(strvar, n_bits):
     """Convert StrVar to string binary representation
@@ -436,8 +441,7 @@ def create_slow_ctrl_packet(gui):
     missing_bits = UARTdef.SLOW_CTRL_UART_DATA_POS - UARTdef.SLOW_CTRL_UART_DATA_LAST_POS
     full_slow_ctrl_packet = full_slow_ctrl_packet + '0'*missing_bits #trailing cause each 6 bits will be reversed when sending data
 
-    # reverse order for uart
-    return full_slow_ctrl_packet[::-1]
+    return full_slow_ctrl_packet
 
 def create_dac_packet(gui, type):
     """Function to create the slow control packet needed in the FPGA
@@ -537,30 +541,14 @@ def send_slow_ctrl(gui):
     print('SLOW_CTRL data to be sent: ',[full_slow_ctrl_packet[i:i+UARTdef.SLOW_CTRL_N_BITS] for i in range(0, len(full_slow_ctrl_packet), UARTdef.SLOW_CTRL_N_BITS)])
 
     try:
-        # set slow packet
+        # set slow packet        
         cmd = create_cmd(UARTdef.SET_SLOW_CTRL_CMD, UARTdef.UNUSED_CODE)
         send_UART(cmd)
         print('CMD sent: ',cmd)
-        time.sleep(1)
+        for data in create_data_slow(convert_strvar_bin(full_slow_ctrl_packet)):
+            send_UART('', data)
+            print('Data sent: ',data)
 
-        full_slow_ctrl_w_headers = ''
-        # reverse order for uart
-        for i in range(0,math.floor(UARTdef.SLOW_CTRL_PACKET_LENGTH/(UARTdef.SLOW_CTRL_UART_DATA_POS+1))):
-            bin_data = full_slow_ctrl_packet[i*(UARTdef.SLOW_CTRL_UART_DATA_POS+1):(i+1)*(UARTdef.SLOW_CTRL_UART_DATA_POS+1)]
-            bin_data = bin_data[::-1] # needed to comply with verilog tb / how reg work
-            data = create_data_slow(bin_data, UARTdef.NOTLAST_UART_PACKET)
-            full_slow_ctrl_w_headers = full_slow_ctrl_w_headers + data
-            send_UART('',data)
-            print('DATA sent: ',data)
-            time.sleep(1)
-
-        bin_data = full_slow_ctrl_packet[(i+1)*(UARTdef.SLOW_CTRL_UART_DATA_POS+1):]
-        bin_data = bin_data[::-1]
-        data = create_data_slow(bin_data, UARTdef.LAST_UART_PACKET)
-        full_slow_ctrl_w_headers = full_slow_ctrl_w_headers + data
-        send_UART('',data)
-        print('DATA sent: ',data)
-        print('Whole string: ',full_slow_ctrl_w_headers)
         time.sleep(1)
 
         # send slow
