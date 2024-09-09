@@ -982,10 +982,12 @@ module pFREYA_IF(
                     if (slow_ctrl_packet_sent) begin
                         slow_ctrl_reset_n <= 1'b1;
                         slow_ctrl_mask <= 1'b0;
+                        slow_ctrl_packet_available <= 1'b0;
                     end
                     else begin
                         slow_ctrl_reset_n <= 1'b1;
                         slow_ctrl_mask <= 1'b1;
+                        slow_ctrl_packet_available <= slow_ctrl_packet_available;
                     end
                 end
                 CMD_SEND_DAC: begin
