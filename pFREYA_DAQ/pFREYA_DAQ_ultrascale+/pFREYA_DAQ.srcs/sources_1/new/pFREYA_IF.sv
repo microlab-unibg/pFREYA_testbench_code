@@ -86,6 +86,10 @@ module pFREYA_IF(
     // for slow ctrl
     logic slow_ctrl_mask = 1'b0;
     logic slow_ctrl_reset_request = 1'b0;
+    // for sh inf (TS)
+    logic sh_phi1d_inf_mask = 1'b0;
+    logic slow_ctrl_in_mask = 1'b0;
+    logic sh_phi1d_inf = 1'b0;
     // fast control timing
     // generated with counter that reach a divisor, where the divisor changes based on flag
     // flag value is 0 for delay, 1 for HIGH, 2 for LOW (the actual polarity is in the name of the signal)
@@ -328,6 +332,15 @@ module pFREYA_IF(
             sh_phi1d_inf <= 1'b0;
             sh_phi1d_inf_cnt <= -1;
             sh_phi1d_inf_flag <= FAST_CTRL_DELAY;
+            // Due to PCB layout error
+            sh_phi1d_inf_mask <= 1'b0; // (TS)
+        end
+        else if (slow_ctrl_in_mask) begin
+            sh_phi1d_inf <= 1'b0;
+            sh_phi1d_inf_cnt <= -1;
+            sh_phi1d_inf_flag <= FAST_CTRL_DELAY;
+            // Due to PCB layout error
+            sh_phi1d_inf_mask <= 1'b0; // (TS)
         end
         else if (sync_time_base_flag ||
             (sh_phi1d_inf_flag == FAST_CTRL_DELAY && sh_phi1d_inf_delay_div == '0) ||
@@ -335,28 +348,38 @@ module pFREYA_IF(
             sh_phi1d_inf <= 1'b0;
             sh_phi1d_inf_cnt <= -1;
             sh_phi1d_inf_flag <= FAST_CTRL_DELAY;
+            // Due to PCB layout error
+            sh_phi1d_inf_mask <= 1'b1; // (TS)
         end
         else if (sh_phi1d_inf_flag == FAST_CTRL_DELAY &&
                  sh_phi1d_inf_cnt == sh_phi1d_inf_delay_div-1) begin
             sh_phi1d_inf <= ~sh_phi1d_inf;
             sh_phi1d_inf_cnt <= '0;
             sh_phi1d_inf_flag <= FAST_CTRL_HIGH;
+            // Due to PCB layout error
+            sh_phi1d_inf_mask <= 1'b1; // (TS)
         end
         else if (sh_phi1d_inf_flag == FAST_CTRL_HIGH &&
                  sh_phi1d_inf_cnt == sh_phi1d_inf_HIGH_div-1) begin
             sh_phi1d_inf <= ~sh_phi1d_inf;
             sh_phi1d_inf_cnt <= '0;
             sh_phi1d_inf_flag <= FAST_CTRL_LOW;
+            // Due to PCB layout error
+            sh_phi1d_inf_mask <= 1'b1; // (TS)
         end
         else if (sh_phi1d_inf_flag == FAST_CTRL_LOW &&
                  sh_phi1d_inf_cnt == sh_phi1d_inf_LOW_div-1) begin
             sh_phi1d_inf <= ~sh_phi1d_inf;
             sh_phi1d_inf_cnt <= '0;
             sh_phi1d_inf_flag <= FAST_CTRL_HIGH;
+            // Due to PCB layout error
+            sh_phi1d_inf_mask <= 1'b1; // (TS)
         end
         else begin
             sh_phi1d_inf <= sh_phi1d_inf;
             sh_phi1d_inf_cnt <= sh_phi1d_inf_cnt + 1'b1;
+            // Due to PCB layout error
+            sh_phi1d_inf_mask <= 1'b1; // (TS)
         end
     end
 
@@ -515,7 +538,7 @@ module pFREYA_IF(
             RESET:
                 next <= CMD_EVAL;
             CMD_EVAL:
-                if (cmd_available) begin
+                if (!uart_valid && cmd_available) begin
                     case (cmd)
                         // if the command is a known one
                         // next read which signal to set
@@ -682,6 +705,8 @@ module pFREYA_IF(
             // reset all resets
             slow_ctrl_mask <= 1'b0;
             slow_ctrl_reset_n <= 1'b0;
+            slow_ctrl_in_mask <= 1'b1; // (TS)
+            //sh_phi1d_inf_mask <= 1'b0; // (TS)
             dac_sync_n <= 1'b1;
             sel_init_n <= 1'b1;
             inj_start <= 1'b0;
@@ -747,6 +772,8 @@ module pFREYA_IF(
                     // reset all resets
                     slow_ctrl_mask <= 1'b0;
                     slow_ctrl_reset_n <= 1'b0;
+                    slow_ctrl_in_mask <= 1'b1; // (TS)
+                    //sh_phi1d_inf_mask <= 1'b0; // (TS)
                     dac_sync_n <= 1'b1;
                     sel_init_n <= 1'b1;
                     inj_start <= 1'b0;
@@ -797,6 +824,8 @@ module pFREYA_IF(
 
                                 slow_ctrl_reset_n = 1'b0;
                                 slow_ctrl_mask = 1'b0;
+                                slow_ctrl_in_mask <= 1'b1; // (TS)
+                                //sh_phi1d_inf_mask <= 1'b0; // (TS)
                                 // cannot set directly index_send and _sent so let's use a flag
                                 slow_ctrl_reset_request = 1'b1;
 
@@ -982,11 +1011,13 @@ module pFREYA_IF(
                     if (slow_ctrl_packet_sent) begin
                         slow_ctrl_reset_n <= 1'b1;
                         slow_ctrl_mask <= 1'b0;
+                        slow_ctrl_in_mask <= 1'b0; // (TS)
                         slow_ctrl_packet_available <= 1'b0;
                     end
                     else begin
                         slow_ctrl_reset_n <= 1'b1;
                         slow_ctrl_mask <= 1'b1;
+                        slow_ctrl_in_mask <= 1'b1; // (TS)
                         slow_ctrl_packet_available <= slow_ctrl_packet_available;
                     end
                 end
@@ -1047,6 +1078,12 @@ module pFREYA_IF(
                 slow_ctrl_in <= slow_ctrl_in;
                 slow_ctrl_packet_sent <= slow_ctrl_packet_sent;
             end
+        end
+        else if (sh_phi1d_inf_mask) begin
+            // this is due to PCB layout problems!! Check constraint files!
+            slow_ctrl_packet_sent <= 1'b0;
+            slow_ctrl_packet_index_send <= SLOW_CTRL_UART_DATA_POS - SLOW_CTRL_UART_DATA_LAST_POS;
+            slow_ctrl_in <= sh_phi1d_inf;
         end
         else begin
             slow_ctrl_packet_sent <= 1'b0;

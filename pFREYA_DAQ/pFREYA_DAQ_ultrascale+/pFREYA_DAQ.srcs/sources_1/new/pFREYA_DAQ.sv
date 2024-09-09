@@ -145,7 +145,7 @@ module pFREYA_DAQ
         .probe11(adc_ck), // input wire [0:0]  probe11
         .probe12(adc_start), // input wire [0:0]  probe12
         .probe13(sh_phi1d_sup), // input wire [0:0]  probe13 
-        .probe14(sh_phi1d_inf), // input wire [0:0]  probe14
+        .probe14(sh_phi1d_inf), // input wire [0:0]  probe14 (TS)
         .probe15(slow_ctrl_in), // input wire [0:0]  probe15 
         .probe16(slow_ctrl_reset_n), // input wire [0:0]  probe16 
         .probe17(slow_ctrl_ck), // input wire [0:0]  probe17

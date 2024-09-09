@@ -111,11 +111,8 @@ set_property DRIVE 8 [get_ports slow_ctrl_in]
 set_property DRIVE 8 [get_ports slow_ctrl_reset_n]
 set_property DRIVE 8 [get_ports tx_ser]
 
-set_property OFFCHIP_TERM FP_VTT_50 [get_ports csa_reset_n_out]
-# (TS)
-set_property PACKAGE_PIN AB19 [get_ports sh_phi1d_inf]
-
 #sample
+set_property OFFCHIP_TERM FP_VTT_50 [get_ports csa_reset_n_out]
 set_property PACKAGE_PIN K26 [get_ports csa_reset_n_out]
 set_property IOSTANDARD LVCMOS12 [get_ports csa_reset_n_out]
 set_property SLEW FAST [get_ports csa_reset_n_out]
