@@ -91,10 +91,11 @@ def check_pixel(strvar,type):
 
 def check_pixel_to_inj(strvar):
     value = strvar.get()
-    if (not value.isnumeric()):
-        messagebox.showerror('FPGA Pixel to Inj Error', f'Pixel to inject must be a number (0-{UARTdef.PIXEL_N-1}).')
-    elif (int(value) < 0 or int(value) > UARTdef.PIXEL_N-1):
-        messagebox.showerror('FPGA Pixel to Inj Error', f'Pixel to inject must be a number (0-{UARTdef.PIXEL_N-1}).')
+    for v in value.split(","):
+        if (not v.isnumeric()):
+            messagebox.showerror('FPGA Pixel to Inj Error', f'Pixel to inject must be a number (0-{UARTdef.PIXEL_N-1}).')
+        elif (int(v) < 0 or int(v) > UARTdef.PIXEL_N-1):
+            messagebox.showerror('FPGA Pixel to Inj Error', f'Pixel to inject must be a number (0-{UARTdef.PIXEL_N-1}).')
 
 def check_slow_ctrl(strvar,n_bit_expected):
     value = strvar.get()
@@ -373,7 +374,7 @@ current_entry.bind("<FocusOut>", lambda x: check_slow_ctrl(gui.inj_mode_n,1))
 current_entry.grid(column=1, row=row_idx, padx=5)
 row_idx += 1
 ttk.Label(sc_lframe, text="Pixel to inject:").grid(column=0, row=row_idx, sticky=E)
-current_entry = ttk.Entry(sc_lframe, textvariable=gui.pixel_to_inj, width=2)
+current_entry = ttk.Entry(sc_lframe, textvariable=gui.pixel_to_inj, width=4)
 current_entry.bind("<FocusOut>", lambda x: check_pixel_to_inj(gui.pixel_to_inj))
 current_entry.grid(column=1, row=row_idx, padx=5)
 row_idx += 1
