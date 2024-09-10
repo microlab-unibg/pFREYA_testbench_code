@@ -429,15 +429,14 @@ def create_slow_ctrl_packet(gui):
     # for each pixel is the same
     slow_ctrl_packet = gui.csa_mode_n.get() + gui.inj_en_n.get() + gui.shap_mode.get() + \
                     gui.ch_en.get() + gui.inj_mode_n.get()
-    slow_ctrl_packet = slow_ctrl_packet[::-1]
-    slow_ctrl_packet = '1111111'
+    #slow_ctrl_packet = slow_ctrl_packet[::-1]
+    #slow_ctrl_packet = '1111111'
     full_slow_ctrl_packet = ''
     for _ in range(0, UARTdef.PIXEL_N):
         full_slow_ctrl_packet = full_slow_ctrl_packet + slow_ctrl_packet
 
     # set pixel to be injected
-    pixel_idx = int(gui.pixel_to_inj.get())*UARTdef.SLOW_CTRL_N_BITS+1+9 # shouldnt be hard coded
-    print(pixel_idx)
+    pixel_idx = int(gui.pixel_to_inj.get())*UARTdef.SLOW_CTRL_N_BITS+2 # shouldnt be hard coded
     full_slow_ctrl_packet = full_slow_ctrl_packet[:pixel_idx] + '0' + full_slow_ctrl_packet[pixel_idx+1:]
     # reach a dimension multiple of DATA_POS+1
     missing_bits = UARTdef.SLOW_CTRL_UART_DATA_POS - UARTdef.SLOW_CTRL_UART_DATA_LAST_POS
@@ -523,7 +522,7 @@ def send_current_level(gui):
 
     return gui.current_level
 
-def send_slow_ctrl(gui):
+def send_slow_ctrl_bits(gui):
     """Function to send clocks in the FPGA
 
     Parameters
@@ -539,7 +538,7 @@ def send_slow_ctrl(gui):
     if (not gui.slow_ck_sent):
         return 1
     
-    full_slow_ctrl_packet = gui.slow_bits.get()*16 + '0'*2 #str
+    full_slow_ctrl_packet = gui.slow_bits.get()*8 + '0'*2 #str
     print('SLOW_CTRL data to be sent: ',[full_slow_ctrl_packet[i:i+UARTdef.SLOW_CTRL_N_BITS] for i in range(0, len(full_slow_ctrl_packet), UARTdef.SLOW_CTRL_N_BITS)])
 
     try:
@@ -563,7 +562,7 @@ def send_slow_ctrl(gui):
     
     return 0
 
-def send_slow_ctrl_true(gui):
+def send_slow_ctrl(gui):
     """Function to send clocks in the FPGA
 
     Parameters

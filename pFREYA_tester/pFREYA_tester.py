@@ -52,10 +52,12 @@ def show_about():
     about_frame.pack()
     about_root.pack()
 
-def check_fpga_clocks(strvar):
+def check_fpga_clocks(strvar, is_slow_ctrl=False):
     value = strvar.get()
     if (not value.isnumeric()):
         messagebox.showerror('FPGA Period Error', f'FPGA Period must be a number between 1 and {2**UARTdef.DATA_PACKET_LENGTH-1}.')
+    elif (is_slow_ctrl and (int(value) <= 2 or int(value) > 2**UARTdef.DATA_PACKET_LENGTH-1)):
+        messagebox.showerror('FPGA Period Error', f'FPGA Period must be between 3 and {2**UARTdef.DATA_PACKET_LENGTH-1}.')
     elif (int(value) < 1 or int(value) > 2**UARTdef.DATA_PACKET_LENGTH-1):
         messagebox.showerror('FPGA Period Error', f'FPGA Period must be between 1 and {2**UARTdef.DATA_PACKET_LENGTH-1}.')
 
@@ -298,7 +300,7 @@ ck_lframe.grid(column=0, row=0, padx=5, pady=30, sticky=NSEW)
 row_idx += 1
 ttk.Label(ck_lframe, text="Slow control clock:").grid(column=0, row=row_idx, sticky=E)
 current_entry = ttk.Entry(ck_lframe, textvariable=gui.slow_ck, width=UARTdef.WIDTH_ENTRY)
-current_entry.bind("<FocusOut>", lambda x: check_fpga_clocks(gui.slow_ck))
+current_entry.bind("<FocusOut>", lambda x: check_fpga_clocks(gui.slow_ck,True))
 current_entry.grid(column=1, row=row_idx, padx=5)
 ttk.Label(ck_lframe, text="FP").grid(column=2, row=row_idx)
 row_idx += 1
@@ -338,43 +340,43 @@ ttk.Button(ck_lframe, text="Send clocks", command=lambda: pYtp.send_clocks(gui))
 sc_lframe = ttk.Labelframe(main_frame, text="Slow control configuration", padding=10, width=200, height=100)
 sc_lframe.grid(column=1, row=0, padx=5, pady=30, sticky=NSEW)
 row_idx = 0
-ttk.Label(sc_lframe, text="Bits:").grid(column=0, row=row_idx, sticky=E)
-current_entry = ttk.Entry(sc_lframe, textvariable=gui.slow_bits, width=7)
+# ttk.Label(sc_lframe, text="Bits:").grid(column=0, row=row_idx, sticky=E)
+# current_entry = ttk.Entry(sc_lframe, textvariable=gui.slow_bits, width=7*2)
+# current_entry.grid(column=1, row=row_idx, padx=5)
+# row_idx += 1
+ttk.Label(sc_lframe, text="CSA_MODE_N:").grid(column=0, row=row_idx, sticky=E)
+current_entry = ttk.Entry(sc_lframe, textvariable=gui.csa_mode_n, width=2)
+current_entry.bind("<FocusOut>", lambda x: check_slow_ctrl(gui.csa_mode_n,2))
 current_entry.grid(column=1, row=row_idx, padx=5)
 row_idx += 1
-#ttk.Label(sc_lframe, text="CSA_MODE_N:").grid(column=0, row=row_idx, sticky=E)
-#current_entry = ttk.Entry(sc_lframe, textvariable=gui.csa_mode_n, width=2)
-#current_entry.bind("<FocusOut>", lambda x: check_slow_ctrl(gui.csa_mode_n,2))
-#current_entry.grid(column=1, row=row_idx, padx=5)
-#row_idx += 1
-#current_label = ttk.Label(sc_lframe, text="INJ_EN_N:")
-#current_label.grid(column=0, row=row_idx, sticky=E)
-#current_label.configure(state='disable')
-#current_entry = ttk.Entry(sc_lframe, textvariable=gui.inj_en_n, width=1)
-#current_entry.bind("<FocusOut>", lambda x: check_slow_ctrl(gui.inj_en_n,1))
-#current_entry.grid(column=1, row=row_idx, padx=5)
-#current_entry.configure(state='disable')
-#row_idx += 1
-#ttk.Label(sc_lframe, text="SHAP_MODE:").grid(column=0, row=row_idx, sticky=E)
-#current_entry = ttk.Entry(sc_lframe, textvariable=gui.shap_mode, width=2)
-#current_entry.bind("<FocusOut>", lambda x: check_slow_ctrl(gui.shap_mode,2))
-#current_entry.grid(column=1, row=row_idx, padx=5)
-#row_idx += 1
-#ttk.Label(sc_lframe, text="CH_EN:").grid(column=0, row=row_idx, sticky=E)
-#current_entry = ttk.Entry(sc_lframe, textvariable=gui.ch_en, width=1)
-#current_entry.bind("<FocusOut>", lambda x: check_slow_ctrl(gui.ch_en,1))
-#current_entry.grid(column=1, row=row_idx, padx=5)
-#row_idx += 1
-#ttk.Label(sc_lframe, text="INJ_MODE_N:").grid(column=0, row=row_idx, sticky=E)
-#current_entry = ttk.Entry(sc_lframe, textvariable=gui.inj_mode_n, width=1)
-#current_entry.bind("<FocusOut>", lambda x: check_slow_ctrl(gui.inj_mode_n,1))
-#current_entry.grid(column=1, row=row_idx, padx=5)
-#row_idx += 1
-#ttk.Label(sc_lframe, text="Pixel to inject:").grid(column=0, row=row_idx, sticky=E)
-#current_entry = ttk.Entry(sc_lframe, textvariable=gui.pixel_to_inj, width=2)
-#current_entry.bind("<FocusOut>", lambda x: check_pixel_to_inj(gui.pixel_to_inj))
-#current_entry.grid(column=1, row=row_idx, padx=5)
-#row_idx += 1
+current_label = ttk.Label(sc_lframe, text="INJ_EN_N:")
+current_label.grid(column=0, row=row_idx, sticky=E)
+current_label.configure(state='disable')
+current_entry = ttk.Entry(sc_lframe, textvariable=gui.inj_en_n, width=1)
+current_entry.bind("<FocusOut>", lambda x: check_slow_ctrl(gui.inj_en_n,1))
+current_entry.grid(column=1, row=row_idx, padx=5)
+current_entry.configure(state='disable')
+row_idx += 1
+ttk.Label(sc_lframe, text="SHAP_MODE:").grid(column=0, row=row_idx, sticky=E)
+current_entry = ttk.Entry(sc_lframe, textvariable=gui.shap_mode, width=2)
+current_entry.bind("<FocusOut>", lambda x: check_slow_ctrl(gui.shap_mode,2))
+current_entry.grid(column=1, row=row_idx, padx=5)
+row_idx += 1
+ttk.Label(sc_lframe, text="CH_EN:").grid(column=0, row=row_idx, sticky=E)
+current_entry = ttk.Entry(sc_lframe, textvariable=gui.ch_en, width=1)
+current_entry.bind("<FocusOut>", lambda x: check_slow_ctrl(gui.ch_en,1))
+current_entry.grid(column=1, row=row_idx, padx=5)
+row_idx += 1
+ttk.Label(sc_lframe, text="INJ_MODE_N:").grid(column=0, row=row_idx, sticky=E)
+current_entry = ttk.Entry(sc_lframe, textvariable=gui.inj_mode_n, width=1)
+current_entry.bind("<FocusOut>", lambda x: check_slow_ctrl(gui.inj_mode_n,1))
+current_entry.grid(column=1, row=row_idx, padx=5)
+row_idx += 1
+ttk.Label(sc_lframe, text="Pixel to inject:").grid(column=0, row=row_idx, sticky=E)
+current_entry = ttk.Entry(sc_lframe, textvariable=gui.pixel_to_inj, width=2)
+current_entry.bind("<FocusOut>", lambda x: check_pixel_to_inj(gui.pixel_to_inj))
+current_entry.grid(column=1, row=row_idx, padx=5)
+row_idx += 1
 ttk.Button(sc_lframe, text="Send slow ctrl", command=lambda: pYtp.send_slow_ctrl(gui)).grid(column=1, columnspan=2, row=row_idx, pady=[10,0], sticky=SE)
 
 # # DAC configuration
