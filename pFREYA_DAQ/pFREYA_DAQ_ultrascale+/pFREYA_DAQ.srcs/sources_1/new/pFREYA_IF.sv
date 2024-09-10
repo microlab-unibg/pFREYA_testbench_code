@@ -168,7 +168,8 @@ module pFREYA_IF(
             slow_ctrl_ck <= 1'b0;
             slow_ctrl_cnt <= -1;
         end
-        else if (slow_ctrl_div == '0 || sync_time_base_flag) begin
+        // <= 2 to allow for half period sample
+        else if (slow_ctrl_div <= 2 || sync_time_base_flag) begin
             slow_ctrl_ck <= 1'b0;
             slow_ctrl_cnt <= -1;
         end
@@ -1049,7 +1050,7 @@ module pFREYA_IF(
             slow_ctrl_packet_sent <= 1'b0;
         end
         else if (slow_ctrl_mask) begin
-            if (slow_ctrl_ck == 1'b0 && slow_ctrl_cnt == slow_ctrl_div-1) begin
+            if (slow_ctrl_ck == 1'b0 && slow_ctrl_cnt == slow_ctrl_div/2) begin
                 if (slow_ctrl_packet_index_send != SLOW_CTRL_PACKET_LENGTH + SLOW_CTRL_UART_DATA_POS - SLOW_CTRL_UART_DATA_LAST_POS) begin
                     slow_ctrl_in <= slow_ctrl_packet[slow_ctrl_packet_index_send];
                     slow_ctrl_packet_index_send <= slow_ctrl_packet_index_send + 1;
@@ -1061,7 +1062,7 @@ module pFREYA_IF(
                     slow_ctrl_packet_sent <= slow_ctrl_packet_sent;
                 end
             end
-            else if (slow_ctrl_ck == 1'b1 && slow_ctrl_cnt == slow_ctrl_div-1) begin
+            else if (slow_ctrl_ck == 1'b1 && slow_ctrl_cnt == slow_ctrl_div/2) begin
                 if (slow_ctrl_packet_index_send == SLOW_CTRL_PACKET_LENGTH + SLOW_CTRL_UART_DATA_POS - SLOW_CTRL_UART_DATA_LAST_POS) begin
                     slow_ctrl_packet_index_send <= SLOW_CTRL_PACKET_LENGTH + SLOW_CTRL_UART_DATA_POS - SLOW_CTRL_UART_DATA_LAST_POS;
                     slow_ctrl_in <= 1'b0;

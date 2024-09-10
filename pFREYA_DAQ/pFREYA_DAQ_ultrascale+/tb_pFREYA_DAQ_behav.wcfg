@@ -12,15 +12,15 @@
       </db_ref>
    </db_ref_list>
    <zoom_setting>
-      <ZoomStartTime time="3,411.168684 us"></ZoomStartTime>
-      <ZoomEndTime time="4,166.168685 us"></ZoomEndTime>
-      <Cursor1Time time="3,744.168684 us"></Cursor1Time>
+      <ZoomStartTime time="0.000000 us"></ZoomStartTime>
+      <ZoomEndTime time="3,795.000001 us"></ZoomEndTime>
+      <Cursor1Time time="213.112614 us"></Cursor1Time>
    </zoom_setting>
    <column_width_setting>
-      <NameColumnWidth column_width="218"></NameColumnWidth>
+      <NameColumnWidth column_width="214"></NameColumnWidth>
       <ValueColumnWidth column_width="58"></ValueColumnWidth>
    </column_width_setting>
-   <WVObjectSize size="24" />
+   <WVObjectSize size="25" />
    <wvobject fp_name="/tb_pFREYA_DAQ/pFREYA_DAQ_inst/daq_ck" type="logic">
       <obj_property name="ElementShortName">daq_ck</obj_property>
       <obj_property name="ObjectShortName">daq_ck</obj_property>
@@ -44,6 +44,7 @@
    <wvobject fp_name="/tb_pFREYA_DAQ/pFREYA_DAQ_inst/uart_data" type="array">
       <obj_property name="ElementShortName">uart_data[7:0]</obj_property>
       <obj_property name="ObjectShortName">uart_data[7:0]</obj_property>
+      <obj_property name="isExpanded"></obj_property>
    </wvobject>
    <wvobject fp_name="/tb_pFREYA_DAQ/pFREYA_DAQ_inst/pFREYA_IF_inst/cmd" type="array">
       <obj_property name="ElementShortName">cmd[3:0]</obj_property>
@@ -109,9 +110,14 @@
       <obj_property name="ElementShortName">slow_ctrl_packet_sent</obj_property>
       <obj_property name="ObjectShortName">slow_ctrl_packet_sent</obj_property>
    </wvobject>
+   <wvobject fp_name="/tb_pFREYA_DAQ/pFREYA_DAQ_inst/pFREYA_IF_inst/slow_ctrl_packet_index_send" type="array">
+      <obj_property name="ElementShortName">slow_ctrl_packet_index_send[7:0]</obj_property>
+      <obj_property name="ObjectShortName">slow_ctrl_packet_index_send[7:0]</obj_property>
+   </wvobject>
    <wvobject fp_name="/tb_pFREYA_DAQ/pFREYA_DAQ_inst/pFREYA_IF_inst/slow_ctrl_packet" type="array">
       <obj_property name="ElementShortName">slow_ctrl_packet[127:0]</obj_property>
       <obj_property name="ObjectShortName">slow_ctrl_packet[127:0]</obj_property>
+      <obj_property name="isExpanded"></obj_property>
    </wvobject>
    <wvobject fp_name="/tb_pFREYA_DAQ/sh_phi1d_inf" type="logic">
       <obj_property name="ElementShortName">sh_phi1d_inf</obj_property>
