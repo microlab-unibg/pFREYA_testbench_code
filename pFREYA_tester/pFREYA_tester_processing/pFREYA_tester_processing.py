@@ -58,7 +58,7 @@ def create_data(data):
     str
         data packet
     """
-    for i in range(math.floor(int(UARTdef.DATA_PACKET_LENGTH)/(int(UARTdef.DATA_UART_DATA_POS)+1)),0,-1):
+    for i in range(math.ceil(int(UARTdef.DATA_PACKET_LENGTH)/(int(UARTdef.DATA_UART_DATA_POS)+1)),0,-1):
         yield UARTdef.DATA_PACKET + \
             (UARTdef.LAST_UART_PACKET if i == 1 else UARTdef.NOTLAST_UART_PACKET) + \
             data[(i-1)*(UARTdef.DATA_UART_DATA_POS+1):i*(UARTdef.DATA_UART_DATA_POS+1)]
@@ -76,7 +76,7 @@ def create_data_slow(data):
     str
         data packet
     """
-    for i in range(math.floor(int(UARTdef.SLOW_CTRL_PACKET_LENGTH)/(int(UARTdef.SLOW_CTRL_UART_DATA_POS)+1)),0,-1):
+    for i in range(math.ceil(len(data)/(int(UARTdef.SLOW_CTRL_UART_DATA_POS)+1)),0,-1):
         yield UARTdef.DATA_PACKET + \
             (UARTdef.LAST_UART_PACKET if i == 1 else UARTdef.NOTLAST_UART_PACKET) + \
             data[(i-1)*(UARTdef.SLOW_CTRL_UART_DATA_POS+1):i*(UARTdef.SLOW_CTRL_UART_DATA_POS+1)]
@@ -429,13 +429,15 @@ def create_slow_ctrl_packet(gui):
     # for each pixel is the same
     slow_ctrl_packet = gui.csa_mode_n.get() + gui.inj_en_n.get() + gui.shap_mode.get() + \
                     gui.ch_en.get() + gui.inj_mode_n.get()
-    #slow_ctrl_packet = '1111111'
+    slow_ctrl_packet = slow_ctrl_packet[::-1]
+    slow_ctrl_packet = '1111111'
     full_slow_ctrl_packet = ''
     for _ in range(0, UARTdef.PIXEL_N):
         full_slow_ctrl_packet = full_slow_ctrl_packet + slow_ctrl_packet
 
     # set pixel to be injected
-    pixel_idx = int(gui.pixel_to_inj.get())*UARTdef.SLOW_CTRL_N_BITS+2 # shouldnt be hard coded
+    pixel_idx = int(gui.pixel_to_inj.get())*UARTdef.SLOW_CTRL_N_BITS+1+9 # shouldnt be hard coded
+    print(pixel_idx)
     full_slow_ctrl_packet = full_slow_ctrl_packet[:pixel_idx] + '0' + full_slow_ctrl_packet[pixel_idx+1:]
     # reach a dimension multiple of DATA_POS+1
     missing_bits = UARTdef.SLOW_CTRL_UART_DATA_POS - UARTdef.SLOW_CTRL_UART_DATA_LAST_POS
@@ -537,6 +539,46 @@ def send_slow_ctrl(gui):
     if (not gui.slow_ck_sent):
         return 1
     
+    full_slow_ctrl_packet = gui.slow_bits.get()*16 + '0'*2 #str
+    print('SLOW_CTRL data to be sent: ',[full_slow_ctrl_packet[i:i+UARTdef.SLOW_CTRL_N_BITS] for i in range(0, len(full_slow_ctrl_packet), UARTdef.SLOW_CTRL_N_BITS)])
+
+    try:
+        # set slow packet        
+        cmd = create_cmd(UARTdef.SET_SLOW_CTRL_CMD, UARTdef.UNUSED_CODE)
+        send_UART(cmd)
+        print('CMD sent: ',cmd)
+        for data in create_data_slow(full_slow_ctrl_packet):
+            send_UART('', data)
+            print('Data sent: ',data)
+            time.sleep(0.5)
+
+        # send slow
+        cmd = create_cmd(UARTdef.SEND_SLOW_CTRL_CMD, UARTdef.UNUSED_CODE)
+        send_UART(cmd)
+        print('CMD sent: ',cmd)
+        time.sleep(1)
+    except Exception:
+        print(traceback.format_exc())
+        return 1
+    
+    return 0
+
+def send_slow_ctrl_true(gui):
+    """Function to send clocks in the FPGA
+
+    Parameters
+    ----------
+    gui : pFREYA_GUI
+        The structure containing all the data related to the tester.
+    
+    Returns
+    ----------
+    int
+        0 if everything was ok, 1 otherwise.
+    """
+    if (not gui.slow_ck_sent):
+        return 1
+    
     full_slow_ctrl_packet = create_slow_ctrl_packet(gui) #str
     print('SLOW_CTRL data to be sent: ',[full_slow_ctrl_packet[i:i+UARTdef.SLOW_CTRL_N_BITS] for i in range(0, len(full_slow_ctrl_packet), UARTdef.SLOW_CTRL_N_BITS)])
 
@@ -545,11 +587,10 @@ def send_slow_ctrl(gui):
         cmd = create_cmd(UARTdef.SET_SLOW_CTRL_CMD, UARTdef.UNUSED_CODE)
         send_UART(cmd)
         print('CMD sent: ',cmd)
-        for data in create_data_slow(convert_strvar_bin(full_slow_ctrl_packet)):
+        for data in create_data_slow(full_slow_ctrl_packet):
             send_UART('', data)
             print('Data sent: ',data)
-
-        time.sleep(1)
+            time.sleep(0.5)
 
         # send slow
         cmd = create_cmd(UARTdef.SEND_SLOW_CTRL_CMD, UARTdef.UNUSED_CODE)
