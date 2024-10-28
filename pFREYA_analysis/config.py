@@ -172,20 +172,22 @@ def config(channel: str, lemo: str, n_steps: int, cfg_bits: list, cfg_inst: bool
     conv_kev_c = 3.65/1000 * 1/1.602e-19 # Energy in silicon for e-/h * no of electrons per coulomb [keV/e-] * [e-/C]
     csa_bits = config_bits[0:2]
     shap_bits = config_bits[3:5]
+
+
     match csa_bits:
         case [0,1]:
             photon_energy = 9 # keV
             offset_charge = 8.5e-15 # C *tentative
             #min_current = 0.03e-6 # A for active probes
             min_current = .07e-6 # A
-            max_current = 1.5e-6 #1.6e-6 # A
+            max_current = 1.55e-6 #1.6e-6 # A
             #max_current = .75e-6 # active probes
             corr_fact = 1 #105.8/103.2
         case [0,0]:
             photon_energy = 25 # keV
             offset_charge = 8.5e-15 # C *tentative
             min_current = .07e-6 # A
-            max_current = 4e-6 #4.1e-6 # A
+            max_current = 3.8e-6 #4.1e-6 # A
             corr_fact = 1 #105.8/103.2
         case [1,0]:
             photon_energy = 18 # keV
@@ -197,7 +199,7 @@ def config(channel: str, lemo: str, n_steps: int, cfg_bits: list, cfg_inst: bool
             photon_energy = 5 # keV
             offset_charge = 0 #8.5e-15 # C *tentative
             min_current = .065e-6 # A
-            max_current = .86e-6 # A
+            max_current = .83e-6 # A
             corr_fact = 1 #105.8/103.2
     match shap_bits:
         case [1,0]: 
@@ -216,7 +218,7 @@ def config(channel: str, lemo: str, n_steps: int, cfg_bits: list, cfg_inst: bool
             peaking_time = 530# old 493 # ns (from mean dyn), 535 ns (from max dyn), 535 ns (from theory)
             inj_shap_corr_fact = 1#565/572 # 
             gain_shap = 2.31 # from measurements
-
+            
     if channel_name == 'csa':
         current_lev = -1 * np.linspace(min_current,max_current,n_steps)
     else:
@@ -238,3 +240,5 @@ def config(channel: str, lemo: str, n_steps: int, cfg_bits: list, cfg_inst: bool
     print(f'Peaking time: {peaking_time} ns')
     print(f'Config bits: {config_bits_str}')
     print(f'Channel to be tested: {channel_name}')
+
+    
