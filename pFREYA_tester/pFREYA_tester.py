@@ -2,9 +2,9 @@ from tkinter import *
 from tkinter import ttk
 from tkinter import messagebox
 from serial import *
-
+import subprocess
 import json
-
+import gui_test as g2
 import serial
 
 import pFREYA_tester_processing.pFREYA_tester_processing as pYtp
@@ -100,7 +100,6 @@ def check_slow_ctrl(strvar,n_bit_expected):
         messagebox.showerror('FPGA Slow Ctrl Error', f'Slow control bits have a specific length to be respected. In this case {n_bit_expected}.')
     elif (value not in ('0','1','00','01','10','11')):
         messagebox.showerror('FPGA Slow Ctrl Error', f'Slow control bits are binary (0 or 1).')
-
 # === GUI CLASS ===
 class pFREYA_GUI():
     """Class representing the GUI
@@ -370,7 +369,7 @@ current_entry.bind("<FocusOut>", lambda x: check_pixel_to_inj(gui.pixel_to_inj))
 current_entry.grid(column=1, row=row_idx, padx=5)
 row_idx += 1
 ttk.Button(sc_lframe, text="Send slow ctrl", command=lambda: pYtp.send_slow_ctrl(gui)).grid(column=1, columnspan=2, row=row_idx, pady=[10,0], sticky=SE)
-ttk.Button(sc_lframe, text="Auto slow ctrl", command=lambda: pYtp.auto_slow_control(gui)).grid(column=0, columnspan=2, row=row_idx, pady=[10,0], sticky=SE)
+ttk.Button(sc_lframe, text="Auto slow ctrl", command=lambda: g2.auto_slow_control()).grid(column=0, columnspan=1, row=row_idx, pady=[10,0], sticky=SE)
 # # DAC configuration
 # ts_lframe = ttk.Labelframe(main_frame, text="DAC configuration", padding=10, width=200, height=100)
 # ts_lframe.grid(column=2, row=0, padx=5, pady=30, sticky=NSEW)
