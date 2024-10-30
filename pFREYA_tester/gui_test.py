@@ -2,16 +2,16 @@ import tkinter as tk
 import subprocess
 import sys
 import os
+#from ..pFREYA_analysis import config
+sys.path.append('..')
+from pFREYA_analysis import config
+from pFREYA_analysis import comms
 
-
-import pFREYA_tester_processing as pYtp
-import pFREYA_tester as g1
 
 def run_script():
-  pYtp.send_clocks(g1)
-  #pYtp.send_slow_ctrl(g1)
+  g1.auto_clock()
   subprocess.run(["python", "prova_transcharacteristics_auto.py"])
-  pYtp.send_CSA_RESET_N(g1)
+  g1.auto_csa_reset()
   
 #metodo per shap
 

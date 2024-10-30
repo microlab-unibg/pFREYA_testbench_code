@@ -17,6 +17,10 @@ import pyvisa
 FPGA_COM_DEF = "XILINX"
 
 # === GUI FUNCTIONS ===
+def auto_clock():
+    pYtp.send_clocks(gui)
+def auto_csa_reset():
+     pYtp.send_CSA_RESET_N(gui)
 def load_config():
     with open("pFREYA_tester_config.json", "r") as f:
         try:
