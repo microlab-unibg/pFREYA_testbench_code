@@ -213,17 +213,69 @@ generate_plots()
 plt.show()
 
 
+#grafico totale delle 4 modalità:
 
+colours = list(mcolors.TABLEAU_COLORS.keys())
 
+# Percorsi dei file .tsv (aggiorna con i tuoi percorsi)
+path = [
+    "C:/Users/giorg/Desktop/ts/mis_config_0.tsv",  # 5 keV
+    "C:/Users/giorg/Desktop/ts/mis_config_1.tsv",  # 9 keV
+    "C:/Users/giorg/Desktop/ts/mis_config_2.tsv",  # 18 keV
+    "C:/Users/giorg/Desktop/ts/mis_config_3.tsv"   # 25 keV
+]
 
-"""
-import pFREYA_tester_processing.pFREYA_tester_processing as pYtp
-import pFREYA_tester_processing.UART_definitions as UARTdef
+# Modelli di energia (aggiorna con i tuoi dati)
+modes = [5, 9, 18, 25]
 
+# Caricamento dei DataFrame
+dfs = []
+for p in path:
+    dfs.append(pd.read_csv(p, sep='\t'))
 
-def auto_slow_control(gui):
-    pYtp.send_clocks(gui)
-    #send slow control
-    #send inj
-    pYtp.send_CSA_RESET_N(gui)
-"""
+# Creazione del grafico
+datetime_str = datetime.strftime(datetime.now(), '%d%m%y_%H%M%S')
+fig, ax = plt.subplots()
+fig.set_figheight(4)
+fig.set_figwidth(5)
+
+photon_span = np.linspace(0, 256, 20)
+
+# Creazione dei grafici per ciascuna configurazione
+for i in range(4):
+    ax.errorbar(
+        photon_span,
+        dfs[i]['Voltage output average (V)'],
+        xerr=np.tile(1, dfs[i].shape[0]),
+        yerr=dfs[i]['Voltage output std (V)'],
+        fmt='s',
+        markersize=1,
+        capsize=3,
+        color=colours[i]
+    )
+
+ax.set_xlabel('Equivalent input photons')
+ax.set_ylabel(f'|CSA reset amplitude| [V]')
+ax.tick_params(right=True, top=True, direction='in')
+
+lns = []
+linear_outputs = []
+max_diffs = []
+inls = []
+
+# Esegui la regressione lineare e aggiungi i risultati al grafico
+for i in range(4):
+    lns.append(linregress(
+        photon_span,
+        dfs[i]['Voltage output average (V)'].astype(float)
+    ))
+    linear_outputs.append(lns[i].intercept + lns[i].slope * np.linspace(0, 256, 20))
+    ax.plot(
+        photon_span,
+        linear_outputs[i],
+        color=colours[i]
+    )
+    max_diffs.append(np.max(dfs[i]['Voltage output average (V)'] - linear_outputs[i]))
+    inls.append(100 * np.abs(max_diffs[i]) / lns[i].slope / 256)
+
+plt.show()
