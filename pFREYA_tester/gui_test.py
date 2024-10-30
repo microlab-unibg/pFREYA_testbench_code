@@ -9,7 +9,7 @@ import pFREYA_tester as g1
 
 def run_script():
   pYtp.send_clocks(g1)
-  pYtp.send_slow_ctrl(g1)
+  #pYtp.send_slow_ctrl(g1)
   subprocess.run(["python", "prova_transcharacteristics_auto.py"])
   pYtp.send_CSA_RESET_N(g1)
   
