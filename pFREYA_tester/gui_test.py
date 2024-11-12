@@ -10,9 +10,13 @@ import pFREYA_tester as g1
 
 def run_script():
   g1.to_json_CSA()
+  print("json ok")
   g1.auto_clock()
-  g1.auto_csa_reset()
+  print("clk ok")
   g1.auto_slwctrl()
+  print("slw ok")
+  g1.auto_csa_reset()
+  
   #devo fare metodo per inviare corrente
   subprocess.run(["python", "prova_transcharacteristics_auto.py"])
 #metodo per shap

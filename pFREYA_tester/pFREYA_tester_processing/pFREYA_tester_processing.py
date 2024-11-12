@@ -545,7 +545,7 @@ def send_slow_ctrl(gui):
         cmd = create_cmd(UARTdef.SET_SLOW_CTRL_CMD, UARTdef.UNUSED_CODE)
         send_UART(cmd)
         print('CMD sent: ',cmd)
-        for data in create_data_slow(convert_strvar_bin(full_slow_ctrl_packet)):
+        for data in create_data_slow(full_slow_ctrl_packet):
             send_UART('', data)
             print('Data sent: ',data)
 
