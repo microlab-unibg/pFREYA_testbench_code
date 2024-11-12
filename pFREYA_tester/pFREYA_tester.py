@@ -55,14 +55,18 @@ def to_json_CSA(): #parametri fissi per caso 1
             "current_level": -0.7
         }
     }
-
+def reset_iniziale():
+    pYtp.send_reset_FPGA()
 def auto_clock():
     pYtp.send_clocks(gui)
 def auto_csa_reset():
     pYtp.send_CSA_RESET_N(gui)
 def auto_slwctrl():
     pYtp.send_slow_ctrl(gui)
-
+def auto_currentlvl():
+    pYtp.send_current_level(gui)
+def auto_send_pixel():
+    pYtp.send_pixel(gui)
 def load_config():
     with open("pFREYA_tester_config.json", "r") as f:
         try:

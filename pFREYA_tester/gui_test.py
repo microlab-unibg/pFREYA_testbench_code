@@ -1,5 +1,6 @@
 import tkinter as tk
 import subprocess
+import time
 import sys
 import os
 #from ..pFREYA_analysis import config
@@ -9,16 +10,34 @@ sys.path.append('..')
 import pFREYA_tester as g1
 
 def run_script():
+  g1.reset_iniziale()
+  print("Reset FPGA")
+  time.sleep(2)
+
   g1.to_json_CSA()
   print("json ok")
+  time.sleep(2)
+
   g1.auto_clock()
   print("clk ok")
+  time.sleep(2)
+
   g1.auto_slwctrl()
   print("slw ok")
+  time.sleep(2)
+
+  g1.auto_currentlvl()
+  print("current ok")
+  time.sleep(2)
+
+  g1.auto_send_pixel()
+  print("pixel ok")
+  time.sleep(2)
+  
   g1.auto_csa_reset()
   
   #devo fare metodo per inviare corrente
-  subprocess.run(["python", "prova_transcharacteristics_auto.py"])
+  #subprocess.run(["python", "prova_transcharacteristics_auto.py"])
 #metodo per shap
 
 #finestra
