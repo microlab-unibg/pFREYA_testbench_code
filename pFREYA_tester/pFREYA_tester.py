@@ -17,12 +17,49 @@ import pyvisa
 FPGA_COM_DEF = "XILINX"
 
 # === GUI FUNCTIONS ===
+
+def to_json_CSA(): #parametri fissi per caso 1
+    use_autocsa = False
+    return{
+        "pFREYA_GUI__": True,
+        "clocks":{
+            "slow_ck": 40,
+            "sel_ck": 4095,
+            "adc_ck": 4095,
+            "inj_stb": 1, 
+            "ser_ck": 4095, 
+            "dac_sck": 4095 
+        }, 
+        "INJ": { 
+            "current_level": 5 
+        }, 
+        "slow_ctrl": { 
+            "csa_mode_n": 10, 
+            "inj_en_n": 1, 
+            "shap_mode": 10, 
+            "ch_en": 1, 
+            "inj_mode_n": 1 
+        }, 
+        "pixel_sel": { 
+            "pixel_row": 3, 
+            "pixel_col": 1 
+        }, 
+        "asic_ctrl": {
+            "csa_reset_n": {
+                "delay":  1,
+                "high": 60,
+                "low": 4000 
+            }
+        }
+    }
+
 def auto_clock():
     pYtp.send_clocks(gui)
 def auto_csa_reset():
     pYtp.send_CSA_RESET_N(gui)
 def auto_slwctrl():
     pYtp.send_slow_ctrl(gui)
+
 def load_config():
     with open("pFREYA_tester_config.json", "r") as f:
         try:
@@ -207,6 +244,7 @@ class pFREYA_GUI():
         print(self.rm.list_resources())
     
     def to_json(self):
+        use_autocsa = False
         # === START JSON DEFINITION ===
         return {
                     "__pFREYA_GUI__": True,
@@ -272,8 +310,13 @@ class pFREYA_GUI():
                     }
                 }
         # === END JSON DEFINITION ===
-
 # === MAIN LOOP ===
+#Metodo per decidere quale JSON utilizzare 
+def get_json(self, use_csa=False): 
+    if use_csa: 
+        return self.to_json_CSA() 
+    else: 
+        return self.to_json()
 # Start GUI window
 root = Tk()
 root.title("pFREYA tester v0 - Manual testing")

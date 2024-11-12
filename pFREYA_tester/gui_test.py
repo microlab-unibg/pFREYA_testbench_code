@@ -9,6 +9,7 @@ sys.path.append('..')
 import pFREYA_tester as g1
 
 def run_script():
+  g1.to_json_CSA()
   g1.auto_clock()
   g1.auto_csa_reset()
   g1.auto_slwctrl()
