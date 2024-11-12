@@ -4,15 +4,16 @@ import sys
 import os
 #from ..pFREYA_analysis import config
 sys.path.append('..')
-from pFREYA_analysis import config
-from pFREYA_analysis import comms
-
+#from pFREYA_analysis import config
+#from pFREYA_analysis import comms
+import pFREYA_tester as g1
 
 def run_script():
   g1.auto_clock()
-  subprocess.run(["python", "prova_transcharacteristics_auto.py"])
   g1.auto_csa_reset()
-  
+  g1.auto_slwctrl()
+  #devo fare metodo per inviare corrente
+  subprocess.run(["python", "prova_transcharacteristics_auto.py"])
 #metodo per shap
 
 #finestra

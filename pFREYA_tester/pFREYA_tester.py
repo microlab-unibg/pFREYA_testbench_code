@@ -20,7 +20,9 @@ FPGA_COM_DEF = "XILINX"
 def auto_clock():
     pYtp.send_clocks(gui)
 def auto_csa_reset():
-     pYtp.send_CSA_RESET_N(gui)
+    pYtp.send_CSA_RESET_N(gui)
+def auto_slwctrl():
+    pYtp.send_slow_ctrl(gui)
 def load_config():
     with open("pFREYA_tester_config.json", "r") as f:
         try:
