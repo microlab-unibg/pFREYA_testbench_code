@@ -50,6 +50,9 @@ def to_json_CSA(): #parametri fissi per caso 1
                 "high": 60,
                 "low": 4000 
             }
+        },
+        "INJ": {
+            "current_level": -0.7
         }
     }
 
