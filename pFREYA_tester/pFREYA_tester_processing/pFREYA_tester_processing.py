@@ -502,7 +502,7 @@ def send_current_level_csa(gui):
     ps.write(':OUTP:RES:SHUN DEF')
     ps.write(':SOUR:FUNC:MODE CURR')
     ps.write(':SOUR:CURR:MODE FIX')
-    ps.write(f':SOUR:CURR:LEV {gui.current_level.get()}E-6')
+    ps.write(f':SOUR:CURR:LEV {-0.8}E-6')
     ps.write(':DISP:ENAB OFF')
     ps.write(':DISP:TEXT:DATA "pFREYA16"')
     ps.write(':DISP:TEXT:STAT ON')
