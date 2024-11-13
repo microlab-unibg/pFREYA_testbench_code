@@ -23,37 +23,35 @@ def to_json_CSA(): #parametri fissi per caso 1
     return{
         "pFREYA_GUI__": True,
         "clocks":{
-            "slow_ck": 40,
-            "sel_ck": 4095,
-            "adc_ck": 4095,
-            "inj_stb": 1, 
-            "ser_ck": 4095, 
-            "dac_sck": 4095 
+            "slow_ck": '40',
+            "sel_ck": '4095',
+            "adc_ck": '4095',
+            "inj_stb": '1', 
+            "ser_ck": '4095', 
+            "dac_sck": '4095' 
         }, 
         "INJ": { 
-            "current_level": 5 
-        }, 
+            "current_level": '-0.8'
+        },
         "slow_ctrl": { 
-            "csa_mode_n": 10, 
-            "inj_en_n": 1, 
-            "shap_mode": 10, 
-            "ch_en": 1, 
-            "inj_mode_n": 1 
+            "csa_mode_n": '10', 
+            "inj_en_n": '1', 
+            "shap_mode": '10', 
+            "ch_en": '1', 
+            "inj_mode_n": '1' 
         }, 
         "pixel_sel": { 
-            "pixel_row": 3, 
-            "pixel_col": 1 
+            "pixel_row": '3', 
+            "pixel_col": '1' 
         }, 
         "asic_ctrl": {
             "csa_reset_n": {
-                "delay":  1,
-                "high": 60,
-                "low": 4000 
+                "delay":  '1',
+                "high": '60',
+                "low": '4000' 
             }
-        },
-        "INJ": {
-            "current_level": -0.7
         }
+
     }
 def reset_iniziale():
     pYtp.send_reset_FPGA()

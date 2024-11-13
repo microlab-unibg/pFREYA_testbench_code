@@ -31,9 +31,6 @@ def run_script():
   g1.auto_currentlvl()
   time.sleep(2)
 
-  print("pixel")
-  g1.auto_send_pixel()
-  time.sleep(2)
   
   print("csa_reset_n")
   g1.auto_csa_reset()
