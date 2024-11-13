@@ -34,9 +34,11 @@ def run_script():
   
   print("csa_reset_n")
   g1.auto_csa_reset()
+  time.sleep(3)
   
-  #subprocess.run(["python", "prova_transcharacteristics_auto.py"]) #metodo transcharacteristics csa
   #metodo transient csa
+  #subprocess.run(["python", "prova_transcharacteristics_auto.py"]) #metodo transcharacteristics csa
+  
 
 #metodo per shap(stessa cosa per per csa)
 #transcharacteristics shap

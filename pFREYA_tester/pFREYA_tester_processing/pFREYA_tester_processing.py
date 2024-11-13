@@ -477,6 +477,52 @@ def create_dac_packet(gui, type):
     
     return dac_packet_data
 
+#metodo per settare livello di livello di corrente a 0.08*10^-6
+def send_current_level_csa(gui):    
+    """Function to create the slow control packet needed in the FPGA
+
+    Parameters
+    ----------
+    gui : pFREYA_GUI
+        The structure containing all the data related to the tester.
+
+    Returns
+    ----------
+    str
+        Current level as a string representing a binary.
+    """
+    ps = gui.rm.open_resource('GPIB1::23::INSTR')
+    print(ps.query('*IDN?'))
+    print(gui.current_level)
+
+    ps.write(':OUTP:LOW FLO')
+    ps.write(':OUTP:OFF:AUTO ON')
+    ps.write(':OUTP:PROT ON')
+    ps.write(':OUTP:RES:MODE FIX')
+    ps.write(':OUTP:RES:SHUN DEF')
+    ps.write(':SOUR:FUNC:MODE CURR')
+    ps.write(':SOUR:CURR:MODE FIX')
+    ps.write(f':SOUR:CURR:LEV {gui.current_level.get()}E-6')
+    ps.write(':DISP:ENAB OFF')
+    ps.write(':DISP:TEXT:DATA "pFREYA16"')
+    ps.write(':DISP:TEXT:STAT ON')
+    ps.write(':OUTP:STAT ON')
+
+    print(f'''
+    Low terminal: {ps.query(':OUTP:LOW?')[:-1]}
+    Auto output off: {ps.query(':OUTP:OFF:AUTO?')[:-1]}
+    Protection: {ps.query(':OUTP:PROT?')[:-1]}
+    Resistance mode: {ps.query(':OUTP:RES:MODE?')[:-1]}
+    Shunt resistance : {ps.query(':OUTP:RES:SHUN?')[:-1]}
+    Output current mode: {ps.query(':SOUR:CURR:MODE?')[:-1]}
+    Output current level: {ps.query(':SOUR:CURR:LEV?')[:-1]}
+    Output voltage range: {ps.query(':SOUR:VOLT:RANG?')[:-1]}
+    Output status: {ps.query(':OUTP:STAT?')[:-1]}
+	''')
+
+    return gui.current_level
+
+
 def send_current_level(gui):
     """Function to create the slow control packet needed in the FPGA
 

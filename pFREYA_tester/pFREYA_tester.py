@@ -62,9 +62,8 @@ def auto_csa_reset():
 def auto_slwctrl():
     pYtp.send_slow_ctrl(gui)
 def auto_currentlvl():
-    pYtp.send_current_level(gui)
-def auto_send_pixel():
-    pYtp.send_pixel(gui)
+    pYtp.send_current_level_csa(gui)
+
 def load_config():
     with open("pFREYA_tester_config.json", "r") as f:
         try:
