@@ -10,35 +10,40 @@ sys.path.append('..')
 import pFREYA_tester as g1
 
 def run_script():
-  g1.reset_iniziale()
+  #g1. richiama funzioni da pFREYA_tester.py 
   print("Reset FPGA")
+  g1.reset_iniziale()
   time.sleep(2)
 
+  print("json")
   g1.to_json_CSA()
-  print("json ok")
   time.sleep(2)
 
+  print("clk")
   g1.auto_clock()
-  print("clk ok")
-  time.sleep(2)
-
-  g1.auto_slwctrl()
-  print("slw ok")
-  time.sleep(2)
-
-  g1.auto_currentlvl()
-  print("current ok")
-  time.sleep(2)
-
-  g1.auto_send_pixel()
-  print("pixel ok")
   time.sleep(2)
   
+  print("slw")
+  g1.auto_slwctrl()
+  time.sleep(2)
+
+  print("current")
+  g1.auto_currentlvl()
+  time.sleep(2)
+
+  print("pixel")
+  g1.auto_send_pixel()
+  time.sleep(2)
+  
+  print("csa_reset_n")
   g1.auto_csa_reset()
   
-  #devo fare metodo per inviare corrente
-  #subprocess.run(["python", "prova_transcharacteristics_auto.py"])
-#metodo per shap
+  #subprocess.run(["python", "prova_transcharacteristics_auto.py"]) #metodo transcharacteristics csa
+  #metodo transient csa
+
+#metodo per shap(stessa cosa per per csa)
+#transcharacteristics shap
+#transient shap
 
 #finestra
 def auto_slow_control():
