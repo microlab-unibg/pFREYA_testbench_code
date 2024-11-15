@@ -1,0 +1,27 @@
+<?xml version="1.0"?>
+<ATLASignalDefinition xmlns="urn:awgnet-schema">
+  <Bus>
+    <SignalName>SLOW_CTRL_CK</SignalName>
+    <SignalType>Signal</SignalType>
+    <Type>0</Type>
+    <Channel>Ch2</Channel>
+    <LogicAnalyzer>
+    </LogicAnalyzer>
+  </Bus>
+  <Bus>
+    <SignalName>SLOW_CTRL_IN</SignalName>
+    <SignalType>Signal</SignalType>
+    <Type>0</Type>
+    <Channel>Ch4</Channel>
+    <LogicAnalyzer>
+    </LogicAnalyzer>
+  </Bus>
+  <Bus>
+    <SignalName>SLOW_CTRL_RESET_N</SignalName>
+    <SignalType>Signal</SignalType>
+    <Type>0</Type>
+    <Channel>Ch3</Channel>
+    <LogicAnalyzer>
+    </LogicAnalyzer>
+  </Bus>
+</ATLASignalDefinition>
