@@ -37,6 +37,7 @@ def run_script():
   time.sleep(3)
   
   #metodo transient csa
+  subprocess.run(["python", "prova_transient_auto.py"]) #metodo transient csa
   #subprocess.run(["python", "prova_transcharacteristics_auto.py"]) #metodo transcharacteristics csa
   
 
@@ -44,31 +45,25 @@ def run_script():
 #transcharacteristics shap
 #transient shap
 
-#finestra
-def auto_slow_control():
-    gui2 = tk.Tk()
-    gui2.title("Test 1")
-    gui2.geometry("400x120")
-    gui2.resizable(False, False)
+#finestra gui 2
+def open_gui2():
+  gui2 = tk.Tk()
+  gui2.title("pFREYA tester v0 - Automatic testing")
+  gui2.geometry("400x120")
+  gui2.resizable(False, False)
 
-    frame = tk.Frame(gui2)
-    frame.pack(pady=10)
+  frame = tk.Frame(gui2)
+  frame.pack(pady=10)
 
-    label1 = tk.Label(frame, text="Transcharacteristics csa")
-    label1.grid(row=0, column=0, padx=10, pady=10)
+  label1 = tk.Label(frame, text="csa")
+  label1.grid(row=0, column=0, padx=10, pady=10)
+  button1 = tk.Button(frame, text="run", command=run_script)
+  button1.grid(row=0, column=1, padx=10, pady=10)
 
-    button1 = tk.Button(frame, text="Test CSA", command=run_script)
-    button1.grid(row=0, column=1, padx=10, pady=10)
+  label2 = tk.Label(frame, text="shap")
+  label2.grid(row=1, column=0, padx=10, pady=10)
 
-    label2 = tk.Label(frame, text="Transcharacteristics shap")
-    label2.grid(row=1, column=0, padx=10, pady=10)
-
-    button2 = tk.Button(frame, text="Test shap", command=lambda: print("Pulsante 2 premuto"))
-    button2.grid(row=1, column=1, padx=10, pady=10)
-
-    gui2.mainloop()
-
-
-
-
+  button2 = tk.Button(frame, text="run", command=lambda: print("Pulsante 2 premuto"))
+  button2.grid(row=1, column=1, padx=10, pady=10)
+  gui2.mainloop()
 

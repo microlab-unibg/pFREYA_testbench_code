@@ -17,7 +17,6 @@ import pyvisa
 FPGA_COM_DEF = "XILINX"
 
 # === GUI FUNCTIONS ===
-
 def to_json_CSA(): #parametri fissi per caso 1
     use_autocsa = False
     return{
@@ -63,7 +62,6 @@ def auto_slwctrl():
     pYtp.send_slow_ctrl(gui)
 def auto_currentlvl():
     pYtp.send_current_level_csa(gui)
-
 def load_config():
     with open("pFREYA_tester_config.json", "r") as f:
         try:
@@ -154,6 +152,7 @@ class pFREYA_GUI():
     def __init__(self):
         """Init that sets defaults and load GUI StringVars
         """
+
         # Retrieve config
         json_config = load_config()
 
@@ -246,7 +245,9 @@ class pFREYA_GUI():
         # power source
         self.rm = pyvisa.ResourceManager()
         print(self.rm.list_resources())
-    
+
+
+
     def to_json(self):
         use_autocsa = False
         # === START JSON DEFINITION ===
@@ -422,7 +423,7 @@ current_entry.bind("<FocusOut>", lambda x: check_pixel_to_inj(gui.pixel_to_inj))
 current_entry.grid(column=1, row=row_idx, padx=5)
 row_idx += 1
 ttk.Button(sc_lframe, text="Send slow ctrl", command=lambda: pYtp.send_slow_ctrl(gui)).grid(column=1, columnspan=2, row=row_idx, pady=[10,0], sticky=SE)
-ttk.Button(sc_lframe, text="Auto slow ctrl", command=lambda: g2.auto_slow_control()).grid(column=0, columnspan=1, row=row_idx, pady=[10,0], sticky=SE)
+ttk.Button(sc_lframe, text="Auto", command=lambda: g2.open_gui2()).grid(column=0, columnspan=1, row=row_idx, pady=[10,0], sticky=SE)
 # # DAC configuration
 # ts_lframe = ttk.Labelframe(main_frame, text="DAC configuration", padding=10, width=200, height=100)
 # ts_lframe.grid(column=2, row=0, padx=5, pady=30, sticky=NSEW)

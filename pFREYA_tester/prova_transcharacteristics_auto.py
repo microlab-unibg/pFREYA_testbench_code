@@ -3,7 +3,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import pyvisa
-import config
+from ..pFREYA_analysis import config
 import matplotlib.colors as mcolors
 from datetime import datetime
 import time
@@ -210,7 +210,7 @@ def generate_plots():
 
 # Esegui la funzione
 generate_plots()
-plt.show()
+#plt.show()
 
 
 #grafico totale delle 4 modalità:
