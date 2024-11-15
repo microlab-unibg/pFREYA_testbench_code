@@ -1,8 +1,10 @@
 import time
 import pandas as pd
-from ..pFREYA_analysis import config
 from datetime import datetime
-
+import sys
+sys.path.append('..')
+path='C:\Users\Paolo Lazzaroni\Documents\FALCON\pFREYA_testbench_code\p\pFREYA_analysis\config.py '
+from pFREYA_analysis import config
 # Definizione delle configurazioni dei livelli di energia in base ai cfg_bits
 def get_energy_level(cfg_bits):
     if cfg_bits[0] == 1 and cfg_bits[1] == 1:
