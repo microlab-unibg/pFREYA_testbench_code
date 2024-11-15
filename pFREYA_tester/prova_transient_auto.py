@@ -1,8 +1,6 @@
 import time
 import pandas as pd
 from datetime import datetime
-
-
 import config
 # Definizione delle configurazioni dei livelli di energia in base ai cfg_bits
 def get_energy_level(cfg_bits):
@@ -26,12 +24,12 @@ config_bits_list = [
 ]
 
 # Loop per ogni configurazione di cfg_bits
-for cfg_bits in config_bits_list:
+for config_bits in config_bits_list:
     # Ottenere il livello di energia
-    energy_level = get_energy_level(cfg_bits)
+    energy_level = get_energy_level(config_bits)
 
     # Configurazione del setup,cfg_bits cambia per ogni configurazione utilizzata per ogni passo
-    config.config(channel='shap', lemo='none', n_steps=8, cfg_bits=cfg_bits, active_probes=False)
+    config.config(channel='csa', lemo='none', n_steps=8, cfg_bits=config_bits, active_probes=False)
     
     
     config.ps.write(':SOUR:CURR:LEV -0.0e-6')
