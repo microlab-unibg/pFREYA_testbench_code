@@ -73,7 +73,7 @@ for cfg_bits in config_bits_list:
         str_type='active_prbs' 
     else: 
         str_type = ''
-    df.to_csv(f'G:/My Drive/PHD/FALCON/measures/transient/{channel_name}/{channel_name}_{config.config_bits_str}_nominal_{lemo_name}_{datetime_str}.tsv', sep='\t')
+    df.to_csv(f'G:/My Drive/PHD/FALCON/measures/transient/csa/{channel_name}_{config.config_bits_str}_nominal_{lemo_name}_{datetime_str}.tsv', sep='\t')
 
     # Feedback verifica su output
     print(f"Misura completata per cfg_bits {cfg_bits} con livello di energia {energy_level:} A")
@@ -86,9 +86,8 @@ for cfg_bits in config_bits_list:
     import time
     from datetime import datetime
     import matplotlib.colors as mcolors
-    import config
 
-    path = '' #aggiungere percorso
+    path = 'G:/My Drive/PHD/FALCON/measures/transient/csa/{channel_name}_{config.config_bits_str}_nominal_{lemo_name}_{datetime_str}.tsv'
     df = pd.read_csv(path, sep = '\t')
     datetime_str = datetime.strftime(datetime.now(), '%d%m%y_%H%M%S')
     arr_split = path.split('/')
@@ -130,6 +129,6 @@ for cfg_bits in config_bits_list:
     # 		'LEMOLOW'
     # 	else:
     # 		'LEMOHIGH'
-    plt.savefig(f'G:/My Drive/PHD/FALCON/measures/transient/csa/{channel_name}_{config.config_bits_str}_nominal_{datetime_str}.pdf',dpi=300)
+    plt.savefig(f'G:/My Drive/PHD/FALCON/measures/transient/csa/{channel_name}_{config.config_bits_str}_nominal_{lemo_name}_{datetime_str}.pdf',dpi=300)
 
 #devo cambiare i percorsi dove salvare e prelevare i file
