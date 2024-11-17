@@ -3,13 +3,12 @@ import subprocess
 import time
 import sys
 import os
-#from ..pFREYA_analysis import config
-sys.path.append('..')
-#from pFREYA_analysis import config
-#from pFREYA_analysis import comms
-import pFREYA_tester as g1
+from tkinter import Toplevel, Label, Button
+
+
 
 def run_script():
+  import pFREYA_tester as g1
   #g1. richiama funzioni da pFREYA_tester.py 
   print("Reset FPGA")
   g1.reset_iniziale()
@@ -46,24 +45,24 @@ def run_script():
 #transient shap
 
 #finestra gui 2
-def open_gui2():
-  gui2 = tk.Tk()
-  gui2.title("pFREYA tester v0 - Automatic testing")
-  gui2.geometry("400x120")
-  gui2.resizable(False, False)
+class gui2(tk.Toplevel):
+  def __init__(self,parent):
+    super().__init__(parent)
+    self.title("pFREYA tester v0 - Automatic testing")
+    self.geometry("400x120")
+    self.resizable(False, False)
 
-  frame = tk.Frame(gui2)
-  frame.pack(pady=10)
+    frame = tk.Frame(self)
+    frame.pack(pady=10)
 
-  label1 = tk.Label(frame, text="csa")
-  label1.grid(row=0, column=0, padx=10, pady=10)
-  button1 = tk.Button(frame, text="run", command=run_script)
-  button1.grid(row=0, column=1, padx=10, pady=10)
+    label1 = tk.Label(frame, text="csa")
+    label1.grid(row=0, column=0, padx=10, pady=10)
+    button1 = tk.Button(frame, text="run", command=run_script)
+    button1.grid(row=0, column=1, padx=10, pady=10)
 
-  label2 = tk.Label(frame, text="shap")
-  label2.grid(row=1, column=0, padx=10, pady=10)
+    label2 = tk.Label(frame, text="shap")
+    label2.grid(row=1, column=0, padx=10, pady=10)
 
-  button2 = tk.Button(frame, text="run", command=lambda: print("Pulsante 2 premuto"))
-  button2.grid(row=1, column=1, padx=10, pady=10)
-  gui2.mainloop()
-
+    button2 = tk.Button(frame, text="run", command=lambda: print("Pulsante 2 premuto"))
+    button2.grid(row=1, column=1, padx=10, pady=10)
+    self.mainloop()

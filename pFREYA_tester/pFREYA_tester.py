@@ -4,9 +4,8 @@ from tkinter import messagebox
 from serial import *
 import subprocess
 import json
-import gui_test as g2
+from gui_test import gui2
 import serial
-
 import pFREYA_tester_processing.pFREYA_tester_processing as pYtp
 import pFREYA_tester_processing.UART_definitions as UARTdef
 
@@ -149,13 +148,12 @@ def check_slow_ctrl(strvar,n_bit_expected):
 class pFREYA_GUI():
     """Class representing the GUI
     """
-    def __init__(self):
+    def __init__(self, root):
         """Init that sets defaults and load GUI StringVars
         """
-
+        self.root=root
         # Retrieve config
         json_config = load_config()
-
         # clocks
         self.slow_ck = StringVar(value=json_config.get("clocks","").get("slow_ck",""))
         self.sel_ck = StringVar(value=json_config.get("clocks","").get("sel_ck",""))
@@ -246,8 +244,6 @@ class pFREYA_GUI():
         self.rm = pyvisa.ResourceManager()
         print(self.rm.list_resources())
 
-
-
     def to_json(self):
         use_autocsa = False
         # === START JSON DEFINITION ===
@@ -315,6 +311,7 @@ class pFREYA_GUI():
                     }
                 }
         # === END JSON DEFINITION ===
+
 # === MAIN LOOP ===
 #Metodo per decidere quale JSON utilizzare 
 def get_json(self, use_csa=False): 
@@ -325,7 +322,12 @@ def get_json(self, use_csa=False):
 # Start GUI window
 root = Tk()
 root.title("pFREYA tester v0 - Manual testing")
-gui = pFREYA_GUI()
+gui = pFREYA_GUI(root)
+
+
+def open_child():
+    child=gui2(root)
+
 
 # Build the GUI
 main_frame = ttk.Frame(root, padding=10)
@@ -423,7 +425,7 @@ current_entry.bind("<FocusOut>", lambda x: check_pixel_to_inj(gui.pixel_to_inj))
 current_entry.grid(column=1, row=row_idx, padx=5)
 row_idx += 1
 ttk.Button(sc_lframe, text="Send slow ctrl", command=lambda: pYtp.send_slow_ctrl(gui)).grid(column=1, columnspan=2, row=row_idx, pady=[10,0], sticky=SE)
-ttk.Button(sc_lframe, text="Auto", command=lambda: g2.open_gui2()).grid(column=0, columnspan=1, row=row_idx, pady=[10,0], sticky=SE)
+ttk.Button(sc_lframe, text="Auto", command=open_child).grid(column=0, columnspan=1, row=row_idx, pady=[10,0], sticky=SE)
 # # DAC configuration
 # ts_lframe = ttk.Labelframe(main_frame, text="DAC configuration", padding=10, width=200, height=100)
 # ts_lframe.grid(column=2, row=0, padx=5, pady=30, sticky=NSEW)

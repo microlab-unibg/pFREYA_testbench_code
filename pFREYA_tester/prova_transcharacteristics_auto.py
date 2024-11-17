@@ -3,13 +3,11 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import pyvisa
-from ..pFREYA_analysis import config
+import config
 import matplotlib.colors as mcolors
 from datetime import datetime
 import time
 import glob
-
-config.config(channel='shap',lemo='none',n_steps=20,cfg_bits=[0,1,0,0,0,1,1])
 T = 30e-9 # s
 t_r = 3e-9 # s
 N_pulses = 10 # adimensional
@@ -104,9 +102,12 @@ auto_iinj_int()
 auto_eq_ph()
 
 
-
+cfg_bits_template = [0, 1, 0, 0, 0, 1, 1] # lo utilizzo per definire un template base per poi iterare le diverse config di bits
 # Creazione del DataFrame
 for index, config in enumerate(csa_configs):
+    config_bits = cfg_bits_template.copy() 
+    config_bits[0], config_bits[1] = config['csa_bits']
+    config.config(channel='shap',lemo='none',n_steps=20,cfg_bits=config_bits)
     measures = {
         'CSA Bits': [],
         'Current Level Step': [],
@@ -262,10 +263,10 @@ lns = []
 linear_outputs = []
 max_diffs = []
 inls = []
-
+import scipy as s
 # Esegui la regressione lineare e aggiungi i risultati al grafico
 for i in range(4):
-    lns.append(linregress(
+    lns.append(s.linregress(
         photon_span,
         dfs[i]['Voltage output average (V)'].astype(float)
     ))
@@ -277,5 +278,6 @@ for i in range(4):
     )
     max_diffs.append(np.max(dfs[i]['Voltage output average (V)'] - linear_outputs[i]))
     inls.append(100 * np.abs(max_diffs[i]) / lns[i].slope / 256)
+    #manca percorso per salvataggio e tabella
 
 plt.show()
