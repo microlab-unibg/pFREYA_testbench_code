@@ -1,8 +1,9 @@
 import time
 import pandas as pd
+import TeledyneLeCroyPy
 from datetime import datetime
 import config
-# Definizione delle configurazioni dei livelli di energia in base ai cfg_bits
+# Definizione delle configurazioni dei livelli di energia in base ai primi 2 bit di cfg_bits
 def get_energy_level(cfg_bits):
     if cfg_bits[0] == 1 and cfg_bits[1] == 1:
         return 5  # 5 keV
@@ -15,6 +16,7 @@ def get_energy_level(cfg_bits):
     else:
         raise ValueError("Configurazione cfg_bits non valida")
 
+
 # Configurazione dei test per le diverse configurazioni di cfg_bits
 config_bits_list = [
     [1, 1, 0, 1, 1, 1, 1],  # Configurazione 5 keV
@@ -24,12 +26,12 @@ config_bits_list = [
 ]
 
 # Loop per ogni configurazione di cfg_bits
-for config_bits in config_bits_list:
+for item in config_bits_list:
     # Ottenere il livello di energia
-    energy_level = get_energy_level(config_bits)
+    energy_level = get_energy_level(item)
 
     # Configurazione del setup,cfg_bits cambia per ogni configurazione utilizzata per ogni passo
-    config.config(channel='csa', lemo='none', n_steps=8, cfg_bits=config_bits, active_probes=False)
+    config.config(channel='csa', lemo='none', n_steps=8, cfg_bits=item, cfg_inst=True, active_probes=False)
     
     
     config.ps.write(':SOUR:CURR:LEV -0.0e-6')
@@ -57,7 +59,7 @@ for config_bits in config_bits_list:
         time.sleep(10)
         # N sample to average and extract std from
         data = pd.DataFrame.from_dict(
-            config.lecroy.get_channel(channel_name='C', n_channel=config.channel_num)['waveforms'][0]
+            config.lecroy.get_channel(channel_name='csa', n_channel=config.channel_num)['waveforms'][0]
         )
         
         data['Amplitude (V)'] = (data['Amplitude (V)'] - data['Amplitude (V)'][0]) / gain_lane
@@ -75,7 +77,7 @@ for config_bits in config_bits_list:
     df.to_csv(f'G:/My Drive/PHD/FALCON/measures/new/transient/csa/{channel_name}_{config.config_bits_str}_nominal_{lemo_name}_{datetime_str}.tsv', sep='\t')
 
     # Feedback verifica su output
-    print(f"Misura completata per cfg_bits {config_bits} con livello di energia {energy_level:} A")
+    print(f"Misura completata per cfg_bits {item} con livello di energia {energy_level:} A")
 
     #PRELEVO DATI DA MISURAZIONI VECCHIE RIGUARDANTI LA STESSA CONFIGURAZIONE DI BIT
     import numpy as np
@@ -93,7 +95,7 @@ for config_bits in config_bits_list:
     channel_name = arr_split[6]
     config_bits_str = arr_split[-1].split('_')[1]
     config_bits = [int(x) for x in config_bits_str]
-    config.config(channel=channel_name,n_steps=8,cfg_bits=config_bits,cfg_inst=False,lemo=False)
+    config.config(channel=channel_name,n_steps=8,cfg_bits=item,cfg_inst=False,lemo=False)
 
     #PLOT UNICO PER OGNI CONFIGURAZIONE
 

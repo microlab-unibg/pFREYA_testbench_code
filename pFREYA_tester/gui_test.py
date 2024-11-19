@@ -8,8 +8,8 @@ from tkinter import Toplevel, Label, Button
 
 
 def run_script():
-  import pFREYA_tester as g1
   #g1. richiama funzioni da pFREYA_tester.py 
+  import pFREYA_tester as g1
   print("Reset FPGA")
   g1.reset_iniziale()
   time.sleep(2)
@@ -51,7 +51,7 @@ class gui2(tk.Toplevel):
     self.title("pFREYA tester v0 - Automatic testing")
     self.geometry("400x120")
     self.resizable(False, False)
-
+    
     frame = tk.Frame(self)
     frame.pack(pady=10)
 

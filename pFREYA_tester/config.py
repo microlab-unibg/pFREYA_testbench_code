@@ -9,7 +9,6 @@ import time
 from datetime import datetime
 import matplotlib.colors as mcolors
 
-
 def config_inst() -> None:
     """Function to initialise instruments
     """
