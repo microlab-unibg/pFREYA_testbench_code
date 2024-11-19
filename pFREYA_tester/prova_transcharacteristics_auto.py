@@ -12,12 +12,7 @@ T = 30e-9 # s
 t_r = 3e-9 # s
 N_pulses = 10 # adimensional
 conv_kev_c = 3.65/1000 * 1/1.602e-19 # Energy in silicon for e-/h * no of electrons per coulomb [keV/e-] * [e-/C]
-"""
-channel_name='csa'
-lemo_name="aaaa"
-N_samples=20
-gain=1
-"""
+
 
 #commenta  
 config.ps.write(':SOUR:CURR:LEV -.0e-6')
@@ -144,7 +139,7 @@ for index, config in enumerate(csa_configs):
     datetime_str = datetime.now().strftime('%Y%m%d%H%M')
 
     # Sostituire percorso del drive e salvare il file
-    df.to_csv(f'G:/My Drive/PHD/FALCON/measures/new/transient/csa/{channel_name}_{config.config_bits_str}_nominal_{lemo_name}_{datetime_str}.tsv', sep='\t', index=False)
+    df.to_csv(f'G:/My Drive/PHD/FALCON/measures/new/transcharacteristics/csa/{channel_name}_{config.config_bits_str}_nominal_{lemo_name}_{datetime_str}.tsv', sep='\t', index=False)
     print("File tsv salvato con successo.")
 
 #GRAFICI( per ogni configurazione di bit plot di tensione media e fotoni equivalenti)
@@ -162,7 +157,7 @@ def get_equivalent_photons(csa_bits, df):
 #fino a qua ho commentato tutti i valori dei dispositivi
 def generate_plots():
     # Trova tutti i file .tsv nella cartella specificata
-    tsv_files = glob.glob(f'G:/My Drive/PHD/FALCON/measures/new/transient/csa/{channel_name}_{config.config_bits_str}_nominal_{lemo_name}_{datetime_str}.tsv')
+    tsv_files = glob.glob(f'G:/My Drive/PHD/FALCON/measures/new/transcharacteristics/csa/{channel_name}_{config.config_bits_str}_nominal_{lemo_name}_{datetime_str}.tsv')
 
     for index, tsv_file in enumerate(tsv_files):
         # Leggi il DataFrame dal file .tsv
@@ -202,7 +197,7 @@ def generate_plots():
 
         # Salva il grafico
         try:
-            output_file = f'G:/My Drive/PHD/FALCON/measures/new/transient/csa/{channel_name}_{config.config_bits_str}_nominal_{lemo_name}_{datetime_str}.pdf'
+            output_file = f'G:/My Drive/PHD/FALCON/measures/new/transcharacteristics/csa/{channel_name}_{config.config_bits_str}_nominal_{lemo_name}_{datetime_str}.pdf'
             plt.savefig(output_file, dpi=300)
             plt.close(fig)  # Chiude il grafico corrente per liberare risorse
             print(f"File plot salvato con successo: {output_file}")
@@ -220,10 +215,10 @@ colours = list(mcolors.TABLEAU_COLORS.keys())
 
 # Percorsi dei file .tsv (aggiorna con i tuoi percorsi)
 path = [ 
-        f'G:/My Drive/PHD/FALCON/measures/new/transient/csa/{channel_name}_{0}_nominal_{lemo_name}_{datetime_str}.tsv',
-        f'G:/My Drive/PHD/FALCON/measures/new/transient/csa/{channel_name}_{1}_nominal_{lemo_name}_{datetime_str}.tsv',
-        f'G:/My Drive/PHD/FALCON/measures/new/transient/csa/{channel_name}_{2}_nominal_{lemo_name}_{datetime_str}.tsv', 
-        f'G:/My Drive/PHD/FALCON/measures/new/transient/csa/{channel_name}_{3}_nominal_{lemo_name}_{datetime_str}.tsv' 
+        f'G:/My Drive/PHD/FALCON/measures/new/transcharacteristics/csa/{channel_name}_{0}_nominal_{lemo_name}_{datetime_str}.tsv',
+        f'G:/My Drive/PHD/FALCON/measures/new/transcharacteristics/csa/{channel_name}_{1}_nominal_{lemo_name}_{datetime_str}.tsv',
+        f'G:/My Drive/PHD/FALCON/measures/new/transcharacteristics/csa/{channel_name}_{2}_nominal_{lemo_name}_{datetime_str}.tsv', 
+        f'G:/My Drive/PHD/FALCON/measures/new/transcharacteristics/csa/{channel_name}_{3}_nominal_{lemo_name}_{datetime_str}.tsv' 
 ]
 # Modelli di energia (aggiorna con i tuoi dati)
 modes = [5, 9, 18, 25]
@@ -278,5 +273,5 @@ for i in range(4):
     max_diffs.append(np.max(dfs[i]['Voltage output average (V)'] - linear_outputs[i]))
     inls.append(100 * np.abs(max_diffs[i]) / lns[i].slope / 256)
     #manca tabella con parametri
-plt.savefig(f'G:/My Drive/PHD/FALCON/measures/new/transient/csa/{channel_name}_{config.config_bits_str}_nominal_{lemo_name}_{datetime_str}.pdf')
+plt.savefig(f'G:/My Drive/PHD/FALCON/measures/new/transcharacteristics/csa/{channel_name}_{config.config_bits_str}_nominal_{lemo_name}_{datetime_str}.pdf')
 plt.show()

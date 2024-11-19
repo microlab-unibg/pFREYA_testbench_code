@@ -462,8 +462,6 @@ ttk.Label(ts_lframe, text="uA").grid(column=2, row=row_idx, sticky=E)
 row_idx += 1
 ttk.Button(ts_lframe, text="Send INJ", command=lambda: pYtp.send_current_level(gui)).grid(column=1, columnspan=2, row=row_idx, pady=[115,0], sticky=SE)
 
-#
-
 
 
 # Pixel selection
