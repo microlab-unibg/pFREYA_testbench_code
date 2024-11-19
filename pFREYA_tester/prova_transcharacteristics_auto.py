@@ -141,10 +141,10 @@ for index, config in enumerate(csa_configs):
            #measures['Voltage output average (V)'] = [-1 * x for x in measures['Voltage output average (V)']]
             measures['Voltage output average (V)'] = -1*measures['Voltage output average (V)']
     df = pd.DataFrame(measures)
-    datetime_str = datetime.now().strftime('%Y%m%d%H%M%S')
+    datetime_str = datetime.now().strftime('%Y%m%d%H%M')
 
     # Sostituire percorso del drive e salvare il file
-    df.to_csv(f'C:/Users/giorg/Desktop/ts/mis_config_{index}.tsv', sep='\t', index=False)
+    df.to_csv(f'G:/My Drive/PHD/FALCON/measures/new/transient/csa/{channel_name}_{config.config_bits_str}_nominal_{lemo_name}_{datetime_str}.tsv', sep='\t', index=False)
     print("File tsv salvato con successo.")
 
 #GRAFICI( per ogni configurazione di bit plot di tensione media e fotoni equivalenti)
@@ -162,7 +162,7 @@ def get_equivalent_photons(csa_bits, df):
 #fino a qua ho commentato tutti i valori dei dispositivi
 def generate_plots():
     # Trova tutti i file .tsv nella cartella specificata
-    tsv_files = glob.glob('C:/Users/giorg/Desktop/ts/mis_config_*.tsv')
+    tsv_files = glob.glob(f'G:/My Drive/PHD/FALCON/measures/new/transient/csa/{channel_name}_{config.config_bits_str}_nominal_{lemo_name}_{datetime_str}.tsv')
 
     for index, tsv_file in enumerate(tsv_files):
         # Leggi il DataFrame dal file .tsv
@@ -202,7 +202,7 @@ def generate_plots():
 
         # Salva il grafico
         try:
-            output_file = f'C:/Users/giorg/Desktop/ts/mis_config_{index}_{datetime_str}.pdf'
+            output_file = f'G:/My Drive/PHD/FALCON/measures/new/transient/csa/{channel_name}_{config.config_bits_str}_nominal_{lemo_name}_{datetime_str}.pdf'
             plt.savefig(output_file, dpi=300)
             plt.close(fig)  # Chiude il grafico corrente per liberare risorse
             print(f"File plot salvato con successo: {output_file}")
@@ -219,13 +219,12 @@ generate_plots()
 colours = list(mcolors.TABLEAU_COLORS.keys())
 
 # Percorsi dei file .tsv (aggiorna con i tuoi percorsi)
-path = [
-    "C:/Users/giorg/Desktop/ts/mis_config_0.tsv",  # 5 keV
-    "C:/Users/giorg/Desktop/ts/mis_config_1.tsv",  # 9 keV
-    "C:/Users/giorg/Desktop/ts/mis_config_2.tsv",  # 18 keV
-    "C:/Users/giorg/Desktop/ts/mis_config_3.tsv"   # 25 keV
+path = [ 
+        f'G:/My Drive/PHD/FALCON/measures/new/transient/csa/{channel_name}_{0}_nominal_{lemo_name}_{datetime_str}.tsv',
+        f'G:/My Drive/PHD/FALCON/measures/new/transient/csa/{channel_name}_{1}_nominal_{lemo_name}_{datetime_str}.tsv',
+        f'G:/My Drive/PHD/FALCON/measures/new/transient/csa/{channel_name}_{2}_nominal_{lemo_name}_{datetime_str}.tsv', 
+        f'G:/My Drive/PHD/FALCON/measures/new/transient/csa/{channel_name}_{3}_nominal_{lemo_name}_{datetime_str}.tsv' 
 ]
-
 # Modelli di energia (aggiorna con i tuoi dati)
 modes = [5, 9, 18, 25]
 
@@ -235,7 +234,7 @@ for p in path:
     dfs.append(pd.read_csv(p, sep='\t'))
 
 # Creazione del grafico
-datetime_str = datetime.strftime(datetime.now(), '%d%m%y_%H%M%S')
+datetime_str = datetime.strftime(datetime.now(), '%d%m%y_%H%M')
 fig, ax = plt.subplots()
 fig.set_figheight(4)
 fig.set_figwidth(5)
@@ -278,6 +277,6 @@ for i in range(4):
     )
     max_diffs.append(np.max(dfs[i]['Voltage output average (V)'] - linear_outputs[i]))
     inls.append(100 * np.abs(max_diffs[i]) / lns[i].slope / 256)
-    #manca percorso per salvataggio e tabella
-
+    #manca tabella con parametri
+plt.savefig(f'G:/My Drive/PHD/FALCON/measures/new/transient/csa/{channel_name}_{config.config_bits_str}_nominal_{lemo_name}_{datetime_str}.pdf')
 plt.show()

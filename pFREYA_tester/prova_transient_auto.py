@@ -72,10 +72,10 @@ for config_bits in config_bits_list:
         str_type='active_prbs' 
     else: 
         str_type = ''
-    df.to_csv(f'G:/My Drive/PHD/FALCON/measures/transient/csa/{channel_name}_{config.config_bits_str}_nominal_{lemo_name}_{datetime_str}.tsv', sep='\t')
+    df.to_csv(f'G:/My Drive/PHD/FALCON/measures/new/transient/csa/{channel_name}_{config.config_bits_str}_nominal_{lemo_name}_{datetime_str}.tsv', sep='\t')
 
     # Feedback verifica su output
-    print(f"Misura completata per cfg_bits {cfg_bits} con livello di energia {energy_level:} A")
+    print(f"Misura completata per cfg_bits {config_bits} con livello di energia {energy_level:} A")
 
     #PRELEVO DATI DA MISURAZIONI VECCHIE RIGUARDANTI LA STESSA CONFIGURAZIONE DI BIT
     import numpy as np
@@ -86,9 +86,9 @@ for config_bits in config_bits_list:
     from datetime import datetime
     import matplotlib.colors as mcolors
 
-    path = 'G:/My Drive/PHD/FALCON/measures/transient/csa/{channel_name}_{config.config_bits_str}_nominal_{lemo_name}_{datetime_str}.tsv'
+    path = 'G:/My Drive/PHD/FALCON/measures/new/transient/csa/{channel_name}_{config.config_bits_str}_nominal_{lemo_name}_{datetime_str}.tsv'
     df = pd.read_csv(path, sep = '\t')
-    datetime_str = datetime.strftime(datetime.now(), '%d%m%y_%H%M%S')
+    datetime_str = datetime.strftime(datetime.now(), '%d%m%y_%H%M')
     arr_split = path.split('/')
     channel_name = arr_split[6]
     config_bits_str = arr_split[-1].split('_')[1]
@@ -121,13 +121,6 @@ for config_bits in config_bits_list:
     if channel_name == 'shap':
         ax.text(.01,.01,f'$t_p$ = {config.peaking_time} ns',ha='left',va='bottom',transform=ax.transAxes)
 
-    # if config.active_prbs:
-    # 	str_type = 'active_prbs'
-    # else:
-    # 	if gain < 3:
-    # 		'LEMOLOW'
-    # 	else:
-    # 		'LEMOHIGH'
-    plt.savefig(f'G:/My Drive/PHD/FALCON/measures/transient/csa/{channel_name}_{config.config_bits_str}_nominal_{lemo_name}_{datetime_str}.pdf',dpi=300)
 
-#devo cambiare i percorsi dove salvare e prelevare i file
+    plt.savefig(f'G:/My Drive/PHD/FALCON/measures/new/transient/csa/{channel_name}_{config.config_bits_str}_nominal_{lemo_name}_{datetime_str}.pdf',dpi=300)
+
