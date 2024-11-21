@@ -2,7 +2,7 @@ import serial
 import serial.tools.list_ports
 import pyvisa
 import matplotlib.pyplot as plt
-import TeledyneLeCroyPy
+from TeledyneLeCroyPy import TeledyneLeCroyPy
 import numpy as np
 import pandas as pd
 import time
@@ -13,7 +13,7 @@ def config_inst() -> None:
     """Function to initialise instruments
     """
 
-    global rm, ps, pg, lecroy
+    global rm, ps, lecroy
 
     rm = pyvisa.ResourceManager()
     print(rm.list_resources())
@@ -48,57 +48,6 @@ def config_inst() -> None:
     Output current level: {ps.query(':SOUR:CURR:LEV?')[:-1]}
     Output voltage range: {ps.query(':SOUR:VOLT:RANG?')[:-1]}
     Output status: {ps.query(':OUTP:STAT?')[:-1]}
-        ''')
-
-    pg = rm.open_resource('GPIB1::9::INSTR')
-    print(pg.query('*IDN?'))
-
-    csa_reset_n_pattern = ''.join([f'{i}' for i in [1]*20 + [0]*980])
-    csa_reset_n_length = str(len(csa_reset_n_pattern))
-    csa_reset_n_length_length = str(len(str(len(csa_reset_n_pattern))))
-
-    pg.write('*RST')
-    pg.write(f':TRIG:COUN {csa_reset_n_length}')
-    pg.write(f':TRIG:SOUR INT')
-    pg.write(f':PULS:PER 15NS')
-    pg.write(f':PULS:DCYC1 50PCT')
-    pg.write(f':PULS:DCYC2 50PCT')
-    pg.write(f':PULS:TRAN1 3NS')
-    pg.write(f':PULS:TRAN2 3NS')
-    pg.write(':DIG:STIM:PATTERN:STAT ON')
-    pg.write(f':DIG:STIM:PATTERN:DATA1 #{csa_reset_n_length_length}{csa_reset_n_length}{csa_reset_n_pattern}')
-    pg.write(f':DIG:STIM:PATTERN:PRES2 2,{csa_reset_n_length}')
-    pg.write(f':DIG:STIM:PATTERN:DATA3 #{csa_reset_n_length_length}{csa_reset_n_length}{csa_reset_n_pattern}')
-    pg.write(f':DIG:STIM:SIGN1:FORM NRZ')
-    pg.write(f':DIG:STIM:SIGN2:FORM NRZ')
-    pg.write(':OUTP1:IMP:INT 50OHM')
-    pg.write(':OUTP1:IMP:EXT 100OHM')
-    pg.write(':OUTP2:IMP:INT 50OHM')
-    pg.write(':OUTP2:IMP:EXT 100OHM')
-    pg.write(':VOLT1:LEV:HIGH 1.2V')
-    pg.write(':VOLT1:LEV:LOW 0V')
-    pg.write(':VOLT2:LEV:HIGH 1.2V')
-    pg.write(':VOLT2:LEV:LOW 0V')
-    pg.write(':OUTP1 ON')
-    pg.write(':OUTP2 ON')
-
-    print(f'''
-    Number of pattern positions: {pg.query(':TRIG:COUN?')[:-1]}
-    Source of the trigger: {pg.query(':TRIG:SOUR?')[:-1]}
-    Period of the pulse: {pg.query(':PULS:PER?')[:-1]}
-    Duty cycle of the pulse: {pg.query(':PULS:DCYC1?')[:-1]}
-    Rise time of the pulse: {pg.query(':PULS:TRAN1?')[:-1]}
-    Type of pulse: PATTERN
-    CH1 data: 20 1's, 980 0's
-    CH2 data: as the clock
-    STRB data: 20 1's, 980 0's
-    Type of the pulse: {pg.query(':DIG:STIM:SIGN1:FORM?')[:-1]}
-    Internal impedance (source): {pg.query(':OUTP1:IMP:INT?')[:-1]}
-    External impedance (termination): {pg.query(':OUTP1:IMP:EXT?')[:-1]}
-    High level: {pg.query(':VOLT1:LEV:HIGH?')[:-1]}
-    Low level: {pg.query(':VOLT1:LEV:LOW?')[:-1]}
-    Output 1 status: {pg.query(':OUTP1?')[:-1]}
-    Output 2 status: {pg.query(':OUTP2?')[:-1]}
         ''')
 
     if lecroy is None:

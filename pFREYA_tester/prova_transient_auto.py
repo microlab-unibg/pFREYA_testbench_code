@@ -36,7 +36,6 @@ for item in config_bits_list:
     
     config.ps.write(':SOUR:CURR:LEV -0.0e-6')
     config.ps.write(':OUTP:STAT ON')
-    config.pg.write(':OUTP2 OFF')
 
     #corrente iniziale
     config.ps.write(f':SOUR:CURR:LEV {-0.07e-6}')
