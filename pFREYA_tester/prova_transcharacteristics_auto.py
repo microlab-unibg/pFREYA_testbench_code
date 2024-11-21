@@ -3,46 +3,15 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import pyvisa
-import config
 import matplotlib.colors as mcolors
 from datetime import datetime
 import time
 import glob
+import config
 T = 30e-9 # s
 t_r = 3e-9 # s
 N_pulses = 10 # adimensional
 conv_kev_c = 3.65/1000 * 1/1.602e-19 # Energy in silicon for e-/h * no of electrons per coulomb [keV/e-] * [e-/C]
-
-
-#commenta  
-config.ps.write(':SOUR:CURR:LEV -.0e-6')
-channel_name = config.channel_name
-lemo_name = config.lemo_name
-gain = config.lemo_gain
-N_samples = config.N_samples
-
-# set proper time division for this analysis
-config.lecroy.write('TDIV 200NS')
-# suppress channel for noise stuff
-#config.lecroy.write('F3:TRA OFF')
-# set cursor positions
-#config.lecroy.write(f'C2:CRS HREL')
-# reset inj
-config.ps.write(':SOUR:CURR:LEV -0.07e-6')
-time.sleep(2)
-
-ndiv = 10 # positive and negative around delay
-tdelay = -648 # ns
-tdiv = 200 # ns/div
-osc_ts = 318 # ns
-osc_te = osc_ts + config.peaking_time + 10 # 10 ns to avoid switching time
-osc_offset = - ndiv/2*tdiv - tdelay
-div_s = (osc_ts - osc_offset)/tdiv
-if config.channel_name == 'shap':
-	div_e = (osc_te - osc_offset)/tdiv
-else:
-	div_e = (432 - osc_offset)/tdiv
-config.lecroy.write(f'C1:CRST HDIF,{div_s},HREF,{div_e}')
 
 
 current_levels = []
@@ -102,9 +71,40 @@ cfg_bits_template = [0, 1, 0, 0, 0, 1, 1] # lo utilizzo per definire un template
 for index, config in enumerate(csa_configs):
     config_bits = cfg_bits_template.copy() 
     config_bits[0], config_bits[1] = config['csa_bits']
-    config.config(channel='shap',lemo='none',n_steps=20,cfg_bits=config_bits)
+    import config
+    config.config(channel='csa',lemo='none',n_steps=20,cfg_bits=config_bits)
+    
+    config.ps.write(':SOUR:CURR:LEV -.0e-6')
+    channel_name = config.channel_name
+    lemo_name = config.lemo_name
+    gain = config.lemo_gain
+    N_samples = config.N_samples
+
+    # set proper time division for this analysis
+    config.lecroy.write('TDIV 200NS')
+    # suppress channel for noise stuff
+    #config.lecroy.write('F3:TRA OFF')
+    # set cursor positions
+    #config.lecroy.write(f'C2:CRS HREL')
+    # reset inj
+    config.ps.write(':SOUR:CURR:LEV -0.07e-6')
+    time.sleep(2)
+
+    ndiv = 10 # positive and negative around delay
+    tdelay = -648 # ns
+    tdiv = 200 # ns/div
+    osc_ts = 318 # ns
+    osc_te = osc_ts + config.peaking_time + 10 # 10 ns to avoid switching time
+    osc_offset = - ndiv/2*tdiv - tdelay
+    div_s = (osc_ts - osc_offset)/tdiv
+    if config.channel_name == 'shap':
+        div_e = (osc_te - osc_offset)/tdiv
+    else:
+        div_e = (432 - osc_offset)/tdiv
+    config.lecroy.write(f'C1:CRST HDIF,{div_s},HREF,{div_e}')
+
     measures = {
-        'CSA Bits': [],
+        #'CSA Bits': [],
         'Current Level Step': [],
         'Current Level (A)': [],
         'iinj_int (C)': [],
@@ -115,7 +115,8 @@ for index, config in enumerate(csa_configs):
 
     current_lev=current_levels[index]
     for i, level in enumerate(current_lev):
-        measures['CSA Bits'].append(config['csa_bits'])
+        import config
+        #measures['CSA Bits'].append(config['csa_bits'])
         measures['Current Level Step'].append(i)
         measures['Current Level (A)'].append(level)
         measures['iinj_int (C)'].append(iinj_int_results[index][i])
@@ -139,7 +140,7 @@ for index, config in enumerate(csa_configs):
     datetime_str = datetime.now().strftime('%Y%m%d%H%M')
 
     # Sostituire percorso del drive e salvare il file
-    df.to_csv(f'G:/My Drive/PHD/FALCON/measures/new/transcharacteristics/csa/{channel_name}_{config.config_bits_str}_nominal_{lemo_name}_{datetime_str}.tsv', sep='\t', index=False)
+    df.to_csv(f'G:/Shared drives/PHD/FALCON/measures/new/transcharacteristics/csa/{channel_name}_{config.config_bits_str}_nominal_{lemo_name}_{datetime_str}.tsv', sep='\t', index=False)
     print("File tsv salvato con successo.")
 
 #GRAFICI( per ogni configurazione di bit plot di tensione media e fotoni equivalenti)
@@ -157,7 +158,7 @@ def get_equivalent_photons(csa_bits, df):
 #fino a qua ho commentato tutti i valori dei dispositivi
 def generate_plots():
     # Trova tutti i file .tsv nella cartella specificata
-    tsv_files = glob.glob(f'G:/My Drive/PHD/FALCON/measures/new/transcharacteristics/csa/{channel_name}_{config.config_bits_str}_nominal_{lemo_name}_{datetime_str}.tsv')
+    tsv_files = glob.glob(f'G:/Shared drives/PHD/FALCON/measures/new/transcharacteristics/csa/{channel_name}_{config.config_bits_str}_nominal_{lemo_name}_{datetime_str}.tsv')
 
     for index, tsv_file in enumerate(tsv_files):
         # Leggi il DataFrame dal file .tsv
@@ -197,7 +198,7 @@ def generate_plots():
 
         # Salva il grafico
         try:
-            output_file = f'G:/My Drive/PHD/FALCON/measures/new/transcharacteristics/csa/{channel_name}_{config.config_bits_str}_nominal_{lemo_name}_{datetime_str}.pdf'
+            output_file = f'G:/Shared drives/PHD/FALCON/measures/new/transcharacteristics/csa/{channel_name}_{config.config_bits_str}_nominal_{lemo_name}_{datetime_str}.pdf'
             plt.savefig(output_file, dpi=300)
             plt.close(fig)  # Chiude il grafico corrente per liberare risorse
             print(f"File plot salvato con successo: {output_file}")
@@ -215,10 +216,10 @@ colours = list(mcolors.TABLEAU_COLORS.keys())
 
 # Percorsi dei file .tsv (aggiorna con i tuoi percorsi)
 path = [ 
-        f'G:/My Drive/PHD/FALCON/measures/new/transcharacteristics/csa/{channel_name}_{0}_nominal_{lemo_name}_{datetime_str}.tsv',
-        f'G:/My Drive/PHD/FALCON/measures/new/transcharacteristics/csa/{channel_name}_{1}_nominal_{lemo_name}_{datetime_str}.tsv',
-        f'G:/My Drive/PHD/FALCON/measures/new/transcharacteristics/csa/{channel_name}_{2}_nominal_{lemo_name}_{datetime_str}.tsv', 
-        f'G:/My Drive/PHD/FALCON/measures/new/transcharacteristics/csa/{channel_name}_{3}_nominal_{lemo_name}_{datetime_str}.tsv' 
+        f'G:/Shared drives/PHD/FALCON/measures/new/transcharacteristics/csa/{channel_name}_{0}_nominal_{lemo_name}_{datetime_str}.tsv',
+        f'G:/Shared drives/PHD/FALCON/measures/new/transcharacteristics/csa/{channel_name}_{1}_nominal_{lemo_name}_{datetime_str}.tsv',
+        f'G:/Shared drives/PHD/FALCON/measures/new/transcharacteristics/csa/{channel_name}_{2}_nominal_{lemo_name}_{datetime_str}.tsv', 
+        f'G:/Shared drives/PHD/FALCON/measures/new/transcharacteristics/csa/{channel_name}_{3}_nominal_{lemo_name}_{datetime_str}.tsv' 
 ]
 # Modelli di energia (aggiorna con i tuoi dati)
 modes = [5, 9, 18, 25]
@@ -273,5 +274,5 @@ for i in range(4):
     max_diffs.append(np.max(dfs[i]['Voltage output average (V)'] - linear_outputs[i]))
     inls.append(100 * np.abs(max_diffs[i]) / lns[i].slope / 256)
     #manca tabella con parametri
-plt.savefig(f'G:/My Drive/PHD/FALCON/measures/new/transcharacteristics/csa/{channel_name}_{config.config_bits_str}_nominal_{lemo_name}_{datetime_str}.pdf')
-plt.show()
+plt.savefig(f'G:/Shared drives/PHD/FALCON/measures/new/transcharacteristics/csa/{channel_name}_{config.config_bits_str}_nominal_{lemo_name}_{datetime_str}.pdf')
+

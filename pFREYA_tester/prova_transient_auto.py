@@ -20,19 +20,18 @@ def get_energy_level(cfg_bits):
 # Configurazione dei test per le diverse configurazioni di cfg_bits
 config_bits_list = [
     [1, 1, 0, 1, 1, 1, 1],  # Configurazione 5 keV
-    [1, 0, 0, 1, 1, 1, 1],  # Configurazione 9 keV
-    [0, 1, 0, 1, 1, 1, 1],  # Configurazione 18 keV
-    [0, 0, 0, 1, 1, 1, 1],  # Configurazione 25 keV
+    [1, 0, 1, 1, 1, 1, 1],  # Configurazione 9 keV
+    [0, 1, 1, 1, 1, 1, 1],  # Configurazione 18 keV
+    [0, 0, 1, 1, 1, 1, 1],  # Configurazione 25 keV
 ]
 
 # Loop per ogni configurazione di cfg_bits
 for item in config_bits_list:
     # Ottenere il livello di energia
     energy_level = get_energy_level(item)
-
+    print(f"energy level {energy_level}Kev")
     # Configurazione del setup,cfg_bits cambia per ogni configurazione utilizzata per ogni passo
     config.config(channel='csa', lemo='none', n_steps=8, cfg_bits=item, cfg_inst=True, active_probes=False)
-    
     
     config.ps.write(':SOUR:CURR:LEV -0.0e-6')
     config.ps.write(':OUTP:STAT ON')
@@ -58,24 +57,23 @@ for item in config_bits_list:
         time.sleep(10)
         # N sample to average and extract std from
         data = pd.DataFrame.from_dict(
-            config.lecroy.get_channel(channel_name='csa', n_channel=config.channel_num)['waveforms'][0]
+            config.lecroy.get_channel(channel_name='C', n_channel=config.channel_num)['waveforms'][0]
         )
         
         data['Amplitude (V)'] = (data['Amplitude (V)'] - data['Amplitude (V)'][0]) / gain_lane
         
         data.insert(0, 'Current level step', i)
         data.insert(1, 'Current level (A)', cl)
-        df = pd.concat((df, data), ignore_index=True)
+        df = pd.concat((df, data))
 
     #salvataggio misura
-    datetime_str = datetime.strftime(datetime.now(), '%d%m%y_%H%M%S')
+    datetime_str = datetime.strftime(datetime.now(), '%d%m%y_%H%M')
     if config.active_prbs: 
         str_type='active_prbs' 
     else: 
         str_type = ''
-    df.to_csv(f'G:/My Drive/PHD/FALCON/measures/new/transient/csa/{channel_name}_{config.config_bits_str}_nominal_{lemo_name}_{datetime_str}.tsv', sep='\t')
-
-    # Feedback verifica su output
+    df.to_csv(f'G:Shared drives/FALCON/measures/new/transient/csa/{channel_name}_{config.config_bits_str}_nominal_{lemo_name}_{datetime_str}.tsv', sep='\t')
+    
     print(f"Misura completata per cfg_bits {item} con livello di energia {energy_level:} A")
 
     #PRELEVO DATI DA MISURAZIONI VECCHIE RIGUARDANTI LA STESSA CONFIGURAZIONE DI BIT
@@ -86,19 +84,18 @@ for item in config_bits_list:
     import time
     from datetime import datetime
     import matplotlib.colors as mcolors
-
-    path = 'G:/My Drive/PHD/FALCON/measures/new/transient/csa/{channel_name}_{config.config_bits_str}_nominal_{lemo_name}_{datetime_str}.tsv'
+    path=(f'G:Shared drives/FALCON/measures/new/transient/csa/{channel_name}_{config.config_bits_str}_nominal_{lemo_name}_{datetime_str}.tsv')
     df = pd.read_csv(path, sep = '\t')
     datetime_str = datetime.strftime(datetime.now(), '%d%m%y_%H%M')
     arr_split = path.split('/')
     channel_name = arr_split[6]
     config_bits_str = arr_split[-1].split('_')[1]
     config_bits = [int(x) for x in config_bits_str]
-    config.config(channel=channel_name,n_steps=8,cfg_bits=item,cfg_inst=False,lemo=False)
+    config.config(channel='csa',n_steps=8,cfg_bits=item,cfg_inst=False,lemo=False)
 
     #PLOT UNICO PER OGNI CONFIGURAZIONE
 
-    t_s = 300e-9 if config.channel_name == 'csa' else -100e-9
+    t_s = 300e-9 if config.channel_name == 'csa' else -100e-9 #300
     t_e = 900e-9 if config.channel_name == 'csa' else 1.8e-6
     sub_df = df[df['Time (s)'].between(t_s, t_e)]
 
@@ -122,6 +119,5 @@ for item in config_bits_list:
     if channel_name == 'shap':
         ax.text(.01,.01,f'$t_p$ = {config.peaking_time} ns',ha='left',va='bottom',transform=ax.transAxes)
 
-
-    plt.savefig(f'G:/My Drive/PHD/FALCON/measures/new/transient/csa/{channel_name}_{config.config_bits_str}_nominal_{lemo_name}_{datetime_str}.pdf',dpi=300)
+    plt.savefig(f'G:Shared drives/FALCON/measures/new/transient/csa/{channel_name}_{config.config_bits_str}_nominal_{lemo_name}_{datetime_str}.pdf',dpi=300)
 
