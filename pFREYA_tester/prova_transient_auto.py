@@ -95,8 +95,8 @@ for item in config_bits_list:
 
     #PLOT UNICO PER OGNI CONFIGURAZIONE
 
-    t_s = 300e-9 if config.channel_name == 'csa' else -100e-9 #300
-    t_e = 900e-9 if config.channel_name == 'csa' else 1.8e-6
+    t_s = 400e-9 if config.channel_name == 'csa' else -100e-9 #300
+    t_e = 100e-8 if config.channel_name == 'csa' else 1.8e-6    #900e-9
     sub_df = df[df['Time (s)'].between(t_s, t_e)]
 
     colours = list(mcolors.TABLEAU_COLORS.keys())

@@ -60,7 +60,7 @@ def auto_eq_ph():
         eq_ph_results.append(eq_ph)
 
 # test
-n_steps = 5
+n_steps = 20
 auto_current_level_csa(n_steps)
 auto_iinj_int()
 auto_eq_ph()
@@ -89,7 +89,7 @@ for index, config in enumerate(csa_configs):
     # reset inj
     config.ps.write(':SOUR:CURR:LEV -0.07e-6')
     time.sleep(2)
-
+    tsv_files = []
     ndiv = 10 # positive and negative around delay
     tdelay = -648 # ns
     tdiv = 200 # ns/div
@@ -103,7 +103,7 @@ for index, config in enumerate(csa_configs):
         div_e = (432 - osc_offset)/tdiv
     config.lecroy.write(f'C1:CRST HDIF,{div_s},HREF,{div_e}')
 
-    measures = {
+    mis = {
         #'CSA Bits': [],
         'Current Level Step': [],
         'Current Level (A)': [],
@@ -115,12 +115,11 @@ for index, config in enumerate(csa_configs):
 
     current_lev=current_levels[index]
     for i, level in enumerate(current_lev):
-        import config
-        #measures['CSA Bits'].append(config['csa_bits'])
-        measures['Current Level Step'].append(i)
-        measures['Current Level (A)'].append(level)
-        measures['iinj_int (C)'].append(iinj_int_results[index][i])
-        measures['Equivalent Photons'].append(eq_ph_results[index][i])      
+        #mis['CSA Bits'].append(config)
+        mis['Current Level Step'].append(i)
+        mis['Current Level (A)'].append(level)
+        mis['iinj_int (C)'].append(iinj_int_results[index][i])
+        mis['Equivalent Photons'].append(eq_ph_results[index][i])      
         data = []
         for _ in range(N_samples):
             #test funzionamento
@@ -130,83 +129,72 @@ for index, config in enumerate(csa_configs):
             time.sleep(0.03)
         
         # Calcola la media e la deviazione standard e memorizza nel DataFrame i diversi valori di tensione
-        measures['Voltage output average (V)'].append(np.average(data) / gain)
-        measures['Voltage output std (V)'].append(np.std(data) / gain)
-
+        mis['Voltage output average (V)'].append(np.average(data)/gain)
+        mis['Voltage output std (V)'].append(np.std(data) / gain)
     if channel_name == 'csa':
-           #measures['Voltage output average (V)'] = [-1 * x for x in measures['Voltage output average (V)']]
-            measures['Voltage output average (V)'] = -1*measures['Voltage output average (V)']
-    df = pd.DataFrame(measures)
+        mis['Voltage output average (V)'] = [-1 * x for x in mis['Voltage output average (V)']]
+        #mis['Voltage output average (V)'] = -1*mis['Voltage output average (V)']
+    df = pd.DataFrame(mis)
     datetime_str = datetime.now().strftime('%Y%m%d%H%M')
 
     # Sostituire percorso del drive e salvare il file
-    df.to_csv(f'G:/Shared drives/PHD/FALCON/measures/new/transcharacteristics/csa/{channel_name}_{config.config_bits_str}_nominal_{lemo_name}_{datetime_str}.tsv', sep='\t', index=False)
+    df.to_csv(f'G:Shared drives/FALCON/measures/new/transcharacteristics/csa/{channel_name}_{config.config_bits_str}_nominal_{lemo_name}_{datetime_str}.tsv', sep='\t', index=False)
+    tsv_files.append(f'G:Shared drives/FALCON/measures/new/transcharacteristics/csa/{channel_name}_{config.config_bits_str}_nominal_{lemo_name}_{datetime_str}.tsv')
     print("File tsv salvato con successo.")
 
 #GRAFICI( per ogni configurazione di bit plot di tensione media e fotoni equivalenti)
-"""
-def get_voltage_output_avg(csa_bits, df):
-# Filtra il DataFrame per ottenere solo le righe con i csa_bits corrispondente a vout media
-    df_filtered = df[df['CSA Bits'].apply(lambda x: tuple(x) == tuple(csa_bits))]
-    return df_filtered['Voltage output average (V)'].tolist()
-
-def get_equivalent_photons(csa_bits, df):
-# Filtra il DataFrame per ottenere solo le righe con i csa_bits corrispondente a 
-    df_filtered = df[df['CSA Bits'].apply(lambda x: tuple(x) == tuple(csa_bits))]
-    return df_filtered['Equivalent Photons'].tolist()
-"""                 
+                 
 #fino a qua ho commentato tutti i valori dei dispositivi
-def generate_plots():
+
     # Trova tutti i file .tsv nella cartella specificata
-    tsv_files = glob.glob(f'G:/Shared drives/PHD/FALCON/measures/new/transcharacteristics/csa/{channel_name}_{config.config_bits_str}_nominal_{lemo_name}_{datetime_str}.tsv')
 
-    for index, tsv_file in enumerate(tsv_files):
-        # Leggi il DataFrame dal file .tsv
-        df = pd.read_csv(tsv_file, sep='\t')
+print(tsv_files)
+for index, tsv_file in enumerate(tsv_files):
+    # Leggi il DataFrame dal file .tsv
+    df = pd.read_csv(tsv_files, sep='\t')
 
-        # Controlla la lunghezza dei dati
-        length = len(df['Voltage output average (V)'])
-        photon_span = np.linspace(0, 256, length)
+    # Controlla la lunghezza dei dati
+    length = len(df['Voltage output average (V)']) #20 valori
+    photon_span = np.linspace(0, 256, length)
 
-        # Genera il grafico
-        fig, ax = plt.subplots()
-        fig.set_figheight(4)
-        fig.set_figwidth(5)
-        
-        ax.errorbar(photon_span, df['Voltage output average (V)'],
-                    xerr=np.tile(1, df.shape[0]), yerr=df['Voltage output std (V)'],
-                    fmt='s', markersize=1, capsize=3)
-        ax.set_xlabel('Equivalent input photons [#]')
-        ax.set_ylabel(f'{channel_name.upper()} output voltage [V]')
-        ax.tick_params(right=True, top=True, direction='in')
-        from scipy.stats import linregress
-        ln = linregress(photon_span, df['Voltage output average (V)'].astype(float))
-        linear_output = ln.intercept + ln.slope * np.linspace(0, 256, length)
-        ax.plot(photon_span, linear_output)
-        max_diff = np.max(df['Voltage output average (V)'] - linear_output)
-        inl = 100 * np.abs(max_diff) / ln.slope / 256
-        print(ln)
-        
-        # Aggiungi tabella informativa
-        ax.table(cellText=[
-            ['$\\gamma$ energy [keV]', f'{config.photon_energy}'],  # Sostituisci N/A con {config.photon_energy}
-            ['Peaking time [ns]', f'{config.peaking_time}'],  # sostituisci 318 con {config.peaking_time}
-            ['Slope [mV/#$\\gamma$]', f'{np.round(ln.slope * 10**3, 3)}'],
-            ['INL [%]', f'{np.round(inl, 2)}'],
-            ['R$^2$', f'{np.round(ln.rvalue**2, 3)}']
-        ], colWidths=[.33, .2], loc='lower right')
+    # Genera il grafico
+    fig, ax = plt.subplots()
+    fig.set_figheight(4)
+    fig.set_figwidth(5)
 
-        # Salva il grafico
-        try:
-            output_file = f'G:/Shared drives/PHD/FALCON/measures/new/transcharacteristics/csa/{channel_name}_{config.config_bits_str}_nominal_{lemo_name}_{datetime_str}.pdf'
-            plt.savefig(output_file, dpi=300)
-            plt.close(fig)  # Chiude il grafico corrente per liberare risorse
-            print(f"File plot salvato con successo: {output_file}")
-        except Exception as e:
-            print(f"Errore durante il salvataggio del file plot: {e}")
+    ax.errorbar(photon_span, df['Voltage output average (V)'],
+                xerr=np.tile(1, df.shape[0]), yerr=df['Voltage output std (V)'],
+                fmt='s', markersize=1, capsize=3)
+    ax.set_xlabel('Equivalent input photons [#]')
+    ax.set_ylabel(f'{channel_name.upper()} output voltage [V]')
+    ax.tick_params(right=True, top=True, direction='in')
+    from scipy.stats import linregress
+    ln = linregress(photon_span, df['Voltage output average (V)'].astype(float))
+    linear_output = ln.intercept + ln.slope * np.linspace(0, 256, length)
+    ax.plot(photon_span, linear_output)
+    max_diff = np.max(df['Voltage output average (V)'] - linear_output)
+    inl = 100 * np.abs(max_diff) / ln.slope / 256
+    print(ln)
+
+    # Aggiungi tabella informativa
+    ax.table(cellText=[
+        ['$\\gamma$ energy [keV]', f'{config.photon_energy}'],  # Sostituisci N/A con {config.photon_energy}
+        ['Peaking time [ns]', f'{config.peaking_time}'],  # sostituisci 318 con {config.peaking_time}
+        ['Slope [mV/#$\\gamma$]', f'{np.round(ln.slope * 10**3, 3)}'],
+        ['INL [%]', f'{np.round(inl, 2)}'],
+        ['R$^2$', f'{np.round(ln.rvalue**2, 3)}']
+    ], colWidths=[.33, .2], loc='lower right')
+
+    # Salva il grafico
+    try:
+        output_file = f'G:Shared drives/FALCON/measures/new/transcharacteristics/csa/{channel_name}_{config.config_bits_str}_nominal_{lemo_name}_{datetime_str}.pdf'
+        plt.savefig(output_file, dpi=300)
+        plt.close(fig)  # Chiude il grafico corrente per liberare risorse
+        print(f"File plot salvato con successo: {output_file}")
+    except Exception as e:
+        print(f"Errore durante il salvataggio del file plot: {e}")
 
 # Esegui la funzione
-generate_plots()
 #plt.show()
 
 
@@ -214,12 +202,12 @@ generate_plots()
 
 colours = list(mcolors.TABLEAU_COLORS.keys())
 
-# Percorsi dei file .tsv (aggiorna con i tuoi percorsi)
+# Percorsi dei file .tsv (aggiorna con i tuoi percorsi) , DA SOSTITUIRE CON TSV_FILES
 path = [ 
-        f'G:/Shared drives/PHD/FALCON/measures/new/transcharacteristics/csa/{channel_name}_{0}_nominal_{lemo_name}_{datetime_str}.tsv',
-        f'G:/Shared drives/PHD/FALCON/measures/new/transcharacteristics/csa/{channel_name}_{1}_nominal_{lemo_name}_{datetime_str}.tsv',
-        f'G:/Shared drives/PHD/FALCON/measures/new/transcharacteristics/csa/{channel_name}_{2}_nominal_{lemo_name}_{datetime_str}.tsv', 
-        f'G:/Shared drives/PHD/FALCON/measures/new/transcharacteristics/csa/{channel_name}_{3}_nominal_{lemo_name}_{datetime_str}.tsv' 
+        f'G:Shared drives/FALCON/measures/new/transcharacteristics/csa/{channel_name}_{config.config_bits_str}_nominal_{lemo_name}_{datetime_str}.tsv',
+        f'G:Shared drives/FALCON/measures/new/transcharacteristics/csa/{channel_name}_{config.config_bits_str}_nominal_{lemo_name}_{datetime_str}.tsv',
+        f'G:Shared drives/FALCON/measures/new/transcharacteristics/csa/{channel_name}_{config.config_bits_str}_nominal_{lemo_name}_{datetime_str}.tsv', 
+        f'G:Shared drives/FALCON/measures/new/transcharacteristics/csa/{channel_name}_{config.config_bits_str}_nominal_{lemo_name}_{datetime_str}.tsv' 
 ]
 # Modelli di energia (aggiorna con i tuoi dati)
 modes = [5, 9, 18, 25]
@@ -274,5 +262,5 @@ for i in range(4):
     max_diffs.append(np.max(dfs[i]['Voltage output average (V)'] - linear_outputs[i]))
     inls.append(100 * np.abs(max_diffs[i]) / lns[i].slope / 256)
     #manca tabella con parametri
-plt.savefig(f'G:/Shared drives/PHD/FALCON/measures/new/transcharacteristics/csa/{channel_name}_{config.config_bits_str}_nominal_{lemo_name}_{datetime_str}.pdf')
+plt.savefig(f'G:Shared drives/FALCON/measures/new/transcharacteristics/csa/{channel_name}_{config.config_bits_str}_nominal_{lemo_name}_{datetime_str}.pdf')
 
