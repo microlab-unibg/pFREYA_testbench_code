@@ -90,15 +90,15 @@ for index, config in enumerate(csa_configs):
     config.ps.write(':SOUR:CURR:LEV -0.07e-6')
     time.sleep(2)
     tsv_files = [
-        "f'G:Shared drives/FALCON/measures/new/transcharacteristics/csa/csa_0000011_nominal_none_202411211717.tsv"
-        "f'G:Shared drives/FALCON/measures/new/transcharacteristics/csa/csa_1100011_nominal_none_202411211724.tsv"
-        "f'G:Shared drives/FALCON/measures/new/transcharacteristics/csa/csa_1000011_nominal_none_202411211720.tsv"
-        "f'G:Shared drives/FALCON/measures/new/transcharacteristics/csa/csa_0100011_nominal_none_202411211713.tsv"
+        'G:Shared drives/FALCON/measures/new/transcharacteristics/csa/csa_0000011_nominal_none_202411211717.tsv',
+        'G:Shared drives/FALCON/measures/new/transcharacteristics/csa/csa_1100011_nominal_none_202411211724.tsv',
+        'G:Shared drives/FALCON/measures/new/transcharacteristics/csa/csa_1000011_nominal_none_202411211720.tsv',
+        'G:Shared drives/FALCON/measures/new/transcharacteristics/csa/csa_0100011_nominal_none_202411211713.tsv'
     ]
     ndiv = 10 # positive and negative around delay
     tdelay = -648 # ns
     tdiv = 200 # ns/div
-    osc_ts = 318 # ns
+    osc_ts = 297 # ns
     osc_te = osc_ts + config.peaking_time + 10 # 10 ns to avoid switching time
     osc_offset = - ndiv/2*tdiv - tdelay
     div_s = (osc_ts - osc_offset)/tdiv
@@ -107,12 +107,12 @@ for index, config in enumerate(csa_configs):
     else:
         div_e = (432 - osc_offset)/tdiv
     config.lecroy.write(f'C1:CRST HDIF,{div_s},HREF,{div_e}')
-'''
+
     mis = {
         #'CSA Bits': [],
         'Current Level Step': [],
         'Current Level (A)': [],
-        'iinj_int (C)': [],
+        #'iinj_int (C)': [],
         'Equivalent Photons': [],
         'Voltage output average (V)': [],
         'Voltage output std (V)': []
@@ -120,10 +120,11 @@ for index, config in enumerate(csa_configs):
 
     current_lev=current_levels[index]
     for i, level in enumerate(current_lev):
+        
         #mis['CSA Bits'].append(config)
         mis['Current Level Step'].append(i)
         mis['Current Level (A)'].append(level)
-        mis['iinj_int (C)'].append(iinj_int_results[index][i])
+        #mis['iinj_int (C)'].append(iinj_int_results[index][i])
         mis['Equivalent Photons'].append(eq_ph_results[index][i])      
         data = []
         for _ in range(N_samples):
@@ -146,22 +147,9 @@ for index, config in enumerate(csa_configs):
     df.to_csv(f'G:Shared drives/FALCON/measures/new/transcharacteristics/csa/{channel_name}_{config.config_bits_str}_nominal_{lemo_name}_{datetime_str}.tsv', sep='\t', index=False)
     tsv_files.append(f'G:Shared drives/FALCON/measures/new/transcharacteristics/csa/{channel_name}_{config.config_bits_str}_nominal_{lemo_name}_{datetime_str}.tsv')
     print("File tsv salvato con successo.")
-'''
-#GRAFICI( per ogni configurazione di bit plot di tensione media e fotoni equivalenti)
-                 
-#fino a qua ho commentato tutti i valori dei dispositivi
-
-    # Trova tutti i file .tsv nella cartella specificata
-
-print(tsv_files)# stampa dei 4 percorsi relativi ai 4 dataset
-
-for index, tsv_file in enumerate(tsv_files):
-    # Leggi il DataFrame dal file .tsv
-    df = pd.read_csv(tsv_files, sep='\t')
 
     # Controlla la lunghezza dei dati
-    length = len(df['Voltage output average (V)']) #20 valori
-    photon_span = np.linspace(0, 256, length)
+    photon_span = np.linspace(0, 256, 20)
 
     # Genera il grafico
     fig, ax = plt.subplots()
@@ -176,7 +164,7 @@ for index, tsv_file in enumerate(tsv_files):
     ax.tick_params(right=True, top=True, direction='in')
     from scipy.stats import linregress
     ln = linregress(photon_span, df['Voltage output average (V)'].astype(float))
-    linear_output = ln.intercept + ln.slope * np.linspace(0, 256, length)
+    linear_output = ln.intercept + ln.slope * np.linspace(0, 256, 20)
     ax.plot(photon_span, linear_output)
     max_diff = np.max(df['Voltage output average (V)'] - linear_output)
     inl = 100 * np.abs(max_diff) / ln.slope / 256
@@ -186,7 +174,7 @@ for index, tsv_file in enumerate(tsv_files):
     ax.table(cellText=[
         ['$\\gamma$ energy [keV]', f'{config.photon_energy}'],  # Sostituisci N/A con {config.photon_energy}
         ['Peaking time [ns]', f'{config.peaking_time}'],  # sostituisci 318 con {config.peaking_time}
-        ['Slope [mV/#$\\gamma$]', f'{np.round(ln.slope * 10**3, 3)}'],
+        ['Slope [mV/#$\\gamma$]', f'{np.round(ln.slope*10**3,3)}'],
         ['INL [%]', f'{np.round(inl, 2)}'],
         ['R$^2$', f'{np.round(ln.rvalue**2, 3)}']
     ], colWidths=[.33, .2], loc='lower right')
@@ -200,27 +188,17 @@ for index, tsv_file in enumerate(tsv_files):
     except Exception as e:
         print(f"Errore durante il salvataggio del file plot: {e}")
 
-# Esegui la funzione
-#plt.show()
-
 
 #grafico totale delle 4 modalità:
 
 colours = list(mcolors.TABLEAU_COLORS.keys())
 
-# Percorsi dei file .tsv (aggiorna con i tuoi percorsi) , DA SOSTITUIRE CON TSV_FILES
-path = [ 
-        f'G:Shared drives/FALCON/measures/new/transcharacteristics/csa/{channel_name}_{config.config_bits_str}_nominal_{lemo_name}_{datetime_str}.tsv',
-        f'G:Shared drives/FALCON/measures/new/transcharacteristics/csa/{channel_name}_{config.config_bits_str}_nominal_{lemo_name}_{datetime_str}.tsv',
-        f'G:Shared drives/FALCON/measures/new/transcharacteristics/csa/{channel_name}_{config.config_bits_str}_nominal_{lemo_name}_{datetime_str}.tsv', 
-        f'G:Shared drives/FALCON/measures/new/transcharacteristics/csa/{channel_name}_{config.config_bits_str}_nominal_{lemo_name}_{datetime_str}.tsv' 
-]
 # Modelli di energia (aggiorna con i tuoi dati)
 modes = [5, 9, 18, 25]
 
 # Caricamento dei DataFrame
 dfs = []
-for p in path:
+for p in tsv_files:
     dfs.append(pd.read_csv(p, sep='\t'))
 
 # Creazione del grafico
@@ -269,4 +247,3 @@ for i in range(4):
     inls.append(100 * np.abs(max_diffs[i]) / lns[i].slope / 256)
     #manca tabella con parametri
 plt.savefig(f'G:Shared drives/FALCON/measures/new/transcharacteristics/csa/{channel_name}_{config.config_bits_str}_nominal_{lemo_name}_{datetime_str}.pdf')
-
