@@ -12,7 +12,23 @@ T = 30e-9 # s
 t_r = 3e-9 # s
 N_pulses = 10 # adimensional
 conv_kev_c = 3.65/1000 * 1/1.602e-19 # Energy in silicon for e-/h * no of electrons per coulomb [keV/e-] * [e-/C]
-
+def get_energy_level(cfg_bits):
+    if cfg_bits[0] == 1 and cfg_bits[1] == 1:
+        return 5  # 5 keV
+    elif cfg_bits[0] == 1 and cfg_bits[1] == 0:
+        return 9 # 9 keV
+    elif cfg_bits[0] == 0 and cfg_bits[1] == 1:
+        return 18 # 18 keV
+    elif cfg_bits[0] == 0 and cfg_bits[1] == 0:
+        return 25 # 25 keV
+    else:
+        raise ValueError("Configurazione cfg_bits non valida")
+config_bits_list = [
+    [1, 1, 0, 1, 1, 1, 1],  # Configurazione 5 keV
+    [1, 0, 1, 1, 1, 1, 1],  # Configurazione 9 keV
+    [0, 1, 1, 1, 1, 1, 1],  # Configurazione 18 keV
+    [0, 0, 1, 1, 1, 1, 1],  # Configurazione 25 keV
+]
 
 current_levels = []
 iinj_int_results = []
@@ -66,13 +82,12 @@ auto_iinj_int()
 auto_eq_ph()
 
 
-cfg_bits_template = [0, 1, 0, 0, 0, 1, 1] # lo utilizzo per definire un template base per poi iterare le diverse config di bits
+#cfg_bits_template = [0, 1, 0, 0, 0, 1, 1]  lo utilizzo per definire un template base per poi iterare le diverse config di bits
 # Creazione del DataFrame
-for index, config in enumerate(csa_configs):
-    config_bits = cfg_bits_template.copy() 
-    config_bits[0], config_bits[1] = config['csa_bits']
+for item in config_bits_list:
+    
     import config
-    config.config(channel='csa',lemo='none',n_steps=20,cfg_bits=config_bits)
+    config.config(channel='csa',lemo='none',n_steps=20,cfg_bits=item,cfg_inst=True, active_probes=False)
     
     config.ps.write(':SOUR:CURR:LEV -.0e-6')
     channel_name = config.channel_name
@@ -118,14 +133,13 @@ for index, config in enumerate(csa_configs):
         'Voltage output std (V)': []
     }
 
-    current_lev=current_levels[index]
-    for i, level in enumerate(current_lev):
+    for i, level in enumerate(config.current_lev):
         
         #mis['CSA Bits'].append(config)
         mis['Current Level Step'].append(i)
         mis['Current Level (A)'].append(level)
         #mis['iinj_int (C)'].append(iinj_int_results[index][i])
-        mis['Equivalent Photons'].append(eq_ph_results[index][i])      
+        mis['Equivalent Photons'].append(eq_ph_results[i])      
         data = []
         for _ in range(N_samples):
             #test funzionamento
