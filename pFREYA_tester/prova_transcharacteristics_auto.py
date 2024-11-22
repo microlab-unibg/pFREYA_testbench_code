@@ -29,7 +29,7 @@ config_bits_list = [
     [0, 1, 1, 1, 1, 1, 1],  # Configurazione 18 keV
     [0, 0, 1, 1, 1, 1, 1],  # Configurazione 25 keV
 ]
-
+'''
 current_levels = []
 iinj_int_results = []
 eq_ph_results = []
@@ -74,12 +74,12 @@ def auto_eq_ph():
     for index, item in enumerate(iinj_int_results):
         eq_ph = -1 * item * get_corr_fact(index) * conv_kev_c / get_photon_energy(index)
         eq_ph_results.append(eq_ph)
-
+'''
 # test
 n_steps = 20
-auto_current_level_csa(n_steps)
-auto_iinj_int()
-auto_eq_ph()
+config.configauto_current_level_csa(n_steps)
+config.configauto_iinj_int()
+config.auto_eq_ph()
 
 
 #cfg_bits_template = [0, 1, 0, 0, 0, 1, 1]  lo utilizzo per definire un template base per poi iterare le diverse config di bits
@@ -139,7 +139,7 @@ for item in config_bits_list:
         mis['Current Level Step'].append(i)
         mis['Current Level (A)'].append(level)
         #mis['iinj_int (C)'].append(iinj_int_results[index][i])
-        mis['Equivalent Photons'].append(eq_ph_results[i])      
+        mis['Equivalent Photons'].append(config.eq_ph_results[i])      
         data = []
         for _ in range(N_samples):
             #test funzionamento
