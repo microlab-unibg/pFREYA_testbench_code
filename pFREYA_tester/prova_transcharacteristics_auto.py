@@ -89,7 +89,12 @@ for index, config in enumerate(csa_configs):
     # reset inj
     config.ps.write(':SOUR:CURR:LEV -0.07e-6')
     time.sleep(2)
-    tsv_files = []
+    tsv_files = [
+        "f'G:Shared drives/FALCON/measures/new/transcharacteristics/csa/csa_0000011_nominal_none_202411211717.tsv"
+        "f'G:Shared drives/FALCON/measures/new/transcharacteristics/csa/csa_1100011_nominal_none_202411211724.tsv"
+        "f'G:Shared drives/FALCON/measures/new/transcharacteristics/csa/csa_1000011_nominal_none_202411211720.tsv"
+        "f'G:Shared drives/FALCON/measures/new/transcharacteristics/csa/csa_0100011_nominal_none_202411211713.tsv"
+    ]
     ndiv = 10 # positive and negative around delay
     tdelay = -648 # ns
     tdiv = 200 # ns/div
@@ -102,7 +107,7 @@ for index, config in enumerate(csa_configs):
     else:
         div_e = (432 - osc_offset)/tdiv
     config.lecroy.write(f'C1:CRST HDIF,{div_s},HREF,{div_e}')
-
+'''
     mis = {
         #'CSA Bits': [],
         'Current Level Step': [],
@@ -141,14 +146,15 @@ for index, config in enumerate(csa_configs):
     df.to_csv(f'G:Shared drives/FALCON/measures/new/transcharacteristics/csa/{channel_name}_{config.config_bits_str}_nominal_{lemo_name}_{datetime_str}.tsv', sep='\t', index=False)
     tsv_files.append(f'G:Shared drives/FALCON/measures/new/transcharacteristics/csa/{channel_name}_{config.config_bits_str}_nominal_{lemo_name}_{datetime_str}.tsv')
     print("File tsv salvato con successo.")
-
+'''
 #GRAFICI( per ogni configurazione di bit plot di tensione media e fotoni equivalenti)
                  
 #fino a qua ho commentato tutti i valori dei dispositivi
 
     # Trova tutti i file .tsv nella cartella specificata
 
-print(tsv_files)
+print(tsv_files)# stampa dei 4 percorsi relativi ai 4 dataset
+
 for index, tsv_file in enumerate(tsv_files):
     # Leggi il DataFrame dal file .tsv
     df = pd.read_csv(tsv_files, sep='\t')
