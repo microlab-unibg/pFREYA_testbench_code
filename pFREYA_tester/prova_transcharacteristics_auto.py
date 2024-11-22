@@ -29,7 +29,7 @@ config_bits_list = [
     [0, 1, 1, 1, 1, 1, 1],  # Configurazione 18 keV
     [0, 0, 1, 1, 1, 1, 1],  # Configurazione 25 keV
 ]
-'''
+
 current_levels = []
 iinj_int_results = []
 eq_ph_results = []
@@ -74,12 +74,12 @@ def auto_eq_ph():
     for index, item in enumerate(iinj_int_results):
         eq_ph = -1 * item * get_corr_fact(index) * conv_kev_c / get_photon_energy(index)
         eq_ph_results.append(eq_ph)
-'''
+
 # test
 n_steps = 20
-config.auto_current_level_csa(n_steps)
-config.auto_iinj_int()
-config.auto_eq_ph()
+auto_current_level_csa(n_steps)
+auto_iinj_int()
+auto_eq_ph()
 
 
 #cfg_bits_template = [0, 1, 0, 0, 0, 1, 1]  lo utilizzo per definire un template base per poi iterare le diverse config di bits
@@ -96,13 +96,11 @@ for item in config_bits_list:
     N_samples = config.N_samples
 
     # set proper time division for this analysis
-    config.lecroy.write('TDIV 200NS')
     # suppress channel for noise stuff
     #config.lecroy.write('F3:TRA OFF')
     # set cursor positions
     #config.lecroy.write(f'C2:CRS HREL')
     # reset inj
-    config.ps.write(':SOUR:CURR:LEV -0.07e-6')
     time.sleep(2)
     tsv_files = []
     ndiv = 10 # positive and negative around delay
