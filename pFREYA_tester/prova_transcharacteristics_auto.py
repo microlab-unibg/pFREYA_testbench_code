@@ -77,8 +77,8 @@ def auto_eq_ph():
 '''
 # test
 n_steps = 20
-config.configauto_current_level_csa(n_steps)
-config.configauto_iinj_int()
+config.auto_current_level_csa(n_steps)
+config.auto_iinj_int()
 config.auto_eq_ph()
 
 
@@ -104,12 +104,7 @@ for item in config_bits_list:
     # reset inj
     config.ps.write(':SOUR:CURR:LEV -0.07e-6')
     time.sleep(2)
-    tsv_files = [
-        'G:Shared drives/FALCON/measures/new/transcharacteristics/csa/csa_0000011_nominal_none_202411211717.tsv',
-        'G:Shared drives/FALCON/measures/new/transcharacteristics/csa/csa_1100011_nominal_none_202411211724.tsv',
-        'G:Shared drives/FALCON/measures/new/transcharacteristics/csa/csa_1000011_nominal_none_202411211720.tsv',
-        'G:Shared drives/FALCON/measures/new/transcharacteristics/csa/csa_0100011_nominal_none_202411211713.tsv'
-    ]
+    tsv_files = []
     ndiv = 10 # positive and negative around delay
     tdelay = -648 # ns
     tdiv = 200 # ns/div
@@ -134,7 +129,7 @@ for item in config_bits_list:
     }
 
     for i, level in enumerate(config.current_lev):
-        
+        config.ps.write(f':SOUR:CURR:LEV {level}')
         #mis['CSA Bits'].append(config)
         mis['Current Level Step'].append(i)
         mis['Current Level (A)'].append(level)
