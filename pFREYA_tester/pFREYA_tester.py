@@ -4,7 +4,6 @@ from tkinter import messagebox
 from serial import *
 import subprocess
 import json
-from gui_test import gui2
 import serial
 import pFREYA_tester_processing.pFREYA_tester_processing as pYtp
 import pFREYA_tester_processing.UART_definitions as UARTdef
@@ -324,8 +323,92 @@ root = Tk()
 root.title("pFREYA tester v0 - Manual testing")
 gui = pFREYA_GUI(root)
 
+import time
+#seconda gui
+def run_script_csa():
+  print("Reset FPGA")
+  reset_iniziale()
+  time.sleep(2)
+
+  print("json")
+  to_json_CSA()
+  time.sleep(2)
+
+  print("clk")
+  auto_clock()
+  time.sleep(2)
+  
+  print("slw")
+  auto_slwctrl()
+  time.sleep(2)
+
+  print("current")
+  auto_currentlvl()
+  time.sleep(2)
+
+  
+  print("csa_reset_n")
+  auto_csa_reset()
+  time.sleep(3)
+  
+  #metodo transient csa
+  subprocess.run(["python", "transient_auto_csa.py"]) #metodo transient csa
+  subprocess.run(["python", "transcharacteristics_auto_csa.py"]) #metodo transcharacteristics csa
+
+def run_script_shap():
+  print("Reset FPGA")
+  reset_iniziale()
+  time.sleep(2)
+
+  print("json")
+  to_json_CSA()
+  time.sleep(2)
+
+  print("clk")
+  auto_clock()
+  time.sleep(2)
+  
+  print("slw")
+  auto_slwctrl()
+  time.sleep(2)
+
+  print("current")
+  auto_currentlvl()
+  time.sleep(2)
+
+  
+  print("csa_reset_n")
+  auto_csa_reset()
+  time.sleep(3)
+  
+  #metodo transient csa
+  subprocess.run(["python", "transient_auto_shap.py"]) #metodo transient csa
+  subprocess.run(["python", "transcharacteristics_auto_shap.py"]) #metodo transcharacteristics csa
+
+class gui2(Toplevel):
+  def __init__(self,parent):
+    super().__init__(parent)
+    self.title("pFREYA tester v0 - Automatic testing")
+    self.geometry("400x120")
+    self.resizable(False, False)
+    
+    frame = Frame(self)
+    frame.pack(pady=10)
+
+    label1 =Label(frame, text="csa")
+    label1.grid(row=0, column=0, padx=10, pady=10)
+    button1 = Button(frame, text="run", command=run_script_csa)
+    button1.grid(row=0, column=1, padx=10, pady=10)
+
+    label2 = Label(frame, text="shap")
+    label2.grid(row=1, column=0, padx=10, pady=10)
+
+    button2 = Button(frame, text="run", command=run_script_shap)
+    button2.grid(row=1, column=1, padx=10, pady=10)
+    self.mainloop()
 
 def open_child():
+    print("opening gui2")
     child=gui2(root)
 
 
@@ -647,3 +730,8 @@ ttk.Button(ser_lframe, text="Sync signals", command=lambda: pYtp.send_sync_time_
 ttk.Button(ser_lframe, text="Reset FPGA", command=lambda: pYtp.send_reset_FPGA()).grid(column=1, row=0, sticky=SE)
 
 root.mainloop()
+
+
+#metodo per shap(stessa cosa per per csa)
+#transcharacteristics shap
+#transient shap

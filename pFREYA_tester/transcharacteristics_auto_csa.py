@@ -30,57 +30,6 @@ config_bits_list = [
     [0, 0, 1, 1, 1, 1, 1],  # Configurazione 25 keV
 ]
 
-current_levels = []
-iinj_int_results = []
-eq_ph_results = []
-csa_configs = [
-    {'csa_bits': [0, 1], 'photon_energy': 9, 'offset_charge': 8.5e-15, 'min_current': 0.07e-6, 'max_current': 1.55e-6, 'corr_fact': 1},
-    {'csa_bits': [0, 0], 'photon_energy': 25, 'offset_charge': 8.5e-15, 'min_current': 0.07e-6, 'max_current': 3.8e-6, 'corr_fact': 1},
-    {'csa_bits': [1, 0], 'photon_energy': 18, 'offset_charge': 8.5e-15, 'min_current': 0.07e-6, 'max_current': 3.3e-6, 'corr_fact': 1},
-    {'csa_bits': [1, 1], 'photon_energy': 5, 'offset_charge': 0, 'min_current': 0.065e-6, 'max_current': 0.83e-6, 'corr_fact': 1}
-]
-def get_csa_bits(index):
-    return csa_configs[index]['csa_bits']
-
-def get_min_current(index):
-    return csa_configs[index]['min_current']
-
-def get_max_current(index):
-    return csa_configs[index]['max_current']
-
-def get_photon_energy(index):
-    return csa_configs[index]['photon_energy']
-
-def get_offset_charge(index):
-    return csa_configs[index]['offset_charge']
-
-def get_corr_fact(index):
-    return csa_configs[index]['corr_fact'] #1
-
-def auto_current_level_csa(n_steps):
-    for index in range(len(csa_configs)):
-        min_current = get_min_current(index)
-        max_current = get_max_current(index)
-        current_lev = -1 * np.linspace(min_current, max_current, n_steps)
-        current_levels.append(current_lev) 
-
-def auto_iinj_int(): 
-    for index, item in enumerate(current_levels):
-        # Calculate iinj_int for each value of current_lev
-        iinj_int = item * (T/2 - t_r) * N_pulses + get_offset_charge(index)
-        iinj_int_results.append(iinj_int)
-
-def auto_eq_ph():
-    for index, item in enumerate(iinj_int_results):
-        eq_ph = -1 * item * get_corr_fact(index) * conv_kev_c / get_photon_energy(index)
-        eq_ph_results.append(eq_ph)
-
-# test
-n_steps = 20
-auto_current_level_csa(n_steps)
-auto_iinj_int()
-auto_eq_ph()
-
 
 #cfg_bits_template = [0, 1, 0, 0, 0, 1, 1]  lo utilizzo per definire un template base per poi iterare le diverse config di bits
 # Creazione del DataFrame
@@ -131,8 +80,8 @@ for item in config_bits_list:
         #mis['CSA Bits'].append(config)
         mis['Current Level Step'].append(i)
         mis['Current Level (A)'].append(level)
-        #mis['iinj_int (C)'].append(iinj_int_results[index][i])
-        mis['Equivalent Photons'].append(config.eq_ph_results[i])      
+        mis['iinj_int (C)'].append(config.iinj_int)
+        mis['Equivalent Photons'].append(config.eq_ph)      
         data = []
         for _ in range(N_samples):
             #test funzionamento
@@ -253,4 +202,13 @@ for i in range(4):
     max_diffs.append(np.max(dfs[i]['Voltage output average (V)'] - linear_outputs[i]))
     inls.append(100 * np.abs(max_diffs[i]) / lns[i].slope / 256)
     #manca tabella con parametri
+ax.table([
+	['Mode [keV]',f'{modes[0]}',f'{modes[1]}',f'{modes[2]}',f'{modes[3]}'],
+	['Gain [mV/#$\\gamma$]',f'{np.round(lns[0].slope*10**3,3)}',f'{np.round(lns[1].slope*10**3,3)}',f'{np.round(lns[2].slope*10**3,3)}',f'{np.round(lns[3].slope*10**3,3)}'],
+	['Gain [mV/fC]',f'{np.round(lns[0].slope*10**3/modes[0]*config.conv_kev_c*10**-15,3)}',f'{np.round(lns[1].slope*10**3/modes[1]*config.conv_kev_c*10**-15,3)}',f'{np.round(lns[2].slope*10**3/modes[2]*config.conv_kev_c*10**-15,3)}',f'{np.round(lns[3].slope*10**3/modes[3]*config.conv_kev_c*10**-15,3)}'],
+	['INL [%]',f'{np.round(inls[0],2)}',f'{np.round(inls[1],2)}',f'{np.round(inls[2],2)}',f'{np.round(inls[3],2)}'],
+	], colWidths=[.25,.11,.11,.11,.11], loc='lower right')
+ax.legend([f'{x} keV' for x in modes],
+		  title=f"$\\gamma$ energy",
+		  frameon=False)
 plt.savefig(f'G:Shared drives/FALCON/measures/new/transcharacteristics/csa/{channel_name}_{config.config_bits_str}_nominal_{lemo_name}_{datetime_str}.pdf')
