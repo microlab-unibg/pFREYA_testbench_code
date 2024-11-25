@@ -27,28 +27,28 @@ def get_energy_level(cfg_bits):
 # Configurazione dei test per le diverse configurazioni di cfg_bits
 config_bits_list = [
     # Configurazione 9 keV 
-    [0, 1, 1, 0, 1, 1, 1],  #shaper tp = 432 ns
-    [0, 1, 0, 0, 1, 1, 1],  #shaper tp = 234 ns 
-    [0, 1, 0, 1, 1, 1, 1],  #shaper tp = 332 ns   
-    [0, 1, 1, 1, 1, 1, 1],  #shaper tp = 535 ns  
+    [0, 1, 0, 1, 0, 1, 1],  #shaper tp = 432 ns
+    [0, 1, 0, 0, 0, 1, 1],  #shaper tp = 234 ns 
+    [0, 1, 0, 0, 1, 1, 1],  #shaper tp = 332 ns   
+    [0, 1, 0, 1, 1, 1, 1],  #shaper tp = 535 ns  
     # Configurazione 25 keV
-    [0, 0, 1, 0, 1, 1, 1],  #shaper tp = 432 ns  
-    [0, 0, 0, 0, 1, 1, 1],  #shaper tp = 234 ns  
-    [0, 0, 0, 1, 1, 1, 1],  #shaper tp = 332 ns  
-    [0, 0, 1, 1, 1, 1, 1],  #shaper tp = 535 ns  
+    [0, 0, 0, 1, 0, 1, 1],  #shaper tp = 432 ns  
+    [0, 0, 0, 0, 0, 1, 1],  #shaper tp = 234 ns  
+    [0, 0, 0, 0, 1, 1, 1],  #shaper tp = 332 ns  
+    [0, 0, 0, 1, 1, 1, 1],  #shaper tp = 535 ns  
     # Configurazione 18 keV
-    [1, 0, 1, 0, 1, 1, 1],  #shaper tp = 432 ns  
-    [1, 0, 0, 0, 1, 1, 1],  #shaper tp = 234 ns  
-    [1, 0, 0, 1, 1, 1, 1],  #shaper tp = 332 ns  
-    [1, 0, 1, 1, 1, 1, 1],  #shaper tp = 535 ns  
+    [1, 0, 0, 1, 0, 1, 1],  #shaper tp = 432 ns  
+    [1, 0, 0, 0, 0, 1, 1],  #shaper tp = 234 ns  
+    [1, 0, 0, 0, 1, 1, 1],  #shaper tp = 332 ns  
+    [1, 0, 0, 1, 1, 1, 1],  #shaper tp = 535 ns  
     # Configurazione 5 keV
-    [1, 1, 1, 0, 1, 1, 1],  #shaper tp = 432 ns  
-    [1, 1, 0, 0, 1, 1, 1],  #shaper tp = 234 ns  
-    [1, 1, 0, 1, 1, 1, 1],  #shaper tp = 332 ns  
-    [1, 1, 1, 1, 1, 1, 1],  #shaper tp = 535 ns  
+    [1, 1, 0, 1, 0, 1, 1],  #shaper tp = 432 ns  
+    [1, 1, 0, 0, 0, 1, 1],  #shaper tp = 234 ns  
+    [1, 1, 0, 0, 1, 1, 1],  #shaper tp = 332 ns  
+    [1, 1, 0, 1, 1, 1, 1],  #shaper tp = 535 ns  
 ]
 
-
+tsv_files = []
 #cfg_bits_template = [0, 1, 0, 0, 0, 1, 1]  lo utilizzo per definire un template base per poi iterare le diverse config di bits
 # Creazione del DataFrame
 for item in config_bits_list:
@@ -69,7 +69,6 @@ for item in config_bits_list:
     #config.lecroy.write(f'C2:CRS HREL')
     # reset inj
     time.sleep(2)
-    tsv_files = []
     ndiv = 10 # positive and negative around delay
     tdelay = -648 # ns
     tdiv = 200 # ns/div
@@ -111,9 +110,6 @@ for item in config_bits_list:
         # Calcola la media e la deviazione standard e memorizza nel DataFrame i diversi valori di tensione
         mis['Voltage output average (V)'].append(np.average(data)/gain)
         mis['Voltage output std (V)'].append(np.std(data) / gain)
-    if channel_name == 'csa':
-        mis['Voltage output average (V)'] = [-1 * x for x in mis['Voltage output average (V)']]
-        #mis['Voltage output average (V)'] = -1*mis['Voltage output average (V)']
     df = pd.DataFrame(mis)
     datetime_str = datetime.now().strftime('%Y%m%d%H%M')
 
@@ -172,8 +168,8 @@ modes = [5, 9, 18, 25]
 
 # Caricamento dei DataFrame
 dfs = []
-for p in tsv_files:
-    dfs.append(pd.read_csv(p, sep='\t'))
+for i in range(4):
+    dfs.append(pd.read_csv(tsv_files[i], sep='\t'))
 
 # Creazione del grafico
 datetime_str = datetime.strftime(datetime.now(), '%d%m%y_%H%M')
