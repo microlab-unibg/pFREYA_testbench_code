@@ -69,7 +69,7 @@ for item in config_bits_list:
         #'CSA Bits': [],
         'Current Level Step': [],
         'Current Level (A)': [],
-        #'iinj_int (C)': [],
+        'iinj_int (C)': [],
         'Equivalent Photons': [],
         'Voltage output average (V)': [],
         'Voltage output std (V)': []
