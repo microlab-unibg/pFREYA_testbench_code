@@ -58,8 +58,7 @@ def auto_csa_reset():
     pYtp.send_CSA_RESET_N(gui)
 def auto_slwctrl():
     pYtp.send_slow_ctrl(gui)
-def auto_currentlvl():
-    pYtp.send_current_level_csa(gui)
+
 def load_config():
     with open("pFREYA_tester_config.json", "r") as f:
         try:
@@ -341,11 +340,6 @@ def run_script_csa():
   print("slw")
   auto_slwctrl()
   time.sleep(2)
-
-  print("current")
-  auto_currentlvl()
-  time.sleep(2)
-
   
   print("csa_reset_n")
   auto_csa_reset()
@@ -371,11 +365,6 @@ def run_script_shap():
   print("slw")
   auto_slwctrl()
   time.sleep(2)
-
-  print("current")
-  auto_currentlvl()
-  time.sleep(2)
-
   
   print("csa_reset_n")
   auto_csa_reset()
