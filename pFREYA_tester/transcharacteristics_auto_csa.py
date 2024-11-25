@@ -80,8 +80,8 @@ for item in config_bits_list:
         #mis['CSA Bits'].append(config)
         mis['Current Level Step'].append(i)
         mis['Current Level (A)'].append(level)
-        mis['iinj_int (C)'].append(config.iinj_int)
-        mis['Equivalent Photons'].append(config.eq_ph)      
+        mis['iinj_int (C)'].append(config.iinj_int[i])
+        mis['Equivalent Photons'].append(config.eq_ph[i])      
         data = []
         for _ in range(N_samples):
             #test funzionamento
