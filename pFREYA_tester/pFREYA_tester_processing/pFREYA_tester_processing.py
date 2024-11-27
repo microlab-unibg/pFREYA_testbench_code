@@ -443,6 +443,81 @@ def create_slow_ctrl_packet(gui):
 
     return full_slow_ctrl_packet
 
+
+#metodo che sulla base dei bit passati va a creare i bits
+def create_slow_ctrl_packet_auto(bits):
+    """
+    Function to create the slow control packet needed in the FPGA
+
+    Parameters
+    ----------
+    bits : list
+        List of bits (1s and 0s) representing the configuration.
+
+    Returns
+    ----------
+    str
+        Full slow control packet as a string representing a binary.
+    """
+    # Convert list of bits to string
+    slow_ctrl_packet = ''.join(str(bit) for bit in bits)
+    full_slow_ctrl_packet = ''
+    
+    # Assume UARTdef.PIXEL_N is the number of pixels to replicate the configuration for
+    for _ in range(UARTdef.PIXEL_N):
+        full_slow_ctrl_packet += slow_ctrl_packet
+
+    # Set pixel to be injected (this is an example, adjust the index calculation as needed)
+    pixel_idx = int(gui.pixel_to_inj.get()) * UARTdef.SLOW_CTRL_N_BITS + 2  # should not be hard coded
+    full_slow_ctrl_packet = full_slow_ctrl_packet[:pixel_idx] + '0' + full_slow_ctrl_packet[pixel_idx + 1:]
+
+    # Ensure the packet length is a multiple of UARTdef.SLOW_CTRL_UART_DATA_POS + 1
+    missing_bits = UARTdef.SLOW_CTRL_UART_DATA_POS - UARTdef.SLOW_CTRL_UART_DATA_LAST_POS
+    full_slow_ctrl_packet += '0' * missing_bits  # trailing because each 6 bits will be reversed when sending data
+
+    return full_slow_ctrl_packet
+
+#invio slow control tramite bits
+def send_slow_ctrl_auto(bits):
+    """Function to send clocks in the FPGA
+
+    Parameters
+    ----------
+    gui : pFREYA_GUI
+        The structure containing all the data related to the tester.
+    
+    Returns
+    ----------
+    int
+        0 if everything was ok, 1 otherwise.
+    """
+    full_slow_ctrl_packet = create_slow_ctrl_packet_auto(bits) #str
+    print('SLOW_CTRL data to be sent: ',[full_slow_ctrl_packet[i:i+UARTdef.SLOW_CTRL_N_BITS] for i in range(0, len(full_slow_ctrl_packet), UARTdef.SLOW_CTRL_N_BITS)])
+
+    try:
+        # set slow packet        
+        cmd = create_cmd(UARTdef.SET_SLOW_CTRL_CMD, UARTdef.UNUSED_CODE)
+        send_UART(cmd)
+        print('CMD sent: ',cmd)
+        for data in create_data_slow(full_slow_ctrl_packet):
+            send_UART('', data)
+            print('Data sent: ',data)
+
+        time.sleep(1)
+
+        # send slow
+        cmd = create_cmd(UARTdef.SEND_SLOW_CTRL_CMD, UARTdef.UNUSED_CODE)
+        send_UART(cmd)
+        print('CMD sent: ',cmd)
+        time.sleep(1)
+    except Exception:
+        print(traceback.format_exc())
+        return 1
+   
+    return 0
+
+
+
 def create_dac_packet(gui, type):
     """Function to create the slow control packet needed in the FPGA
 
@@ -477,7 +552,7 @@ def create_dac_packet(gui, type):
     
     return dac_packet_data
 
-#metodo per settare livello di livello di corrente a 0.08*10^-6
+#metodo per settare livello di livello di corrente a 0.08*10^-6, si puo togliere dato che lo invio già 
 def send_current_level_csa(gui):    
     """Function to create the slow control packet needed in the FPGA
 
