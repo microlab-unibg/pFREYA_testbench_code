@@ -145,16 +145,15 @@ for item in config_bits_list:
 
 
 #grafico totale delle 4 modalità:
-
+# Colori per ogni configurazione
 colours = list(mcolors.TABLEAU_COLORS.keys())
 
 # Modelli di energia (aggiorna con i tuoi dati)
 modes = [5, 9, 18, 25]
+# Caricamento dei DataFrame
 
 # Caricamento dei DataFrame
-dfs = []
-for i in range(4):
-    dfs.append(pd.read_csv(tsv_files[i], sep='\t'))
+dfs = [pd.read_csv(file, sep='\t') for file in tsv_files]
 
 # Creazione del grafico
 datetime_str = datetime.strftime(datetime.now(), '%d%m%y_%H%M')
@@ -178,17 +177,18 @@ for i in range(4):
     )
 
 ax.set_xlabel('Equivalent input photons')
-ax.set_ylabel(f'|CSA reset amplitude| [V]')
+ax.set_ylabel('|CSA reset amplitude| [V]')
 ax.tick_params(right=True, top=True, direction='in')
 
 lns = []
 linear_outputs = []
 max_diffs = []
 inls = []
-import scipy as s
+
 # Esegui la regressione lineare e aggiungi i risultati al grafico
 for i in range(4):
-    lns.append(s.linregress(
+    from scipy.stats import linregress
+    lns.append(linregress(
         photon_span,
         dfs[i]['Voltage output average (V)'].astype(float)
     ))
@@ -200,14 +200,18 @@ for i in range(4):
     )
     max_diffs.append(np.max(dfs[i]['Voltage output average (V)'] - linear_outputs[i]))
     inls.append(100 * np.abs(max_diffs[i]) / lns[i].slope / 256)
-    #manca tabella con parametri
-ax.table([
-	['Mode [keV]',f'{modes[0]}',f'{modes[1]}',f'{modes[2]}',f'{modes[3]}'],
-	['Gain [mV/#$\\gamma$]',f'{np.round(lns[0].slope*10**3,3)}',f'{np.round(lns[1].slope*10**3,3)}',f'{np.round(lns[2].slope*10**3,3)}',f'{np.round(lns[3].slope*10**3,3)}'],
-	['Gain [mV/fC]',f'{np.round(lns[0].slope*10**3/modes[0]*config.conv_kev_c*10**-15,3)}',f'{np.round(lns[1].slope*10**3/modes[1]*config.conv_kev_c*10**-15,3)}',f'{np.round(lns[2].slope*10**3/modes[2]*config.conv_kev_c*10**-15,3)}',f'{np.round(lns[3].slope*10**3/modes[3]*config.conv_kev_c*10**-15,3)}'],
-	['INL [%]',f'{np.round(inls[0],2)}',f'{np.round(inls[1],2)}',f'{np.round(inls[2],2)}',f'{np.round(inls[3],2)}'],
-	], colWidths=[.25,.11,.11,.11,.11], loc='lower right')
+
+# Aggiungi la tabella con i parametri
+ax.table(cellText=[
+    ['Mode [keV]', f'{modes[0]}', f'{modes[1]}', f'{modes[2]}', f'{modes[3]}'],
+    ['Gain [mV/γ]', f'{np.round(lns[0].slope*10**3, 3)}', f'{np.round(lns[1].slope*10**3, 3)}', f'{np.round(lns[2].slope*10**3, 3)}', f'{np.round(lns[3].slope*10**3, 3)}'],
+    ['Gain [mV/fC]', f'{np.round(lns[0].slope*10**3/modes[0]*config.conv_kev_c*10**-15, 3)}', f'{np.round(lns[1].slope*10**3/modes[1]*config.conv_kev_c*10**-15, 3)}', f'{np.round(lns[2].slope*10**3/modes[2]*config.conv_kev_c*10**-15, 3)}', f'{np.round(lns[3].slope*10**3/modes[3]*config.conv_kev_c*10**-15, 3)}'],
+    ['INL [%]', f'{np.round(inls[0], 2)}', f'{np.round(inls[1], 2)}', f'{np.round(inls[2], 2)}', f'{np.round(inls[3], 2)}'],
+], colWidths=[.25, .11, .11, .11, .11], loc='lower right')
+
+# Aggiungi la legenda
 ax.legend([f'{x} keV' for x in modes],
-		  title=f"$\\gamma$ energy",
-		  frameon=False)
+          title='γ energy',
+          frameon=False)
+
 plt.savefig(f'G:Shared drives/FALCON/measures/new/transcharacteristics/csa/{channel_name}_{config.config_bits_str}_nominal_{lemo_name}_{datetime_str}.pdf')
