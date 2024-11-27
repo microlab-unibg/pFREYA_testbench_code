@@ -5,8 +5,8 @@ from serial import *
 import subprocess
 import json
 import serial
-import pFREYA_tester_processing.pFREYA_tester_processing as pYtp
-import pFREYA_tester_processing.UART_definitions as UARTdef
+import pFREYA_tester_processing as pYtp
+import UART_definitions as UARTdef
 
 import pyvisa
 
@@ -329,16 +329,8 @@ def run_script_csa():
   reset_iniziale()
   time.sleep(2)
 
-  print("json")
-  to_json_CSA()
-  time.sleep(2)
-
   print("clk")
   auto_clock()
-  time.sleep(2)
-  
-  print("slw")
-  auto_slwctrl()
   time.sleep(2)
   
   print("csa_reset_n")
@@ -354,16 +346,8 @@ def run_script_shap():
   reset_iniziale()
   time.sleep(2)
 
-  print("json")
-  to_json_CSA()
-  time.sleep(2)
-
   print("clk")
   auto_clock()
-  time.sleep(2)
-  
-  print("slw")
-  auto_slwctrl()
   time.sleep(2)
   
   print("csa_reset_n")

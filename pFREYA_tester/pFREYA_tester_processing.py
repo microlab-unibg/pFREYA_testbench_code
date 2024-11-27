@@ -1,4 +1,4 @@
-import pFREYA_tester_processing.UART_definitions as UARTdef
+import UART_definitions as UARTdef
 from utilities.bitstring_to_bytes import bitstring_to_bytes
 
 import serial
@@ -520,6 +520,74 @@ def send_current_level(gui):
 	''')
 
     return gui.current_level
+def create_slow_ctrl_packet_auto(bits):
+    """Function to create the slow control packet needed in the FPGA
+
+    Parameters
+    ----------
+    gui : pFREYA_GUI
+        The structure containing all the data related to the tester.
+
+    Returns
+    ----------
+    str
+        Full slow control packet as a string representing a binary.
+    """
+    # for each pixel is the same
+    slow_ctrl_packet = ''.join(map(str, bits))
+    #slow_ctrl_packet = '1111111'
+    full_slow_ctrl_packet = ''
+    for _ in range(0, UARTdef.PIXEL_N):
+        full_slow_ctrl_packet = full_slow_ctrl_packet + slow_ctrl_packet
+
+    # set pixel to be injected
+    pixel_idx = 0*UARTdef.SLOW_CTRL_N_BITS+2 # shouldnt be hard coded
+    full_slow_ctrl_packet = full_slow_ctrl_packet[:pixel_idx] + '0' + full_slow_ctrl_packet[pixel_idx+1:]
+    # reach a dimension multiple of DATA_POS+1
+    missing_bits = UARTdef.SLOW_CTRL_UART_DATA_POS - UARTdef.SLOW_CTRL_UART_DATA_LAST_POS
+    full_slow_ctrl_packet = full_slow_ctrl_packet + '0'*missing_bits #trailing cause each 6 bits will be reversed when sending data
+
+    return full_slow_ctrl_packet
+def send_slow_ctrl_auto(bits):
+    """Function to send clocks in the FPGA
+
+    Parameters
+    ----------
+    gui : pFREYA_GUI
+        The structure containing all the data related to the tester.
+    
+    Returns
+    ----------
+    int
+        0 if everything was ok, 1 otherwise.
+    """
+    #if (not gui.slow_ck_sent):
+     #   return 1
+    
+    full_slow_ctrl_packet = create_slow_ctrl_packet_auto(bits) #str
+    print('SLOW_CTRL data to be sent: ',[full_slow_ctrl_packet[i:i+UARTdef.SLOW_CTRL_N_BITS] for i in range(0, len(full_slow_ctrl_packet), UARTdef.SLOW_CTRL_N_BITS)])
+
+    try:
+        # set slow packet        
+        cmd = create_cmd(UARTdef.SET_SLOW_CTRL_CMD, UARTdef.UNUSED_CODE)
+        send_UART(cmd)
+        print('CMD sent: ',cmd)
+        for data in create_data_slow(full_slow_ctrl_packet):
+            send_UART('', data)
+            print('Data sent: ',data)
+
+        time.sleep(1)
+
+        # send slow
+        cmd = create_cmd(UARTdef.SEND_SLOW_CTRL_CMD, UARTdef.UNUSED_CODE)
+        send_UART(cmd)
+        print('CMD sent: ',cmd)
+        time.sleep(1)
+    except Exception:
+        print(traceback.format_exc())
+        return 1
+    
+    return 0
 
 def send_slow_ctrl(gui):
     """Function to send clocks in the FPGA

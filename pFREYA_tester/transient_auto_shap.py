@@ -3,6 +3,7 @@ import pandas as pd
 import TeledyneLeCroyPy
 from datetime import datetime
 import config
+import pFREYA_tester_processing as pYtp
 # Definizione delle configurazioni dei livelli di energia in base ai primi 2 bit di cfg_bits
 def get_energy_level(cfg_bits):
     if cfg_bits[0] == 1 and cfg_bits[1] == 1:
@@ -20,20 +21,20 @@ def get_energy_level(cfg_bits):
 # Configurazione dei test per le diverse configurazioni di cfg_bits
 config_bits_list = [
     # Configurazione 9 keV 
-    [0, 1, 0, 1, 0, 1, 1],  #shaper tp = 432 ns
-    [0, 1, 0, 0, 0, 1, 1],  #shaper tp = 234 ns 
-    [0, 1, 0, 0, 1, 1, 1],  #shaper tp = 332 ns   
-    [0, 1, 0, 1, 1, 1, 1],  #shaper tp = 535 ns  
+    [0, 1, 1, 1, 0, 1, 1],  #shaper tp = 432 ns
+    [0, 1, 1, 0, 0, 1, 1],  #shaper tp = 234 ns 
+    [0, 1, 1, 0, 1, 1, 1],  #shaper tp = 332 ns   
+    [0, 1, 1, 1, 1, 1, 1],  #shaper tp = 535 ns  
     # Configurazione 25 keV
-    [0, 0, 0, 1, 0, 1, 1],  #shaper tp = 432 ns  
-    [0, 0, 0, 0, 0, 1, 1],  #shaper tp = 234 ns  
-    [0, 0, 0, 0, 1, 1, 1],  #shaper tp = 332 ns  
-    [0, 0, 0, 1, 1, 1, 1],  #shaper tp = 535 ns  
+    [0, 0, 1, 1, 0, 1, 1],  #shaper tp = 432 ns  
+    [0, 0, 1, 0, 0, 1, 1],  #shaper tp = 234 ns  
+    [0, 0, 1, 0, 1, 1, 1],  #shaper tp = 332 ns  
+    [0, 0, 1, 1, 1, 1, 1],  #shaper tp = 535 ns  
     # Configurazione 18 keV
-    [1, 0, 0, 1, 0, 1, 1],  #shaper tp = 432 ns  
-    [1, 0, 0, 0, 0, 1, 1],  #shaper tp = 234 ns  
-    [1, 0, 0, 0, 1, 1, 1],  #shaper tp = 332 ns  
-    [1, 0, 0, 1, 1, 1, 1],  #shaper tp = 535 ns  
+    [1, 0, 1, 1, 0, 1, 1],  #shaper tp = 432 ns  
+    [1, 0, 1, 0, 0, 1, 1],  #shaper tp = 234 ns  
+    [1, 0, 1, 0, 1, 1, 1],  #shaper tp = 332 ns  
+    [1, 0, 1, 1, 1, 1, 1],  #shaper tp = 535 ns  
     # Configurazione 5 keV
     [1, 1, 0, 1, 0, 1, 1],  #shaper tp = 432 ns  
     [1, 1, 0, 0, 0, 1, 1],  #shaper tp = 234 ns  
@@ -48,8 +49,8 @@ for item in config_bits_list:
     print(f"energy level {energy_level}Kev")
     # Configurazione del setup,cfg_bits cambia per ogni configurazione utilizzata per ogni passo
     config.config(channel='shap', lemo='none', n_steps=8, cfg_bits=item, cfg_inst=True, active_probes=False)
+    pYtp.send_slow_ctrl_auto(item)
     
-    config.ps.write(':SOUR:CURR:LEV -0.0e-6')
     config.ps.write(':OUTP:STAT ON')
 
     #corrente iniziale
