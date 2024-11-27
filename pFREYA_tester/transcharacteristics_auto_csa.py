@@ -24,19 +24,13 @@ def get_energy_level(cfg_bits):
     else:
         raise ValueError("Configurazione cfg_bits non valida")
 config_bits_list = [
-    [1, 1, 0, 1, 1, 1, 1],  # Configurazione 5 keV
+    [1, 1, 1, 1, 1, 1, 1],  # Configurazione 5 keV
     [1, 0, 1, 1, 1, 1, 1],  # Configurazione 9 keV
     [0, 1, 1, 1, 1, 1, 1],  # Configurazione 18 keV
     [0, 0, 1, 1, 1, 1, 1],  # Configurazione 25 keV
 ]
 
-tsv_files = [
-    '''"f'G:Shared drives/FALCON/measures/new/transcharacteristics/csa/csa_1101111_nominal_none_202411251037.tsv",
-    "f'G:Shared drives/FALCON/measures/new/transcharacteristics/csa/csa_1101111_nominal_none_202411251037.tsv",
-    "f'G:Shared drives/FALCON/measures/new/transcharacteristics/csa/csa_1101111_nominal_none_202411251037.tsv",
-    "f'G:Shared drives/FALCON/measures/new/transcharacteristics/csa/csa_1101111_nominal_none_202411251037.tsv"
-    '''
-]
+tsv_files = []
 #cfg_bits_template = [0, 1, 0, 0, 0, 1, 1]  lo utilizzo per definire un template base per poi iterare le diverse config di bits
 # Creazione del DataFrame
 for item in config_bits_list:
@@ -98,7 +92,8 @@ for item in config_bits_list:
         # Calcola la media e la deviazione standard e memorizza nel DataFrame i diversi valori di tensione
         mis['Voltage output average (V)'].append(np.average(data)/gain)
         mis['Voltage output std (V)'].append(np.std(data) / gain)
-        mis['Voltage output average (V)'] = 100*[-1 * float(x) for x in mis['Voltage output average (V)'] ]
+    if channel_name == 'csa':
+        mis['Voltage output average (V)'] = [-1 * x for x in mis['Voltage output average (V)']]
         #mis['Voltage output average (V)'] = -1*mis['Voltage output average (V)']
     df = pd.DataFrame(mis)
     datetime_str = datetime.now().strftime('%Y%m%d%H%M')
