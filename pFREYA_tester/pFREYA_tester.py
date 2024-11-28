@@ -15,13 +15,49 @@ import pyvisa
 FPGA_COM_DEF = "XILINX"
 
 # === GUI FUNCTIONS ===
+def to_json_CSA(): #parametri fissi per caso 1
+    use_autocsa = False
+    return{
+        "pFREYA_GUI__": True,
+        "clocks":{
+            "slow_ck": '40',
+            "sel_ck": '4095',
+            "adc_ck": '4095',
+            "inj_stb": '1', 
+            "ser_ck": '4095', 
+            "dac_sck": '4095' 
+        }, 
+        "INJ": { 
+            "current_level": '-0.8'
+        },
+        "slow_ctrl": { 
+            "csa_mode_n": '10', 
+            "inj_en_n": '1', 
+            "shap_mode": '10', 
+            "ch_en": '1', 
+            "inj_mode_n": '1' 
+        }, 
+        "pixel_sel": { 
+            "pixel_row": '3', 
+            "pixel_col": '1' 
+        }, 
+        "asic_ctrl": {
+            "csa_reset_n": {
+                "delay":  '1',
+                "high": '60',
+                "low": '4000' 
+            }
+        }
+
+    }
 def reset_iniziale():
     pYtp.send_reset_FPGA()
 def auto_clock():
     pYtp.send_clocks(gui)
 def auto_csa_reset():
     pYtp.send_CSA_RESET_N(gui)
-
+def auto_slwctrl():
+    pYtp.send_slow_ctrl(gui)
 
 def load_config():
     with open("pFREYA_tester_config.json", "r") as f:
@@ -277,7 +313,10 @@ class pFREYA_GUI():
 # === MAIN LOOP ===
 #Metodo per decidere quale JSON utilizzare 
 def get_json(self, use_csa=False): 
-    return self.to_json()
+    if use_csa: 
+        return self.to_json_CSA() 
+    else: 
+        return self.to_json()
 # Start GUI window
 root = Tk()
 root.title("pFREYA tester v0 - Manual testing")
@@ -315,31 +354,15 @@ def run_script_shap():
   auto_csa_reset()
   time.sleep(3)
   
-  #metodo transient shap
-  subprocess.run(["python", "transient_auto_shap.py"]) #metodo transient shap 
-  subprocess.run(["python", "transcharacteristics_auto_shap.py"]) #metodo transcharacteristics shap
+  #metodo transient csa
+  subprocess.run(["python", "transient_auto_shap.py"]) #metodo transient csa
+  subprocess.run(["python", "transcharacteristics_auto_shap.py"]) #metodo transcharacteristics csa
 
-def run_script_enc():
-  print("Reset FPGA")
-  reset_iniziale()
-  time.sleep(2)
-
-  print("clk")
-  auto_clock()
-  time.sleep(2)
-  
-  print("csa_reset_n")
-  auto_csa_reset()
-  time.sleep(3)
-  
-  #metodo enc
-  subprocess.run(["python", "auto_enc.py"]) #metodo enc
-  
 class gui2(Toplevel):
   def __init__(self,parent):
     super().__init__(parent)
     self.title("pFREYA tester v0 - Automatic testing")
-    self.geometry("400x170")
+    self.geometry("400x120")
     self.resizable(False, False)
     
     frame = Frame(self)
@@ -352,15 +375,10 @@ class gui2(Toplevel):
 
     label2 = Label(frame, text="shap")
     label2.grid(row=1, column=0, padx=10, pady=10)
+
     button2 = Button(frame, text="run", command=run_script_shap)
     button2.grid(row=1, column=1, padx=10, pady=10)
-
-    label3 = Label(frame, text="enc")
-    label3.grid(row=2, column=0, padx=10, pady=10)
-    button3 = Button(frame, text="run", command=run_script_enc)
-    button3.grid(row=2, column=1, padx=10, pady=10)  
     self.mainloop()
-
 
 def open_child():
     print("opening gui2")
