@@ -7,6 +7,7 @@ from datetime import datetime
 import time
 import glob
 import config
+import pFREYA_tester_processing as pYtp
 T = 30e-9 # s
 t_r = 3e-9 # s
 N_pulses = 10 # adimensional
@@ -54,6 +55,7 @@ for item in config_bits_list:
     
     import config
     config.config(channel='shap',lemo='none',n_steps=20,cfg_bits=item,cfg_inst=True, active_probes=False)
+    pYtp.send_slow_ctrl_auto(item)
     channel_name = config.channel_name
     lemo_name = config.lemo_name
     gain = config.lemo_gain

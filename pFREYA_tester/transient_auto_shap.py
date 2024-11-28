@@ -36,10 +36,10 @@ config_bits_list = [
     [1, 0, 1, 0, 1, 1, 1],  #shaper tp = 332 ns  
     [1, 0, 1, 1, 1, 1, 1],  #shaper tp = 535 ns  
     # Configurazione 5 keV
-    [1, 1, 0, 1, 0, 1, 1],  #shaper tp = 432 ns  
-    [1, 1, 0, 0, 0, 1, 1],  #shaper tp = 234 ns  
-    [1, 1, 0, 0, 1, 1, 1],  #shaper tp = 332 ns  
-    [1, 1, 0, 1, 1, 1, 1],  #shaper tp = 535 ns  
+    [1, 1, 1, 1, 0, 1, 1],  #shaper tp = 432 ns  
+    [1, 1, 1, 0, 0, 1, 1],  #shaper tp = 234 ns  
+    [1, 1, 1, 0, 1, 1, 1],  #shaper tp = 332 ns  
+    [1, 1, 1, 1, 1, 1, 1],  #shaper tp = 535 ns  
 ]
 
 # Loop per ogni configurazione di cfg_bits
