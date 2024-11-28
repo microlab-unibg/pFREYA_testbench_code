@@ -58,7 +58,7 @@ def create_data(data):
     str
         data packet
     """
-    for i in range(math.floor(int(UARTdef.DATA_PACKET_LENGTH)/(int(UARTdef.DATA_UART_DATA_POS)+1)),0,-1):
+    for i in range(math.ceil(int(UARTdef.DATA_PACKET_LENGTH)/(int(UARTdef.DATA_UART_DATA_POS)+1)),0,-1):
         yield UARTdef.DATA_PACKET + \
             (UARTdef.LAST_UART_PACKET if i == 1 else UARTdef.NOTLAST_UART_PACKET) + \
             data[(i-1)*(UARTdef.DATA_UART_DATA_POS+1):i*(UARTdef.DATA_UART_DATA_POS+1)]
@@ -76,7 +76,7 @@ def create_data_slow(data):
     str
         data packet
     """
-    for i in range(math.floor(int(UARTdef.SLOW_CTRL_PACKET_LENGTH)/(int(UARTdef.SLOW_CTRL_UART_DATA_POS)+1)),0,-1):
+    for i in range(math.ceil(int(UARTdef.SLOW_CTRL_PACKET_LENGTH)/(int(UARTdef.SLOW_CTRL_UART_DATA_POS)+1)),0,-1):
         yield UARTdef.DATA_PACKET + \
             (UARTdef.LAST_UART_PACKET if i == 1 else UARTdef.NOTLAST_UART_PACKET) + \
             data[(i-1)*(UARTdef.SLOW_CTRL_UART_DATA_POS+1):i*(UARTdef.SLOW_CTRL_UART_DATA_POS+1)]
@@ -435,8 +435,9 @@ def create_slow_ctrl_packet(gui):
         full_slow_ctrl_packet = full_slow_ctrl_packet + slow_ctrl_packet
 
     # set pixel to be injected
-    pixel_idx = int(gui.pixel_to_inj.get())*UARTdef.SLOW_CTRL_N_BITS+2 # shouldnt be hard coded
-    full_slow_ctrl_packet = full_slow_ctrl_packet[:pixel_idx] + '0' + full_slow_ctrl_packet[pixel_idx+1:]
+    for v in gui.pixel_to_inj.get().split(","):
+        pixel_idx = int(v)*UARTdef.SLOW_CTRL_N_BITS+2 # shouldnt be hard coded
+        full_slow_ctrl_packet = full_slow_ctrl_packet[:pixel_idx] + '0' + full_slow_ctrl_packet[pixel_idx+1:]
     # reach a dimension multiple of DATA_POS+1
     missing_bits = UARTdef.SLOW_CTRL_UART_DATA_POS - UARTdef.SLOW_CTRL_UART_DATA_LAST_POS
     full_slow_ctrl_packet = full_slow_ctrl_packet + '0'*missing_bits #trailing cause each 6 bits will be reversed when sending data
@@ -520,7 +521,7 @@ def send_current_level(gui):
 	''')
 
     return gui.current_level
-def create_slow_ctrl_packet_auto(bits):
+def create_slow_ctrl_packet_auto(bits, pixel_idx):
     """Function to create the slow control packet needed in the FPGA
 
     Parameters
@@ -541,14 +542,14 @@ def create_slow_ctrl_packet_auto(bits):
         full_slow_ctrl_packet = full_slow_ctrl_packet + slow_ctrl_packet
 
     # set pixel to be injected
-    pixel_idx = 0*UARTdef.SLOW_CTRL_N_BITS+2 # shouldnt be hard coded
+    pixel_idx = pixel_idx*UARTdef.SLOW_CTRL_N_BITS+2 # shouldnt be hard coded
     full_slow_ctrl_packet = full_slow_ctrl_packet[:pixel_idx] + '0' + full_slow_ctrl_packet[pixel_idx+1:]
     # reach a dimension multiple of DATA_POS+1
     missing_bits = UARTdef.SLOW_CTRL_UART_DATA_POS - UARTdef.SLOW_CTRL_UART_DATA_LAST_POS
     full_slow_ctrl_packet = full_slow_ctrl_packet + '0'*missing_bits #trailing cause each 6 bits will be reversed when sending data
 
     return full_slow_ctrl_packet
-def send_slow_ctrl_auto(bits):
+def send_slow_ctrl_auto(bits, n_pixel):
     """Function to send clocks in the FPGA
 
     Parameters
@@ -560,11 +561,8 @@ def send_slow_ctrl_auto(bits):
     ----------
     int
         0 if everything was ok, 1 otherwise.
-    """
-    #if (not gui.slow_ck_sent):
-     #   return 1
-    
-    full_slow_ctrl_packet = create_slow_ctrl_packet_auto(bits) #str
+    """    
+    full_slow_ctrl_packet = create_slow_ctrl_packet_auto(bits,n_pixel) #str
     print('SLOW_CTRL data to be sent: ',[full_slow_ctrl_packet[i:i+UARTdef.SLOW_CTRL_N_BITS] for i in range(0, len(full_slow_ctrl_packet), UARTdef.SLOW_CTRL_N_BITS)])
 
     try:
@@ -575,8 +573,7 @@ def send_slow_ctrl_auto(bits):
         for data in create_data_slow(full_slow_ctrl_packet):
             send_UART('', data)
             print('Data sent: ',data)
-
-        time.sleep(1)
+            time.sleep(0.5)
 
         # send slow
         cmd = create_cmd(UARTdef.SEND_SLOW_CTRL_CMD, UARTdef.UNUSED_CODE)
@@ -613,11 +610,10 @@ def send_slow_ctrl(gui):
         cmd = create_cmd(UARTdef.SET_SLOW_CTRL_CMD, UARTdef.UNUSED_CODE)
         send_UART(cmd)
         print('CMD sent: ',cmd)
-        for data in create_data_slow(convert_strvar_bin(full_slow_ctrl_packet)):
+        for data in create_data_slow(full_slow_ctrl_packet):
             send_UART('', data)
             print('Data sent: ',data)
-
-        time.sleep(1)
+            time.sleep(0.5)
 
         # send slow
         cmd = create_cmd(UARTdef.SEND_SLOW_CTRL_CMD, UARTdef.UNUSED_CODE)
@@ -643,7 +639,7 @@ def send_UART_DAC(dac_packet):
     print('CMD sent: ',cmd)
     time.sleep(1)
 
-    for i in range(0,math.floor(UARTdef.DAC_PACKET_LENGTH/(UARTdef.DAC_UART_DATA_POS+1))-1): # -1 due to last packet different
+    for i in range(0,math.ceil(UARTdef.DAC_PACKET_LENGTH/(UARTdef.DAC_UART_DATA_POS+1))-1): # -1 due to last packet different
         bin_data = dac_packet[i*(UARTdef.DAC_UART_DATA_POS+1):(i+1)*(UARTdef.DAC_UART_DATA_POS+1)]
         bin_data = bin_data[::-1] # as above
         data = create_data_slow(bin_data, UARTdef.NOTLAST_UART_PACKET)

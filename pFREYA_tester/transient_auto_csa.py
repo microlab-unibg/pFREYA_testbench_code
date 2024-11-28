@@ -33,7 +33,7 @@ for item in config_bits_list:
     print(f"energy level {energy_level}Kev")
     # Configurazione del setup,cfg_bits cambia per ogni configurazione utilizzata per ogni passo
     config.config(channel='csa', lemo='none', n_steps=8, cfg_bits=item, cfg_inst=True, active_probes=False)
-    pYtp.send_slow_ctrl_auto(item)
+    pYtp.send_slow_ctrl_auto(item,0)
     config.ps.write(':SOUR:CURR:LEV -0.0e-6')
     config.ps.write(':OUTP:STAT ON')
 

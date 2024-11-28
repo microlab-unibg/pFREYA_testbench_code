@@ -38,7 +38,7 @@ for item in config_bits_list:
     
     import config
     config.config(channel='csa',lemo='none',n_steps=20,cfg_bits=item,cfg_inst=True, active_probes=False)
-    pYtp.send_slow_ctrl_auto(item)
+    pYtp.send_slow_ctrl_auto(item,0)
     channel_name = config.channel_name
     lemo_name = config.lemo_name
     gain = config.lemo_gain
