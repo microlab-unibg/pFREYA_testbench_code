@@ -4,6 +4,8 @@ import TeledyneLeCroyPy
 from datetime import datetime
 import config
 import pFREYA_tester_processing as pYtp
+
+
 # Definizione delle configurazioni dei livelli di energia in base ai primi 2 bit di cfg_bits
 def get_energy_level(cfg_bits):
     if cfg_bits[0] == 1 and cfg_bits[1] == 1:
@@ -16,7 +18,17 @@ def get_energy_level(cfg_bits):
         return 25 # 25 keV
     else:
         raise ValueError("Configurazione cfg_bits non valida")
-
+def get_shap_bits(cfg_bits):
+    if cfg_bits[3] == 1 and cfg_bits[4] == 1:
+        return 535  
+    elif cfg_bits[3] == 1 and cfg_bits[4] == 0:
+        return 432 
+    elif cfg_bits[3] == 0 and cfg_bits[4] == 1:
+        return 332 
+    elif cfg_bits[3] == 0 and cfg_bits[4] == 0:
+        return 234 
+    else:
+        raise ValueError("Configurazione cfg_bits non valida")
 
 # Configurazione dei test per le diverse configurazioni di cfg_bits
 config_bits_list = [
@@ -46,11 +58,13 @@ config_bits_list = [
 for item in config_bits_list:
     # Ottenere il livello di energia
     energy_level = get_energy_level(item)
+    shap_bits = get_shap_bits(item)
     print(f"energy level {energy_level}Kev")
     # Configurazione del setup,cfg_bits cambia per ogni configurazione utilizzata per ogni passo
     config.config(channel='shap', lemo='none', n_steps=8, cfg_bits=item, cfg_inst=True, active_probes=False)
+    config.lecroy.set_tdiv(tdiv='200NS')
+    config.lecroy.set_toffset(toffset='-400e-9')
     pYtp.send_slow_ctrl_auto(item,1)
-    
     config.ps.write(':OUTP:STAT ON')
 
     #corrente iniziale
@@ -86,7 +100,7 @@ for item in config_bits_list:
         str_type='active_prbs' 
     else: 
         str_type = ''
-    df.to_csv(f'G:Shared drives/FALCON/measures/new/transient/shap/{channel_name}_{config.config_bits_str}_nominal_{lemo_name}_{datetime_str}.tsv', sep='\t')
+    df.to_csv(f'G:Shared drives/FALCON/measures/new/transient/shap/{channel_name}_{config.config_bits_str}_nominal_{lemo_name}_shapconfig_{shap_bits}_{datetime_str}.tsv', sep='\t')
     
     print(f"Misura completata per cfg_bits {item} con livello di energia {energy_level:} A")
 
@@ -98,7 +112,7 @@ for item in config_bits_list:
     import time
     from datetime import datetime
     import matplotlib.colors as mcolors
-    path=(f'G:Shared drives/FALCON/measures/new/transient/shap/{channel_name}_{config.config_bits_str}_nominal_{lemo_name}_{datetime_str}.tsv')
+    path=(f'G:Shared drives/FALCON/measures/new/transient/shap/{channel_name}_{config.config_bits_str}_nominal_{lemo_name}_shapconfig_{shap_bits}_{datetime_str}.tsv')
     df = pd.read_csv(path, sep = '\t')
     datetime_str = datetime.strftime(datetime.now(), '%d%m%y_%H%M')
     arr_split = path.split('/')
@@ -132,5 +146,5 @@ for item in config_bits_list:
             frameon=False)
     if channel_name == 'shap':
         ax.text(.01,.01,f'$t_p$ = {config.peaking_time} ns',ha='left',va='bottom',transform=ax.transAxes)
-
-    plt.savefig(f'G:Shared drives/FALCON/measures/new/transient/shap/{channel_name}_{config.config_bits_str}_nominal_{lemo_name}_{datetime_str}.pdf',dpi=300)
+    
+    plt.savefig(f'G:Shared drives/FALCON/measures/new/transient/shap/_shap_{config.config_bits_str}_nominal_{lemo_name}_shapconfig_{shap_bits}_{datetime_str}.pdf',dpi=300)

@@ -24,6 +24,18 @@ def get_energy_level(cfg_bits):
         return 25 # 25 keV
     else:
         raise ValueError("Configurazione cfg_bits non valida")
+
+def get_shap_bits(cfg_bits):
+    if cfg_bits[3] == 1 and cfg_bits[4] == 1:
+        return 535  
+    elif cfg_bits[3] == 1 and cfg_bits[4] == 0:
+        return 432 
+    elif cfg_bits[3] == 0 and cfg_bits[4] == 1:
+        return 332 
+    elif cfg_bits[3] == 0 and cfg_bits[4] == 0:
+        return 234 
+    else:
+        raise ValueError("Configurazione cfg_bits non valida")
     
 # Configurazione dei test per le diverse configurazioni di cfg_bits
 config_bits_list = [
@@ -116,8 +128,8 @@ for item in config_bits_list:
     datetime_str = datetime.now().strftime('%Y%m%d%H%M')
 
     # Sostituire percorso del drive e salvare il file
-    df.to_csv(f'G:Shared drives/FALCON/measures/new/transcharacteristics/shap/{channel_name}_{config.config_bits_str}_nominal_{lemo_name}_{datetime_str}.tsv', sep='\t', index=False)
-    tsv_files.append(f'G:Shared drives/FALCON/measures/new/transcharacteristics/shap/{channel_name}_{config.config_bits_str}_nominal_{lemo_name}_{datetime_str}.tsv')
+    df.to_csv(f'G:Shared drives/FALCON/measures/new/transcharacteristics/shap/{channel_name}_{config.config_bits_str}_nominal_{lemo_name}_shapconfig_{shap_bits}_{datetime_str}.tsv', sep='\t', index=False)
+    tsv_files.append(f'G:Shared drives/FALCON/measures/new/transcharacteristics/shap/{channel_name}_{config.config_bits_str}_nominal_{lemo_name}_shapconfig_{shap_bits}_{datetime_str}.tsv')
     print("File tsv salvato con successo.")
 
     # Controlla la lunghezza dei dati
@@ -153,7 +165,7 @@ for item in config_bits_list:
 
     # Salva il grafico
     try:
-        output_file = f'G:Shared drives/FALCON/measures/new/transcharacteristics/shap/{channel_name}_{config.config_bits_str}_nominal_{lemo_name}_{datetime_str}.pdf'
+        output_file = f'G:Shared drives/FALCON/measures/new/transcharacteristics/shap/{channel_name}_{config.config_bits_str}_nominal_{lemo_name}_shapconfig_{shap_bits}_{datetime_str}.pdf'
         plt.savefig(output_file, dpi=300)
         plt.close(fig)  # Chiude il grafico corrente per liberare risorse
         print(f"File plot salvato con successo: {output_file}")
@@ -230,4 +242,4 @@ ax.table(cellText=[
 ax.legend([f'{x} keV' for x in modes],
           title='γ energy',
           frameon=False)
-plt.savefig(f'G:Shared drives/FALCON/measures/new/transcharacteristics/shap/{channel_name}_{config.config_bits_str}_nominal_{lemo_name}_{datetime_str}.pdf')
+plt.savefig(f'G:Shared drives/FALCON/measures/new/transcharacteristics/shap/{channel_name}_{config.config_bits_str}_nominal_{lemo_name}_shapconfig_{shap_bits}_{datetime_str}.pdf')

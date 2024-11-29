@@ -17,7 +17,6 @@ def get_energy_level(cfg_bits):
     else:
         raise ValueError("Configurazione cfg_bits non valida")
 
-
 # Configurazione dei test per le diverse configurazioni di cfg_bits
 config_bits_list = [
     [1, 1, 1, 1, 1, 1, 1],  # Configurazione 5 keV
@@ -33,12 +32,14 @@ for item in config_bits_list:
     print(f"energy level {energy_level}Kev")
     # Configurazione del setup,cfg_bits cambia per ogni configurazione utilizzata per ogni passo
     config.config(channel='csa', lemo='none', n_steps=8, cfg_bits=item, cfg_inst=True, active_probes=False)
+    config.lecroy.set_tdiv(tdiv='100NS')
+    config.lecroy.set_toffset(toffset='-240e-9')
     pYtp.send_slow_ctrl_auto(item,0)
     config.ps.write(':SOUR:CURR:LEV -0.0e-6')
     config.ps.write(':OUTP:STAT ON')
 
     #corrente iniziale
-    config.ps.write(f':SOUR:CURR:LEV {-0.07e-6}')
+    
     time.sleep(2)
 
     
@@ -55,7 +56,7 @@ for item in config_bits_list:
     for i, cl in enumerate(config.current_lev):
         # Imposta il livello di corrente
         config.ps.write(f':SOUR:CURR:LEV {cl}')
-        time.sleep(10)
+        time.sleep(1)
         # N sample to average and extract std from
         data = pd.DataFrame.from_dict(
             config.lecroy.get_channel(channel_name='C', n_channel=config.channel_num)['waveforms'][0]

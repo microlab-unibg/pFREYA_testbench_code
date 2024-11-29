@@ -38,7 +38,22 @@ for item in config_bits_list:
     
     import config
     config.config(channel='csa',lemo='none',n_steps=20,cfg_bits=item,cfg_inst=True, active_probes=False)
+    config.lecroy.set_tdiv(tdiv='100NS')
+    config.lecroy.set_toffset(toffset='-240e-9')
+    config.lecroy.write(f'C2:CRS HREL')
     pYtp.send_slow_ctrl_auto(item,0)
+    ndiv = 10 # positive and negative around delay
+    tdelay = -648  #ns
+    tdiv = 100 # ns/div
+    osc_ts = 700 # ns
+    osc_te = osc_ts + config.peaking_time + 10 # 10 ns to avoid switching time
+    osc_offset = - ndiv/2*tdiv - tdelay
+    div_s = (osc_ts - osc_offset)/tdiv
+    if config.channel_name == 'shap':
+        div_e = (osc_te - osc_offset)/tdiv
+    else:
+        div_e = (432 - osc_offset)/tdiv
+    config.lecroy.write(f'C1:CRST HDIF,{div_s},HREF,{div_e}')
     channel_name = config.channel_name
     lemo_name = config.lemo_name
     gain = config.lemo_gain
@@ -51,18 +66,6 @@ for item in config_bits_list:
     #config.lecroy.write(f'C2:CRS HREL')
     # reset inj
     time.sleep(2)
-    ndiv = 10 # positive and negative around delay
-    tdelay = -648  #ns
-    tdiv = 200 # ns/div
-    osc_ts = 297 # ns
-    osc_te = osc_ts + config.peaking_time + 10 # 10 ns to avoid switching time
-    osc_offset = - ndiv/2*tdiv - tdelay
-    div_s = (osc_ts - osc_offset)/tdiv
-    if config.channel_name == 'shap':
-        div_e = (osc_te - osc_offset)/tdiv
-    else:
-        div_e = (432 - osc_offset)/tdiv
-    config.lecroy.write(f'C1:CRST HDIF,{div_s},HREF,{div_e}')
 
     mis = {
         #'CSA Bits': [],
@@ -93,7 +96,7 @@ for item in config_bits_list:
         mis['Voltage output average (V)'].append(np.average(data)/gain)
         mis['Voltage output std (V)'].append(np.std(data) / gain)
     if channel_name == 'csa':
-        mis['Voltage output average (V)'] = [x for x in mis['Voltage output average (V)']]
+        mis['Voltage output average (V)'] = [-1* x for x in mis['Voltage output average (V)']]
         #mis['Voltage output average (V)'] = -1*mis['Voltage output average (V)']
     df = pd.DataFrame(mis)
     datetime_str = datetime.now().strftime('%Y%m%d%H%M')

@@ -128,26 +128,26 @@ def config(channel: str, lemo: str, n_steps: int, cfg_bits: list, cfg_inst: bool
             offset_charge = 8.5e-15 # C *tentative
             #min_current = 0.03e-6 # A for active probes
             min_current = .07e-6 # A
-            max_current = 1.55e-6 #1.6e-6 # A
+            max_current = 1.5e-6 #1.6e-6 # A
             #max_current = .75e-6 # active probes
             corr_fact = 1 #105.8/103.2
         case [0,0]:
             photon_energy = 25 # keV
             offset_charge = 8.5e-15 # C *tentative
             min_current = .07e-6 # A
-            max_current = 3.8e-6 #4.1e-6 # A
+            max_current = 3.6e-6 #4.1e-6 # A
             corr_fact = 1 #105.8/103.2
         case [1,0]:
             photon_energy = 18 # keV
             offset_charge = 8.5e-15 # C *tentative
             min_current = .07e-6 # A
-            max_current = 3.3e-6 # A
+            max_current = 3.25e-6 # A
             corr_fact = 1 #105.8/103.2
         case [1,1]:
             photon_energy = 5 # keV
             offset_charge = 0 #8.5e-15 # C *tentative
             min_current = .05e-6 # A
-            max_current = 1.05e-6 # A
+            max_current = 1.02e-6 # A
             corr_fact = 1 #105.8/103.2
     match shap_bits:
         case [1,0]: 
