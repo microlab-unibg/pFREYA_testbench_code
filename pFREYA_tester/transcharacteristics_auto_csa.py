@@ -52,7 +52,7 @@ for item in config_bits_list:
     # reset inj
     time.sleep(2)
     ndiv = 10 # positive and negative around delay
-    tdelay = -648 # ns
+    tdelay = -648  #ns
     tdiv = 200 # ns/div
     osc_ts = 297 # ns
     osc_te = osc_ts + config.peaking_time + 10 # 10 ns to avoid switching time
@@ -93,7 +93,7 @@ for item in config_bits_list:
         mis['Voltage output average (V)'].append(np.average(data)/gain)
         mis['Voltage output std (V)'].append(np.std(data) / gain)
     if channel_name == 'csa':
-        mis['Voltage output average (V)'] = [-1 * x for x in mis['Voltage output average (V)']]
+        mis['Voltage output average (V)'] = [x for x in mis['Voltage output average (V)']]
         #mis['Voltage output average (V)'] = -1*mis['Voltage output average (V)']
     df = pd.DataFrame(mis)
     datetime_str = datetime.now().strftime('%Y%m%d%H%M')

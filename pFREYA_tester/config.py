@@ -146,8 +146,8 @@ def config(channel: str, lemo: str, n_steps: int, cfg_bits: list, cfg_inst: bool
         case [1,1]:
             photon_energy = 5 # keV
             offset_charge = 0 #8.5e-15 # C *tentative
-            min_current = .065e-6 # A
-            max_current = 1.1e-6 # A
+            min_current = .05e-6 # A
+            max_current = 1.05e-6 # A
             corr_fact = 1 #105.8/103.2
     match shap_bits:
         case [1,0]: 

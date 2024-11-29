@@ -22,7 +22,7 @@ def get_energy_level(cfg_bits):
 config_bits_list = [
     [1, 1, 1, 1, 1, 1, 1],  # Configurazione 5 keV
     [1, 0, 1, 1, 1, 1, 1],  # Configurazione 9 keV
-    [0, 1, 1, 1, 1, 1, 1],  # Configurazione 18 keV
+    [0, 1, 1, 1, 1, 1, 1],  # Configurazione da 9 a 25 keV
     [0, 0, 1, 1, 1, 1, 1],  # Configurazione 25 keV
 ]
 
@@ -73,6 +73,8 @@ for item in config_bits_list:
         str_type='active_prbs' 
     else: 
         str_type = ''
+    
+    df['Time (s)'] = df['Time (s)'] + 200e-9
     df.to_csv(f'G:Shared drives/FALCON/measures/new/transient/csa/{channel_name}_{config.config_bits_str}_nominal_{lemo_name}_{datetime_str}.tsv', sep='\t')
     
     print(f"Misura completata per cfg_bits {item} con livello di energia {energy_level:} A")
@@ -96,8 +98,8 @@ for item in config_bits_list:
 
     #PLOT UNICO PER OGNI CONFIGURAZIONE
 
-    t_s = 400e-9 if config.channel_name == 'csa' else -100e-9 #300
-    t_e = 100e-8 if config.channel_name == 'csa' else 1.8e-6    #900e-9
+    t_s = 300e-9 if config.channel_name == 'csa' else -100e-9 #300
+    t_e = 900e-9 if config.channel_name == 'csa' else 1.8e-6    #900e-9
     sub_df = df[df['Time (s)'].between(t_s, t_e)]
 
     colours = list(mcolors.TABLEAU_COLORS.keys())

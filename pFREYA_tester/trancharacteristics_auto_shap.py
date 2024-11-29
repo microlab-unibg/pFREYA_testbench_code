@@ -27,7 +27,7 @@ def get_energy_level(cfg_bits):
     
 # Configurazione dei test per le diverse configurazioni di cfg_bits
 config_bits_list = [
-    # Configurazione 9 keV 
+    # Configurazione da 9 a 25 keV 
     [0, 1, 1, 1, 0, 1, 1],  #shaper tp = 432 ns
     [0, 1, 1, 0, 0, 1, 1],  #shaper tp = 234 ns 
     [0, 1, 1, 0, 1, 1, 1],  #shaper tp = 332 ns   
@@ -37,17 +37,18 @@ config_bits_list = [
     [0, 0, 1, 0, 0, 1, 1],  #shaper tp = 234 ns  
     [0, 0, 1, 0, 1, 1, 1],  #shaper tp = 332 ns  
     [0, 0, 1, 1, 1, 1, 1],  #shaper tp = 535 ns  
-    # Configurazione 18 keV
+    # Configurazione 9 keV
     [1, 0, 1, 1, 0, 1, 1],  #shaper tp = 432 ns  
     [1, 0, 1, 0, 0, 1, 1],  #shaper tp = 234 ns  
     [1, 0, 1, 0, 1, 1, 1],  #shaper tp = 332 ns  
     [1, 0, 1, 1, 1, 1, 1],  #shaper tp = 535 ns  
     # Configurazione 5 keV
-    [1, 1, 0, 1, 0, 1, 1],  #shaper tp = 432 ns  
-    [1, 1, 0, 0, 0, 1, 1],  #shaper tp = 234 ns  
-    [1, 1, 0, 0, 1, 1, 1],  #shaper tp = 332 ns  
-    [1, 1, 0, 1, 1, 1, 1],  #shaper tp = 535 ns  
+    [1, 1, 1, 1, 0, 1, 1],  #shaper tp = 432 ns  
+    [1, 1, 1, 0, 0, 1, 1],  #shaper tp = 234 ns  
+    [1, 1, 1, 0, 1, 1, 1],  #shaper tp = 332 ns  
+    [1, 1, 1, 1, 1, 1, 1],  #shaper tp = 535 ns  
 ]
+
 
 tsv_files = []
 #cfg_bits_template = [0, 1, 0, 0, 0, 1, 1]  lo utilizzo per definire un template base per poi iterare le diverse config di bits

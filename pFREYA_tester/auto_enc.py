@@ -26,26 +26,26 @@ def get_energy_level(cfg_bits):
     
 # Configurazione dei test per le diverse configurazioni di cfg_bits
 config_bits_list = [
-    # Configurazione 9 keV 
-    [0, 1, 1, 0, 1, 1, 1],  #shaper tp = 432 ns
-    [0, 1, 0, 0, 1, 1, 1],  #shaper tp = 234 ns 
-    [0, 1, 0, 1, 1, 1, 1],  #shaper tp = 332 ns   
-    [0, 1, 1, 1, 1, 1, 1],  #shaper tp = 535 ns  
+    # Configurazione  da 9 keV a 25
+    [0, 1, 0, 1, 0, 1, 1],  #shaper tp = 432 ns
+    [0, 1, 0, 0, 0, 1, 1],  #shaper tp = 234 ns 
+    [0, 1, 0, 0, 1, 1, 1],  #shaper tp = 332 ns   
+    [0, 1, 0, 1, 1, 1, 1],  #shaper tp = 535 ns  
     # Configurazione 25 keV
-    [0, 0, 1, 0, 1, 1, 1],  #shaper tp = 432 ns  
-    [0, 0, 0, 0, 1, 1, 1],  #shaper tp = 234 ns  
-    [0, 0, 0, 1, 1, 1, 1],  #shaper tp = 332 ns  
-    [0, 0, 1, 1, 1, 1, 1],  #shaper tp = 535 ns  
-    # Configurazione 18 keV
-    [1, 0, 1, 0, 1, 1, 1],  #shaper tp = 432 ns  
-    [1, 0, 0, 0, 1, 1, 1],  #shaper tp = 234 ns  
-    [1, 0, 0, 1, 1, 1, 1],  #shaper tp = 332 ns  
-    [1, 0, 1, 1, 1, 1, 1],  #shaper tp = 535 ns  
+    [0, 0, 0, 1, 0, 1, 1],  #shaper tp = 432 ns  
+    [0, 0, 0, 0, 0, 1, 1],  #shaper tp = 234 ns  
+    [0, 0, 0, 0, 1, 1, 1],  #shaper tp = 332 ns  
+    [0, 0, 0, 1, 1, 1, 1],  #shaper tp = 535 ns  
+    # Configurazione 9 keV
+    [1, 0, 0, 1, 0, 1, 1],  #shaper tp = 432 ns  
+    [1, 0, 0, 0, 0, 1, 1],  #shaper tp = 234 ns  
+    [1, 0, 0, 0, 1, 1, 1],  #shaper tp = 332 ns  
+    [1, 0, 0, 1, 1, 1, 1],  #shaper tp = 535 ns  
     # Configurazione 5 keV
-    [1, 1, 1, 0, 1, 1, 1],  #shaper tp = 432 ns  
-    [1, 1, 0, 0, 1, 1, 1],  #shaper tp = 234 ns  
-    [1, 1, 0, 1, 1, 1, 1],  #shaper tp = 332 ns  
-    [1, 1, 1, 1, 1, 1, 1],  #shaper tp = 535 ns  
+    [1, 1, 0, 1, 0, 1, 1],  #shaper tp = 432 ns  
+    [1, 1, 0, 0, 0, 1, 1],  #shaper tp = 234 ns  
+    [1, 1, 0, 0, 1, 1, 1],  #shaper tp = 332 ns  
+    [1, 1, 0, 1, 1, 1, 1],  #shaper tp = 535 ns  
 ]
 
 
@@ -55,7 +55,7 @@ for item in config_bits_list:
     
     import config
     config.config(channel='shap',lemo='none',n_steps=20,cfg_bits=item,cfg_inst=True, active_probes=False)
-    pYtp.send_slow_ctrl_auto(item)
+    pYtp.send_slow_ctrl_auto(item,1)
     channel_name = config.channel_name
     lemo_name = config.lemo_name
     gain = config.lemo_gain
@@ -83,8 +83,8 @@ for item in config_bits_list:
 
     # no injection for noise (check withouth injection circuit TODO)
     # Set zero output
-    config.pg.write(':OUTP1 ON')
-    config.pg.write(':OUTP2 OFF')
+    config.ps.write(':OUTP1 ON')
+    config.ps.write(':OUTP2 OFF')
     config.ps.write(':SOUR:CURR:LEV 0')
     #config.ps.write(':SOUR:CURR:LEV 0')
     #config.ps.write(':OUTP:STAT OFF')

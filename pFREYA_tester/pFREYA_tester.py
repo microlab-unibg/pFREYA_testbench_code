@@ -358,11 +358,29 @@ def run_script_shap():
   subprocess.run(["python", "transient_auto_shap.py"]) #metodo transient csa
   subprocess.run(["python", "transcharacteristics_auto_shap.py"]) #metodo transcharacteristics csa
 
+
+def run_script_enc():
+  print("Reset FPGA")
+  reset_iniziale()
+  time.sleep(2)
+
+  print("clk")
+  auto_clock()
+  time.sleep(2)
+  
+  print("csa_reset_n")
+  auto_csa_reset()
+  time.sleep(3)
+  
+  #metodo transient csa
+  subprocess.run(["python", "auto_enc.py"])
+
+
 class gui2(Toplevel):
   def __init__(self,parent):
     super().__init__(parent)
     self.title("pFREYA tester v0 - Automatic testing")
-    self.geometry("400x120")
+    self.geometry("400x175")
     self.resizable(False, False)
     
     frame = Frame(self)
@@ -375,9 +393,14 @@ class gui2(Toplevel):
 
     label2 = Label(frame, text="shap")
     label2.grid(row=1, column=0, padx=10, pady=10)
-
     button2 = Button(frame, text="run", command=run_script_shap)
     button2.grid(row=1, column=1, padx=10, pady=10)
+
+    label3 = Label(frame, text="enc")
+    label3.grid(row=2, column=0, padx=10, pady=10)
+    button3 = Button(frame, text="run", command=run_script_enc)
+    button3.grid(row=2, column=1, padx=10, pady=10)
+
     self.mainloop()
 
 def open_child():

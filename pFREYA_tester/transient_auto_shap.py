@@ -20,7 +20,7 @@ def get_energy_level(cfg_bits):
 
 # Configurazione dei test per le diverse configurazioni di cfg_bits
 config_bits_list = [
-    # Configurazione 9 keV 
+    # Configurazione da 9 a 25 keV 
     [0, 1, 1, 1, 0, 1, 1],  #shaper tp = 432 ns
     [0, 1, 1, 0, 0, 1, 1],  #shaper tp = 234 ns 
     [0, 1, 1, 0, 1, 1, 1],  #shaper tp = 332 ns   
@@ -30,7 +30,7 @@ config_bits_list = [
     [0, 0, 1, 0, 0, 1, 1],  #shaper tp = 234 ns  
     [0, 0, 1, 0, 1, 1, 1],  #shaper tp = 332 ns  
     [0, 0, 1, 1, 1, 1, 1],  #shaper tp = 535 ns  
-    # Configurazione 18 keV
+    # Configurazione 9 keV
     [1, 0, 1, 1, 0, 1, 1],  #shaper tp = 432 ns  
     [1, 0, 1, 0, 0, 1, 1],  #shaper tp = 234 ns  
     [1, 0, 1, 0, 1, 1, 1],  #shaper tp = 332 ns  
@@ -54,8 +54,6 @@ for item in config_bits_list:
     config.ps.write(':OUTP:STAT ON')
 
     #corrente iniziale
-    time.sleep(2)
-
     
     channel_name = config.channel_name
     lemo_name = config.lemo_name
@@ -70,7 +68,7 @@ for item in config_bits_list:
     for i, cl in enumerate(config.current_lev):
         # Imposta il livello di corrente
         config.ps.write(f':SOUR:CURR:LEV {cl}')
-        time.sleep(10)
+        time.sleep(0.5)
         # N sample to average and extract std from
         data = pd.DataFrame.from_dict(
             config.lecroy.get_channel(channel_name='C', n_channel=config.channel_num)['waveforms'][0]
@@ -111,9 +109,9 @@ for item in config_bits_list:
 
     #PLOT UNICO PER OGNI CONFIGURAZIONE
 
-    t_s = -100e-9 #300
-    t_e = 1.8e-6    #900e-9
-    sub_df = df[df['Time (s)'].between(t_s, t_e)]
+    t_s = -324e-9 #300
+    t_e = 900e-9    #900e-9
+    sub_df = df
 
     colours = list(mcolors.TABLEAU_COLORS.keys())
     fig, ax = plt.subplots()
