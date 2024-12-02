@@ -65,6 +65,7 @@ for item in config_bits_list:
     config.lecroy.set_tdiv(tdiv='200NS')
     config.lecroy.set_toffset(toffset='-400e-9')
     pYtp.send_slow_ctrl_auto(item,1)
+    time.sleep(2)
     config.ps.write(':OUTP:STAT ON')
 
     #corrente iniziale
@@ -147,4 +148,4 @@ for item in config_bits_list:
     if channel_name == 'shap':
         ax.text(.01,.01,f'$t_p$ = {config.peaking_time} ns',ha='left',va='bottom',transform=ax.transAxes)
     
-    plt.savefig(f'G:Shared drives/FALCON/measures/new/transient/shap/_shap_{config.config_bits_str}_nominal_{lemo_name}_shapconfig_{shap_bits}_{datetime_str}.pdf',dpi=300)
+    plt.savefig(f'G:Shared drives/FALCON/measures/new/transient/shap/shap_{config.config_bits_str}_nominal_{lemo_name}_shapconfig_{shap_bits}_{datetime_str}.pdf',dpi=300)

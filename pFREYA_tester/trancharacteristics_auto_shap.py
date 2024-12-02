@@ -63,12 +63,15 @@ config_bits_list = [
 
 
 tsv_files = []
+
 #cfg_bits_template = [0, 1, 0, 0, 0, 1, 1]  lo utilizzo per definire un template base per poi iterare le diverse config di bits
 # Creazione del DataFrame
 for item in config_bits_list:
     
     import config
     config.config(channel='shap',lemo='none',n_steps=20,cfg_bits=item,cfg_inst=True, active_probes=False)
+    energy_level = get_energy_level(item)
+    shap_bits = get_shap_bits(item)
     config.ps.write(':SOUR:CURR:LEV -.0e-6')
     pYtp.send_slow_ctrl_auto(item,1)
 
@@ -81,16 +84,13 @@ for item in config_bits_list:
     # reset inj
     time.sleep(2)
     ndiv = 10 # positive and negative around delay
-    tdelay = -648 # ns
+    tdelay = -400 # ns
     tdiv = 200 # ns/div
-    osc_ts = 297 # ns
-    osc_te = osc_ts + config.peaking_time + 10 # 10 ns to avoid switching time
+    osc_ts = 298 # ns
+    osc_te = 550 
     osc_offset = - ndiv/2*tdiv - tdelay
     div_s = (osc_ts - osc_offset)/tdiv
-    if config.channel_name == 'shap':
-        div_e = (osc_te - osc_offset)/tdiv
-    else:
-        div_e = (432 - osc_offset)/tdiv
+    div_e = (osc_te - osc_offset)/tdiv
     config.lecroy.write(f'C1:CRST HDIF,{div_s},HREF,{div_e}')
     channel_name = config.channel_name
     lemo_name = config.lemo_name
@@ -173,16 +173,13 @@ for item in config_bits_list:
         print(f"Errore durante il salvataggio del file plot: {e}")
 
 
-#grafico totale delle 4 modalità:
-# Colori per ogni configurazione
 colours = list(mcolors.TABLEAU_COLORS.keys())
 
 # Modelli di energia (aggiorna con i tuoi dati)
 modes = [5, 9, 18, 25]
-# Caricamento dei DataFrame
 
 # Caricamento dei DataFrame
-dfs = [pd.read_csv(file, sep='\t') for file in tsv_files]
+dfs = [pd.read_csv(file, sep='\t') for file in gruppi]
 
 # Creazione del grafico
 datetime_str = datetime.strftime(datetime.now(), '%d%m%y_%H%M')
@@ -240,6 +237,6 @@ ax.table(cellText=[
 
 # Aggiungi la legenda
 ax.legend([f'{x} keV' for x in modes],
-          title='γ energy',
-          frameon=False)
+        title='γ energy',
+        frameon=False)
 plt.savefig(f'G:Shared drives/FALCON/measures/new/transcharacteristics/shap/{channel_name}_{config.config_bits_str}_nominal_{lemo_name}_shapconfig_{shap_bits}_{datetime_str}.pdf')
