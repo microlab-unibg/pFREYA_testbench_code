@@ -83,11 +83,8 @@ for item in config_bits_list:
 
     # no injection for noise (check withouth injection circuit TODO)
     # Set zero output
-    config.ps.write(':OUTP1 ON')
-    config.ps.write(':OUTP2 OFF')
     config.ps.write(':SOUR:CURR:LEV 0')
-    #config.ps.write(':SOUR:CURR:LEV 0')
-    #config.ps.write(':OUTP:STAT OFF')
+    config.ps.write(':OUTP:STAT OFF')
 
     N_repetitions = 16
     background = False
