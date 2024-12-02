@@ -356,7 +356,7 @@ def run_script_shap():
   
   #metodo transient csa
   subprocess.run(["python", "transient_auto_shap.py"]) #metodo transient csa
-  subprocess.run(["python", "transcharacteristics_auto_shap.py"]) #metodo transcharacteristics csa
+  subprocess.run(["python", "trancharacteristics_auto_shap.py"]) #metodo transcharacteristics csa
 
 
 def run_script_enc():

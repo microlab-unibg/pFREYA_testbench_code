@@ -69,12 +69,9 @@ for item in config_bits_list:
     
     import config
     config.config(channel='shap',lemo='none',n_steps=20,cfg_bits=item,cfg_inst=True, active_probes=False)
-    pYtp.send_slow_ctrl_auto(item,1)
     config.ps.write(':SOUR:CURR:LEV -.0e-6')
-    channel_name = config.channel_name
-    lemo_name = config.lemo_name
-    gain = config.lemo_gain
-    N_samples = config.N_samples
+    pYtp.send_slow_ctrl_auto(item,1)
+
 
     # set proper time division for this analysis
     # suppress channel for noise stuff
@@ -95,7 +92,10 @@ for item in config_bits_list:
     else:
         div_e = (432 - osc_offset)/tdiv
     config.lecroy.write(f'C1:CRST HDIF,{div_s},HREF,{div_e}')
-
+    channel_name = config.channel_name
+    lemo_name = config.lemo_name
+    gain = config.lemo_gain
+    N_samples = config.N_samples
     mis = {
         #'CSA Bits': [],
         'Current Level Step': [],

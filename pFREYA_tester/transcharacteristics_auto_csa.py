@@ -38,8 +38,7 @@ for item in config_bits_list:
     
     import config
     config.config(channel='csa',lemo='none',n_steps=20,cfg_bits=item,cfg_inst=True, active_probes=False)
-    config.lecroy.set_tdiv(tdiv='100NS')
-    config.lecroy.set_toffset(toffset='-240e-9')
+
     config.lecroy.write(f'C2:CRS HREL')
     pYtp.send_slow_ctrl_auto(item,0)
     ndiv = 10 # positive and negative around delay
