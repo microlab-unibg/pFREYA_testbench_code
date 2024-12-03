@@ -51,10 +51,11 @@ groups = {18:[] ,9: [], 25: [], 5: []}
 # Raggruppa i file TSV per energia
 for item in config_bits_list:
     config.config(channel='shap', lemo='none', n_steps=20, cfg_bits=item, cfg_inst=True, active_probes=False)
+    pYtp.send_slow_ctrl_auto(item,1)
     energy_level = get_energy_level(item)
     shap_bits = get_shap_bits(item)
     config.ps.write(':SOUR:CURR:LEV -.0e-6')
-    pYtp.send_slow_ctrl_auto(item,1)
+
 
 
     # set proper time division for this analysis
@@ -108,8 +109,46 @@ for item in config_bits_list:
     output_file = f'G:Shared drives/FALCON/measures/new/transcharacteristics/shap/{config.channel_name}_{config.config_bits_str}_nominal_{config.lemo_name}_shapconfig_{shap_bits}_{datetime_str}.tsv'
     df.to_csv(output_file, sep='\t', index=False)
     print("File tsv salvato con successo.")
-    # Aggiungi il file al gruppo di energia corrispondente per il grafico totale
+    # Aggiungi il file al gruppo di energia corrispondente per il grafico totale, cosi poi plotto dalla lista corrispondente
     groups[energy_level].append(df)
+    photon_span = np.linspace(0, 256, 20)
+
+    # Genera il grafico
+    fig, ax = plt.subplots()
+    fig.set_figheight(4)
+    fig.set_figwidth(5)
+
+    ax.errorbar(photon_span, df['Voltage output average (V)'],
+                xerr=np.tile(1, df.shape[0]), yerr=df['Voltage output std (V)'],
+                fmt='s', markersize=1, capsize=3)
+    ax.set_xlabel('Equivalent input photons [#]')
+    ax.set_ylabel(f'{channel_name.upper()} output voltage [V]')
+    ax.tick_params(right=True, top=True, direction='in')
+    from scipy.stats import linregress
+    ln = linregress(photon_span, df['Voltage output average (V)'].astype(float))
+    linear_output = ln.intercept + ln.slope * np.linspace(0, 256, 20)
+    ax.plot(photon_span, linear_output)
+    max_diff = np.max(df['Voltage output average (V)'] - linear_output)
+    inl = 100 * np.abs(max_diff) / ln.slope / 256
+    print(ln)
+
+    # Aggiungi tabella informativa
+    ax.table(cellText=[
+        ['$\\gamma$ energy [keV]', f'{config.photon_energy}'],  # Sostituisci N/A con {config.photon_energy}
+        ['Peaking time [ns]', f'{config.peaking_time}'],  # sostituisci 318 con {config.peaking_time}
+        ['Slope [mV/#$\\gamma$]', f'{np.round(ln.slope*10**3,3)}'],
+        ['INL [%]', f'{np.round(inl, 2)}'],
+        ['R$^2$', f'{np.round(ln.rvalue**2, 3)}']
+    ], colWidths=[.33, .2], loc='lower right')
+
+    # Salva il grafico
+    try:
+        output_file = f'G:Shared drives/FALCON/measures/new/transcharacteristics/shap/{channel_name}_{config.config_bits_str}_nominal_{lemo_name}_shapconfig_{shap_bits}_{datetime_str}.pdf'
+        plt.savefig(output_file, dpi=300)
+        plt.close(fig)  # Chiude il grafico corrente per liberare risorse
+        print(f"File plot salvato con successo: {output_file}")
+    except Exception as e:
+        print(f"Errore durante il salvataggio del file plot: {e}")
 
 ###summary###
 colours = list(mcolors.TABLEAU_COLORS.keys())
@@ -164,7 +203,7 @@ for energy_level, dataframes in groups.items():  # Sostituisci con i percorsi re
     ax.table([
         ['Mode [ns]', f'{pt[0]}', f'{pt[1]}', f'{pt[2]}', f'{pt[3]}'],
         ['Gain [mV/#$\\gamma$]', f'{np.round(lns[0].slope * 10**3, 3)}', f'{np.round(lns[1].slope * 10**3, 3)}', f'{np.round(lns[2].slope * 10**3, 3)}', f'{np.round(lns[3].slope * 10**3, 3)}'],
-        ['Gain [mV/fC]', f'{np.round(lns[0].slope * 10**3 / config.modes[1] * config.conv_kev_c * 10**-15, 3)}', f'{np.round(lns[1].slope * 10**3 / config.modes[1] * config.conv_kev_c * 10**-15, 3)}', f'{np.round(lns[2].slope * 10**3 / config.modes[1] * config.conv_kev_c * 10**-15, 3)}', f'{np.round(lns[3].slope * 10**3 / config.modes[1] * config.conv_kev_c * 10**-15, 3)}'],
+        ['Gain [mV/fC]', f'{np.round(lns[0].slope * 10**3 / pt[0]*config.conv_kev_c * 10**-15, 3)}', f'{np.round(lns[1].slope * 10**3 / pt[1] * config.conv_kev_c * 10**-15, 3)}', f'{np.round(lns[2].slope * 10**3 / pt[2] * config.conv_kev_c * 10**-15, 3)}', f'{np.round(lns[3].slope * 10**3 / pt[3] * config.conv_kev_c * 10**-15, 3)}'],
         ['INL [%]', f'{np.round(inls[0], 2)}', f'{np.round(inls[1], 2)}', f'{np.round(inls[2], 2)}', f'{np.round(inls[3], 2)}'],
     ], colWidths=[.25, .11, .11, .11, .11], loc='lower right')
 
@@ -175,5 +214,5 @@ for energy_level, dataframes in groups.items():  # Sostituisci con i percorsi re
     ax.legend([f'{x} ns' for x in pt], title=f"Peaking time", frameon=False)
 
     # Salvataggio del grafico
-    plt.savefig(f'G:/My Drive/PHD/FALCON/measures/transcharacteristics/shap/summary/shap_summary_nominal_{energy_level}_keV_{datetime_str}.pdf', dpi=300)
+    plt.savefig(f'G:Shared drives/FALCON/measures/new/transcharacteristics/shap/shap_summary_nominal_{energy_level}_keV_{datetime_str}.pdf', dpi=300)
     print(f"Grafico salvato per {energy_level} keV")
