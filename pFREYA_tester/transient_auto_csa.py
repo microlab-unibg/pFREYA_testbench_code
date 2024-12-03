@@ -5,17 +5,19 @@ from datetime import datetime
 import config
 import pFREYA_tester_processing as pYtp
 # Definizione delle configurazioni dei livelli di energia in base ai primi 2 bit di cfg_bits
+# Funzioni per determinare energia e peaking time dalla configurazione dei bit
 def get_energy_level(cfg_bits):
-    if cfg_bits[0] == 1 and cfg_bits[1] == 1:
+    if cfg_bits[1] == 1 and cfg_bits[0] == 1:
         return 5  # 5 keV
-    elif cfg_bits[0] == 1 and cfg_bits[1] == 0:
-        return 9 # 9 keV
-    elif cfg_bits[0] == 0 and cfg_bits[1] == 1:
+    elif cfg_bits[0] == 1 and cfg_bits[0] == 0:
+        return 9  # 9 keV
+    elif cfg_bits[1] == 0 and cfg_bits[0] == 1:
         return 18 # 18 keV
     elif cfg_bits[0] == 0 and cfg_bits[1] == 0:
         return 25 # 25 keV
     else:
         raise ValueError("Configurazione cfg_bits non valida")
+
 
 # Configurazione dei test per le diverse configurazioni di cfg_bits
 config_bits_list = [

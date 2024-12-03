@@ -13,17 +13,20 @@ T = 30e-9 # s
 t_r = 3e-9 # s
 N_pulses = 10 # adimensional
 conv_kev_c = 3.65/1000 * 1/1.602e-19 # Energy in silicon for e-/h * no of electrons per coulomb [keV/e-] * [e-/C]
+# Funzioni per determinare energia e peaking time dalla configurazione dei bit
 def get_energy_level(cfg_bits):
-    if cfg_bits[0] == 1 and cfg_bits[1] == 1:
+    if cfg_bits[1] == 1 and cfg_bits[0] == 1:
         return 5  # 5 keV
-    elif cfg_bits[0] == 1 and cfg_bits[1] == 0:
-        return 9 # 9 keV
-    elif cfg_bits[0] == 0 and cfg_bits[1] == 1:
+    elif cfg_bits[0] == 1 and cfg_bits[0] == 0:
+        return 9  # 9 keV
+    elif cfg_bits[1] == 0 and cfg_bits[0] == 1:
         return 18 # 18 keV
     elif cfg_bits[0] == 0 and cfg_bits[1] == 0:
         return 25 # 25 keV
     else:
         raise ValueError("Configurazione cfg_bits non valida")
+
+
 config_bits_list = [
     [1, 1, 1, 1, 1, 1, 1],  # Configurazione 5 keV
     [1, 0, 1, 1, 1, 1, 1],  # Configurazione 9 keV

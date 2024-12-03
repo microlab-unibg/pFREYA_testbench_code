@@ -13,11 +13,11 @@ from scipy.stats import linregress
 
 # Funzioni per determinare energia e peaking time dalla configurazione dei bit
 def get_energy_level(cfg_bits):
-    if cfg_bits[0] == 1 and cfg_bits[1] == 1:
+    if cfg_bits[1] == 1 and cfg_bits[0] == 1:
         return 5  # 5 keV
-    elif cfg_bits[0] == 1 and cfg_bits[1] == 0:
+    elif cfg_bits[0] == 1 and cfg_bits[0] == 0:
         return 9  # 9 keV
-    elif cfg_bits[0] == 0 and cfg_bits[1] == 1:
+    elif cfg_bits[1] == 0 and cfg_bits[0] == 1:
         return 18 # 18 keV
     elif cfg_bits[0] == 0 and cfg_bits[1] == 0:
         return 25 # 25 keV
@@ -27,9 +27,9 @@ def get_energy_level(cfg_bits):
 def get_shap_bits(cfg_bits):
     if cfg_bits[3] == 1 and cfg_bits[4] == 1:
         return 535  
-    elif cfg_bits[3] == 1 and cfg_bits[4] == 0:
-        return 432 
     elif cfg_bits[3] == 0 and cfg_bits[4] == 1:
+        return 432 
+    elif cfg_bits[3] == 1 and cfg_bits[4] == 0:
         return 332 
     elif cfg_bits[3] == 0 and cfg_bits[4] == 0:
         return 234 
