@@ -8,6 +8,7 @@ from datetime import datetime
 import time
 import glob
 import config
+import os
 import pFREYA_tester_processing as pYtp
 T = 30e-9 # s
 t_r = 3e-9 # s
@@ -172,14 +173,16 @@ for item in config_bits_list:
     except Exception as e:
         print(f"Errore durante il salvataggio del file plot: {e}")
 
-
+#ordino i file per tempo di salvataggio e li divido in 4 gruppi (diverse config di Kev)
+tsv_files_sorted = sorted(tsv_files, key=os.path.getctime)
+groups = [tsv_files_sorted[i:i + 4] for i in range(0, len(tsv_files_sorted), 4)]
 colours = list(mcolors.TABLEAU_COLORS.keys())
 
 # Modelli di energia (aggiorna con i tuoi dati)
 modes = [5, 9, 18, 25]
 
 # Caricamento dei DataFrame
-dfs = [pd.read_csv(file, sep='\t') for file in gruppi]
+dfs = [pd.read_csv(file, sep='\t') for file in groups]
 
 # Creazione del grafico
 datetime_str = datetime.strftime(datetime.now(), '%d%m%y_%H%M')
