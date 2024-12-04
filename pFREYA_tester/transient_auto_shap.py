@@ -4,17 +4,16 @@ import TeledyneLeCroyPy
 from datetime import datetime
 import config
 import pFREYA_tester_processing as pYtp
-import pFREYA_tester as test
 
 # Definizione delle configurazioni dei livelli di energia in base ai primi 2 bit di cfg_bits
 # Funzioni per determinare energia e peaking time dalla configurazione dei bit
 def get_energy_level(cfg_bits):
-    if cfg_bits[1] == 1 and cfg_bits[0] == 1:
+    if cfg_bits[0] == 1 and cfg_bits[1] == 1:
         return 5  # 5 keV
-    elif cfg_bits[0] == 1 and cfg_bits[0] == 0:
-        return 9  # 9 keV
-    elif cfg_bits[1] == 0 and cfg_bits[0] == 1:
-        return 18 # 18 keV
+    elif cfg_bits[0] == 1 and cfg_bits[1] == 0:
+        return 18  # 18 keV
+    elif cfg_bits[0] == 0 and cfg_bits[1] == 1:
+        return 9 # 9 keV
     elif cfg_bits[0] == 0 and cfg_bits[1] == 0:
         return 25 # 25 keV
     else:
@@ -30,7 +29,7 @@ def get_shap_bits(cfg_bits):
     elif cfg_bits[3] == 0 and cfg_bits[4] == 0:
         return 234 
     else:
-        raise ValueError("Configurazione cfg_bits non valida")
+        raise ValueError("Configurazione shap_bits non valida")
 
 
 # Configurazione dei test per le diverse configurazioni di cfg_bits
@@ -59,17 +58,6 @@ config_bits_list = [
 
 # Loop per ogni configurazione di cfg_bits
 for item in config_bits_list:
-    print("Reset FPGA")
-    test.reset_iniziale()
-    time.sleep(2)
-
-    print("clk")
-    test.auto_clock()
-    time.sleep(2)
-    
-    print("csa_reset_n")
-    test.auto_csa_reset()
-    time.sleep(3)
     # Ottenere il livello di energia
     energy_level = get_energy_level(item)
     shap_bits = get_shap_bits(item)

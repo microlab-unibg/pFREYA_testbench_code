@@ -325,14 +325,71 @@ gui = pFREYA_GUI(root)
 import time
 #seconda gui
 def run_script_csa():  
-  #metodo transient csa
-  subprocess.run(["python", "transient_auto_csa.py"]) #metodo transient csa
-  subprocess.run(["python", "transcharacteristics_auto_csa.py"]) #metodo transcharacteristics csa
+    #metodo transient csa
+    print("Reset FPGA")
+    reset_iniziale()
+    time.sleep(2)
 
-def run_script_shap():  
-  #metodo transient csa
-  subprocess.run(["python", "transient_auto_shap.py"]) #metodo transient csa
-  subprocess.run(["python", "transcharacteristics_auto_shap.py"]) #metodo transcharacteristics csa
+    print("start clk")
+    auto_clock()
+    time.sleep(2)
+    print("end clk")
+
+    print("start csa_reset_n")
+    auto_csa_reset()
+    print("end csa_reset_n")
+    time.sleep(3)
+    subprocess.run(["python", "transient_auto_csa.py"]) #metodo transient csa
+    time.sleep(0.5)
+    
+    print("Reset FPGA")
+    reset_iniziale()
+    time.sleep(2)
+
+    print("start clk")
+    auto_clock()
+    time.sleep(2)
+    print("end clk")
+
+    print("start csa_reset_n")
+    auto_csa_reset()
+    print("end csa_reset_n")
+    time.sleep(3)
+
+    subprocess.run(["python", "transcharacteristics_auto_csa.py"]) #metodo transcharacteristics csa
+
+def run_script_shap():
+    #metodo transient csa
+    print("Reset FPGA")
+    reset_iniziale()
+    time.sleep(2)
+
+    print("start clk")
+    auto_clock()
+    time.sleep(2)
+    print("end clk")
+
+    print("start csa_reset_n")
+    auto_csa_reset()
+    print("end csa_reset_n")
+    time.sleep(3)  
+    #metodo transient csa
+    subprocess.run(["python", "transient_auto_shap.py"]) #metodo transient csa
+
+    print("Reset FPGA")
+    reset_iniziale()
+    time.sleep(2)
+
+    print("start clk")
+    auto_clock()
+    time.sleep(2)
+    print("end clk")
+
+    print("start csa_reset_n")
+    auto_csa_reset()
+    print("end csa_reset_n")
+    time.sleep(3)
+    subprocess.run(["python", "transcharacteristics_auto_shap.py"]) #metodo transcharacteristics csa
 
 
 def run_script_enc():

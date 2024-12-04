@@ -10,16 +10,15 @@ import config
 import os
 import pFREYA_tester_processing as pYtp
 from scipy.stats import linregress
-import pFREYA_tester as test
 
 # Funzioni per determinare energia e peaking time dalla configurazione dei bit
 def get_energy_level(cfg_bits):
-    if cfg_bits[1] == 1 and cfg_bits[0] == 1:
+    if cfg_bits[0] == 1 and cfg_bits[1] == 1:
         return 5  # 5 keV
-    elif cfg_bits[0] == 1 and cfg_bits[0] == 0:
-        return 9  # 9 keV
-    elif cfg_bits[1] == 0 and cfg_bits[0] == 1:
-        return 18 # 18 keV
+    elif cfg_bits[0] == 1 and cfg_bits[1] == 0:
+        return 18  # 18 keV
+    elif cfg_bits[0] == 0 and cfg_bits[1] == 1:
+        return 9 # 9 keV
     elif cfg_bits[0] == 0 and cfg_bits[1] == 0:
         return 25 # 25 keV
     else:
@@ -35,7 +34,7 @@ def get_shap_bits(cfg_bits):
     elif cfg_bits[3] == 0 and cfg_bits[4] == 0:
         return 234 
     else:
-        raise ValueError("Configurazione cfg_bits non valida")
+        raise ValueError("Configurazione shap_bits non valida")
 
 # Configurazione dei test per le diverse configurazioni di cfg_bits
 config_bits_list = [
@@ -45,27 +44,24 @@ config_bits_list = [
     [1, 1, 1, 1, 0, 1, 1],  [1, 1, 1, 0, 0, 1, 1],  [1, 1, 1, 0, 1, 1, 1],  [1, 1, 1, 1, 1, 1, 1],  # 5 keV
 ]
 
+#dizionario utilizzato per salvare dati di ogni configurazione
+dati = {
+    'energy level [keV]': [],
+    'Peaking time [ns]': [],
+    'Slope [mV/#$\\gamma$]': [],
+    'INL [%]': [],
+    'R$^2$': []
+}
 # Elenco dei livelli di energia (da associare ai rispettivi gruppi di configurazioni)
 energy_levels = [18, 25, 9, 5]
 groups = {18:[] ,9: [], 25: [], 5: []}
 
 # Raggruppa i file TSV per energia
 for item in config_bits_list:
-    print("Reset FPGA")
-    test.reset_iniziale()
-    time.sleep(2)
-
-    print("clk")
-    test.auto_clock()
-    time.sleep(2)
-    
-    print("csa_reset_n")
-    test.auto_csa_reset()
-    time.sleep(3)
     config.config(channel='shap', lemo='none', n_steps=20, cfg_bits=item, cfg_inst=True, active_probes=False)
-    pYtp.send_slow_ctrl_auto(item,1)
     energy_level = get_energy_level(item)
     shap_bits = get_shap_bits(item)
+    pYtp.send_slow_ctrl_auto(item,1)
     time.sleep(5)
     config.ps.write(':SOUR:CURR:LEV -.0e-6')
 
@@ -101,14 +97,6 @@ for item in config_bits_list:
         'Voltage output std (V)': []
           }
     
-    #dizionario utilizzato per salvare dati di ogni configurazione
-    dati = {
-        '$\\gamma$ energy [keV]': [],
-        'Peaking time [ns]': [],
-        'Slope [mV/#$\\gamma$]': [],
-        'INL [%]': [],
-        'R$^2$': []
-    }
     for i, level in enumerate(config.current_lev):
         config.ps.write(f':SOUR:CURR:LEV {level}')
         mis['Current Level Step'].append(i)
@@ -144,7 +132,7 @@ for item in config_bits_list:
     ax.tick_params(right=True, top=True, direction='in')
     from scipy.stats import linregress
     ln = linregress(photon_span, df['Voltage output average (V)'].astype(float))
-    linear_output = ln.intercept + ln.slope * np.linspace(0, 256, 20)
+    linear_output = ln.intercept + ln.slope * np.linspace(0, 256, 2)
     ax.plot(photon_span, linear_output)
     max_diff = np.max(df['Voltage output average (V)'] - linear_output)
     inl = 100 * np.abs(max_diff) / ln.slope / 256
@@ -160,14 +148,12 @@ for item in config_bits_list:
     ], colWidths=[.33, .2], loc='lower right')
 
     #salvataggio valori misurati su nel dataframe dati, in maniera che li salvi in un .tsv
-    dati['$\\gamma$ energy [keV]'].append(f'{config.photon_energy}')
+    dati['energy level [keV]'].append(f'{config.photon_energy}')
     dati['Peaking time [ns]'].append(f'{config.peaking_time}')
     dati['Slope [mV/#$\\gamma$]'].append(f'{np.round(ln.slope*10**3,3)}')
     dati['INL [%]'].append(f'{np.round(inl, 2)}')
     dati['R$^2$'].append(f'{np.round(ln.rvalue**2, 3)}')
 
-    data = pd.DataFrame(dati)
-    data.to_csv(f'G:Shared drives/FALCON/measures/new/transcharacteristics/shap/data/{channel_name}_{config.config_bits_str}_nominal_{lemo_name}_shapconfig_{shap_bits}_{datetime_str}.tsv', sep='\t', index=False)
     # Salva il grafico
     try:
         output_file = f'G:Shared drives/FALCON/measures/new/transcharacteristics/shap/{channel_name}_{config.config_bits_str}_nominal_{lemo_name}_shapconfig_{shap_bits}_{datetime_str}.pdf'
@@ -176,7 +162,8 @@ for item in config_bits_list:
         print(f"File plot salvato con successo: {output_file}")
     except Exception as e:
         print(f"Errore durante il salvataggio del file plot: {e}")
-
+data = pd.DataFrame(dati)
+data.to_csv(f'G:Shared drives/FALCON/measures/new/transcharacteristics/shap/data/{channel_name}_nominal_{lemo_name}_shapconfig_{shap_bits}_{datetime_str}.tsv', sep='\t', index=False)
 ###summary###
 colours = list(mcolors.TABLEAU_COLORS.keys())
 for energy_level, dataframes in groups.items():  # Sostituisci con i percorsi reali
@@ -232,8 +219,8 @@ for energy_level, dataframes in groups.items():  # Sostituisci con i percorsi re
         )
         max_diffs.append(np.max(dfs[i]['Voltage output average (V)'] - linear_outputs[i]))
         inls.append(100 * np.abs(max_diffs[i]) / lns[i].slope / 256)
-        data_summary['Mode [keV]'].append(f'{pt[i]}')
-        data_summary['Gain [mV/γ]'].append(f'{np.round(lns[i].slope*10**3, 3)}')
+        data_summary['Mode [ns]'].append(f'{pt[i]}')
+        data_summary['Gain [mV/#$\\gamma$]'].append(f'{np.round(lns[i].slope*10**3, 3)}')
         data_summary['Gain [mV/fC]'].append(f'{np.round(lns[i].slope*10**3/pt[i]*config.conv_kev_c*10**-15, 3)}')
         data_summary['INL [%]'].append(f'{np.round(inls[i], 2)}')
 

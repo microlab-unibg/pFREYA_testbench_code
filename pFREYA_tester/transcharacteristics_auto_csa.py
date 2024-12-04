@@ -9,19 +9,19 @@ import time
 import glob
 import config
 import pFREYA_tester_processing as pYtp
-import pFREYA_tester as test
+
 T = 30e-9 # s
 t_r = 3e-9 # s
 N_pulses = 10 # adimensional
 conv_kev_c = 3.65/1000 * 1/1.602e-19 # Energy in silicon for e-/h * no of electrons per coulomb [keV/e-] * [e-/C]
 # Funzioni per determinare energia e peaking time dalla configurazione dei bit
 def get_energy_level(cfg_bits):
-    if cfg_bits[1] == 1 and cfg_bits[0] == 1:
+    if cfg_bits[0] == 1 and cfg_bits[1] == 1:
         return 5  # 5 keV
-    elif cfg_bits[0] == 1 and cfg_bits[0] == 0:
-        return 9  # 9 keV
-    elif cfg_bits[1] == 0 and cfg_bits[0] == 1:
-        return 18 # 18 keV
+    elif cfg_bits[0] == 1 and cfg_bits[1] == 0:
+        return 18  # 18 keV
+    elif cfg_bits[0] == 0 and cfg_bits[1] == 1:
+        return 9 # 9 keV
     elif cfg_bits[0] == 0 and cfg_bits[1] == 0:
         return 25 # 25 keV
     else:
@@ -35,21 +35,18 @@ config_bits_list = [
     [0, 0, 1, 1, 1, 1, 1],  # Configurazione 25 keV
 ]
 
+#dizionario utilizzato per salvare dati di ogni configurazione
+dati = {
+    'energy level [keV]': [],
+    'Peaking time [ns]': [],
+    'Slope [mV/#$\\gamma$]': [],
+    'INL [%]': [],
+    'R$^2$': []
+}
 tsv_files = []
 #cfg_bits_template = [0, 1, 0, 0, 0, 1, 1]  lo utilizzo per definire un template base per poi iterare le diverse config di bits
 # Creazione del DataFrame
 for item in config_bits_list:
-    print("Reset FPGA")
-    test.reset_iniziale()
-    time.sleep(2)
-
-    print("clk")
-    test.auto_clock()
-    time.sleep(2)
-    
-    print("csa_reset_n")
-    test.auto_csa_reset()
-    time.sleep(3)
     import config
     config.config(channel='csa',lemo='none',n_steps=20,cfg_bits=item,cfg_inst=True, active_probes=False)
 
@@ -91,14 +88,6 @@ for item in config_bits_list:
         'Voltage output std (V)': []
     }
 
-    #dizionario utilizzato per salvare dati di ogni configurazione
-    dati = {
-        '$\\gamma$ energy [keV]': [],
-        'Peaking time [ns]': [],
-        'Slope [mV/#$\\gamma$]': [],
-        'INL [%]': [],
-        'R$^2$': []
-    }
 
     for i, level in enumerate(config.current_lev):
         config.ps.write(f':SOUR:CURR:LEV {level}')
@@ -159,14 +148,12 @@ for item in config_bits_list:
 
 
     #salvataggio valori misurati su nel dataframe dati, in maniera che li salvi in un .tsv
-    dati['$\\gamma$ energy [keV]'].append(f'{config.photon_energy}')
+    dati['energy level [keV]'].append(f'{config.photon_energy}')
     dati['Peaking time [ns]'].append(f'{config.peaking_time}')
     dati['Slope [mV/#$\\gamma$]'].append(f'{np.round(ln.slope*10**3,3)}')
     dati['INL [%]'].append(f'{np.round(inl, 2)}')
     dati['R$^2$'].append(f'{np.round(ln.rvalue**2, 3)}')
 
-    data = pd.DataFrame(dati)
-    data.to_csv(f'G:Shared drives/FALCON/measures/new/transcharacteristics/csa/data/{channel_name}_{config.config_bits_str}_nominal_{lemo_name}_{datetime_str}.tsv', sep='\t', index=False)
     # Salva il grafico
     try:
         output_file = f'G:Shared drives/FALCON/measures/new/transcharacteristics/csa/{channel_name}_{config.config_bits_str}_nominal_{lemo_name}_{datetime_str}.pdf'
@@ -175,6 +162,10 @@ for item in config_bits_list:
         print(f"File plot salvato con successo: {output_file}")
     except Exception as e:
         print(f"Errore durante il salvataggio del file plot: {e}")
+
+data = pd.DataFrame(dati)
+data.to_csv(f'G:Shared drives/FALCON/measures/new/transcharacteristics/csa/data/{channel_name}_nominal_{lemo_name}_{datetime_str}.tsv', sep='\t', index=False)
+
 
 
 #grafico totale delle 4 modalità:
