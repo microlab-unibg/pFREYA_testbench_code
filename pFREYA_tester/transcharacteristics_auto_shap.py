@@ -10,6 +10,7 @@ import config
 import os
 import pFREYA_tester_processing as pYtp
 from scipy.stats import linregress
+import pFREYA_tester as test
 
 # Funzioni per determinare energia e peaking time dalla configurazione dei bit
 def get_energy_level(cfg_bits):
@@ -50,10 +51,22 @@ groups = {18:[] ,9: [], 25: [], 5: []}
 
 # Raggruppa i file TSV per energia
 for item in config_bits_list:
+    print("Reset FPGA")
+    test.reset_iniziale()
+    time.sleep(2)
+
+    print("clk")
+    test.auto_clock()
+    time.sleep(2)
+    
+    print("csa_reset_n")
+    test.auto_csa_reset()
+    time.sleep(3)
     config.config(channel='shap', lemo='none', n_steps=20, cfg_bits=item, cfg_inst=True, active_probes=False)
     pYtp.send_slow_ctrl_auto(item,1)
     energy_level = get_energy_level(item)
     shap_bits = get_shap_bits(item)
+    time.sleep(5)
     config.ps.write(':SOUR:CURR:LEV -.0e-6')
 
 
@@ -64,7 +77,6 @@ for item in config_bits_list:
     # set cursor positions
     #config.lecroy.write(f'C2:CRS HREL')
     # reset inj
-    time.sleep(2)
     ndiv = 10 # positive and negative around delay
     tdelay = -400 # ns
     tdiv = 200 # ns/div
@@ -88,6 +100,15 @@ for item in config_bits_list:
         'Voltage output average (V)': [],
         'Voltage output std (V)': []
           }
+    
+    #dizionario utilizzato per salvare dati di ogni configurazione
+    dati = {
+        '$\\gamma$ energy [keV]': [],
+        'Peaking time [ns]': [],
+        'Slope [mV/#$\\gamma$]': [],
+        'INL [%]': [],
+        'R$^2$': []
+    }
     for i, level in enumerate(config.current_lev):
         config.ps.write(f':SOUR:CURR:LEV {level}')
         mis['Current Level Step'].append(i)
@@ -96,9 +117,6 @@ for item in config_bits_list:
         mis['Equivalent Photons'].append(config.eq_ph[i])
         data=[]
         for _ in range(N_samples):
-            #test funzionamento
-            #random_voltage = np.random.normal(loc=0.5, scale=0.05)  # media=0.5V e deviazione standard=0.05V
-            #data.append(random_voltage)
             data.append(float(config.lecroy.query(f'C{config.channel_num}:CRVA? HREL').split(',')[2]))
             time.sleep(0.03)
         mis['Voltage output average (V)'].append(np.average(data)/config.lemo_gain)
@@ -141,6 +159,15 @@ for item in config_bits_list:
         ['R$^2$', f'{np.round(ln.rvalue**2, 3)}']
     ], colWidths=[.33, .2], loc='lower right')
 
+    #salvataggio valori misurati su nel dataframe dati, in maniera che li salvi in un .tsv
+    dati['$\\gamma$ energy [keV]'].append(f'{config.photon_energy}')
+    dati['Peaking time [ns]'].append(f'{config.peaking_time}')
+    dati['Slope [mV/#$\\gamma$]'].append(f'{np.round(ln.slope*10**3,3)}')
+    dati['INL [%]'].append(f'{np.round(inl, 2)}')
+    dati['R$^2$'].append(f'{np.round(ln.rvalue**2, 3)}')
+
+    data = pd.DataFrame(dati)
+    data.to_csv(f'G:Shared drives/FALCON/measures/new/transcharacteristics/shap/data/{channel_name}_{config.config_bits_str}_nominal_{lemo_name}_shapconfig_{shap_bits}_{datetime_str}.tsv', sep='\t', index=False)
     # Salva il grafico
     try:
         output_file = f'G:Shared drives/FALCON/measures/new/transcharacteristics/shap/{channel_name}_{config.config_bits_str}_nominal_{lemo_name}_shapconfig_{shap_bits}_{datetime_str}.pdf'
@@ -184,6 +211,13 @@ for energy_level, dataframes in groups.items():  # Sostituisci con i percorsi re
     linear_outputs = []
     max_diffs = []
     inls = []
+    #dizionario per risultati totali
+    data_summary ={
+        'Mode [ns]': [],
+        'Gain [mV/#$\\gamma$]': [],
+        'Gain [mV/fC]': [],
+        'INL [%]': []
+    }
     for i in range(4):
         from scipy.stats import linregress
         lns.append(linregress(
@@ -198,7 +232,15 @@ for energy_level, dataframes in groups.items():  # Sostituisci con i percorsi re
         )
         max_diffs.append(np.max(dfs[i]['Voltage output average (V)'] - linear_outputs[i]))
         inls.append(100 * np.abs(max_diffs[i]) / lns[i].slope / 256)
+        data_summary['Mode [keV]'].append(f'{pt[i]}')
+        data_summary['Gain [mV/γ]'].append(f'{np.round(lns[i].slope*10**3, 3)}')
+        data_summary['Gain [mV/fC]'].append(f'{np.round(lns[i].slope*10**3/pt[i]*config.conv_kev_c*10**-15, 3)}')
+        data_summary['INL [%]'].append(f'{np.round(inls[i], 2)}')
 
+    #per ogni configurazione di shap salvo dati
+    summary =pd.DataFrame(data_summary)
+    summary.to_csv(f'G:Shared drives/FALCON/measures/new/transcharacteristics/shap/summary/{channel_name}_{config.config_bits_str}_nominal_{lemo_name}_{datetime_str}.tsv',sep='\t', index=False)
+    
     # Tabella dei risultati
     ax.table([
         ['Mode [ns]', f'{pt[0]}', f'{pt[1]}', f'{pt[2]}', f'{pt[3]}'],
@@ -214,5 +256,5 @@ for energy_level, dataframes in groups.items():  # Sostituisci con i percorsi re
     ax.legend([f'{x} ns' for x in pt], title=f"Peaking time", frameon=False)
 
     # Salvataggio del grafico
-    plt.savefig(f'G:Shared drives/FALCON/measures/new/transcharacteristics/shap/shap_summary_nominal_{energy_level}_keV_{datetime_str}.pdf', dpi=300)
+    plt.savefig(f'G:Shared drives/FALCON/measures/new/transcharacteristics/shap/summary/shap_summary_nominal_{energy_level}_keV_{datetime_str}.pdf', dpi=300)
     print(f"Grafico salvato per {energy_level} keV")

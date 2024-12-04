@@ -4,6 +4,8 @@ import TeledyneLeCroyPy
 from datetime import datetime
 import config
 import pFREYA_tester_processing as pYtp
+import pFREYA_tester as test
+
 # Definizione delle configurazioni dei livelli di energia in base ai primi 2 bit di cfg_bits
 # Funzioni per determinare energia e peaking time dalla configurazione dei bit
 def get_energy_level(cfg_bits):
@@ -29,6 +31,17 @@ config_bits_list = [
 
 # Loop per ogni configurazione di cfg_bits
 for item in config_bits_list:
+    print("Reset FPGA")
+    test.reset_iniziale()
+    time.sleep(2)
+
+    print("clk")
+    test.auto_clock()
+    time.sleep(2)
+    
+    print("csa_reset_n")
+    test.auto_csa_reset()
+    time.sleep(3)
     # Ottenere il livello di energia
     energy_level = get_energy_level(item)
     print(f"energy level {energy_level}Kev")

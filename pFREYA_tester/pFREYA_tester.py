@@ -324,54 +324,19 @@ gui = pFREYA_GUI(root)
 
 import time
 #seconda gui
-def run_script_csa():
-  print("Reset FPGA")
-  reset_iniziale()
-  time.sleep(2)
-
-  print("clk")
-  auto_clock()
-  time.sleep(2)
-  
-  print("csa_reset_n")
-  auto_csa_reset()
-  time.sleep(3)
-  
+def run_script_csa():  
   #metodo transient csa
   subprocess.run(["python", "transient_auto_csa.py"]) #metodo transient csa
   subprocess.run(["python", "transcharacteristics_auto_csa.py"]) #metodo transcharacteristics csa
 
-def run_script_shap():
-  print("Reset FPGA")
-  reset_iniziale()
-  time.sleep(2)
-
-  print("clk")
-  auto_clock()
-  time.sleep(2)
-  
-  print("csa_reset_n")
-  auto_csa_reset()
-  time.sleep(3)
-  
+def run_script_shap():  
   #metodo transient csa
   subprocess.run(["python", "transient_auto_shap.py"]) #metodo transient csa
   subprocess.run(["python", "transcharacteristics_auto_shap.py"]) #metodo transcharacteristics csa
 
 
 def run_script_enc():
-  print("Reset FPGA")
-  reset_iniziale()
-  time.sleep(2)
 
-  print("clk")
-  auto_clock()
-  time.sleep(2)
-  
-  print("csa_reset_n")
-  auto_csa_reset()
-  time.sleep(3)
-  
   #metodo transient csa
   subprocess.run(["python", "auto_enc.py"])
 
