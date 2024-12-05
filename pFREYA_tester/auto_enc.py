@@ -94,7 +94,7 @@ for gain_item, cfg_item in zip(gain, selected_configs):
     tdelay = -908  # ns
     tdiv = 200  # ns/div
     osc_ts = 329  # ns
-    osc_te = osc_ts + config.peaking_time  # Assuming 'peaking_time' exists
+    osc_te = osc_ts + config.peaking_time  
     osc_offset = - ndiv / 2 * tdiv - tdelay
     div_s = (osc_ts - osc_offset) / tdiv
     if config.channel_name == 'shap':
@@ -116,9 +116,8 @@ for gain_item, cfg_item in zip(gain, selected_configs):
         for j in range(N_samples):
             data[j, i] = float(config.lecroy.query(f'C{config.channel_num}:CRVA? HREL').split(',')[2])
 
-    data = data * 10 ** 3  # Convert to mV
+    data = data * 10 ** 3  
 
-    # Calculate noise and ENC metrics
     noise_std = np.mean(np.std(data, axis=0))
     noise_std_std = np.std(np.std(data, axis=0))
     noise_rms = np.mean(np.sqrt(np.mean(np.square(data), axis=0)))
@@ -150,10 +149,9 @@ for gain_item, cfg_item in zip(gain, selected_configs):
         'ENC std std (e-)',
     ])
 
-    # Save to the file path
+    #salvataggio e plot
     df.to_csv(f'G:/Shared drives/PHD/FALCON/measures/new/enc/enc_{config.config_bits_str}_{datetime_str}_{lemo_name}_background{"" if not background else "background"}_{"absolute" if absolute else ""}.tsv', sep='\t')
 
-    # Plotting histograms
     colours = list(mcolors.TABLEAU_COLORS.keys())
     fig, ax = plt.subplots(4, 4)
     fig.set_figheight(8)
@@ -166,7 +164,6 @@ for gain_item, cfg_item in zip(gain, selected_configs):
     fig.text(0.5, 0.04, 'Shaper output voltage [mV]', ha='center')
     fig.text(0.04, 0.5, 'Number of occurrences', va='center', rotation='vertical')
 
-    # Save the plot
     fig.savefig(f'G:/Shared drives/PHD/FALCON/measures/new/enc/distributions_{config.config_bits_str}_{datetime_str}_{lemo_name}_background{"" if not background else "background"}_{"absolute" if absolute else ""}.pdf', dpi=300)
 
 
