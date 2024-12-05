@@ -52,9 +52,19 @@ def select_configurations(file_name, config_bits_list):
     selected_configs = energy_to_config_map.get(energy_level, [])
     return selected_configs
 
+def keV(bits):
+    if bits[0] == 1 and bits[1] == 1:
+        return 5000  # 5 keV
+    elif bits[0] == 1 and bits[1] == 0:
+        return 18000  # 18 keV
+    elif bits[0] == 0 and bits[1] == 1:
+        return 9000 # 9 keV
+    elif bits[0] == 0 and bits[1] == 0:
+        return 25000 # 25 keV
+
 # Percorso alla cartella contenente i file(primo:mio pc, secondo: lab)
-folder = f'G:Drive condivisi/FALCON/measures/new/transcharacteristics/shap/summary'
-#folder = f'G:Shared drives/FALCON/measures/new/transcharacteristics/shap/summary'
+#folder = f'G:Drive condivisi/FALCON/measures/new/transcharacteristics/shap/summary'
+folder = f'G:Shared drives/FALCON/measures/new/transcharacteristics/shap/summary'
 
 
 tsv_files = [f for f in os.listdir(folder) if f.endswith('.tsv')]
@@ -89,7 +99,9 @@ for gain_item, cfg_item in zip(gain, selected_configs):
     gain_shap = gain_item
     N_samples = 500
 
-
+    # 2 mV/div e -351.8mV
+    config.lecroy.set_vdiv(channel=1,vdiv='2e-3')
+    config.lecroy.set_voffset(channel=1,voffset='-351e-3')
     ndiv = 10
     tdelay = -908  # ns
     tdiv = 200  # ns/div
@@ -123,10 +135,10 @@ for gain_item, cfg_item in zip(gain, selected_configs):
     noise_rms = np.mean(np.sqrt(np.mean(np.square(data), axis=0)))
     noise_rms_std = np.std(np.sqrt(np.mean(np.square(data), axis=0)))
     
-    enc_std = np.sqrt(noise_std ** 2) / gain_shap * 9000 / 3.65
-    enc_std_std = noise_std_std / gain_shap * 9000 / 3.65
-    enc_rms = np.sqrt(noise_rms ** 2) / gain_shap * 9000 / 3.65
-    enc_rms_std = noise_rms_std / gain_shap * 9000 / 3.65
+    enc_std = np.sqrt(noise_std ** 2) / gain_shap * keV(cfg_item) / 3.65
+    enc_std_std = noise_std_std / gain_shap * keV(cfg_item) / 3.65
+    enc_rms = np.sqrt(noise_rms ** 2) / gain_shap * keV(cfg_item) / 3.65
+    enc_rms_std = noise_rms_std / gain_shap * keV(cfg_item) / 3.65
 
     datetime_str = datetime.strftime(datetime.now(), '%d%m%y_%H%M%S')
     df = pd.DataFrame([[
@@ -148,10 +160,9 @@ for gain_item, cfg_item in zip(gain, selected_configs):
         'ENC rms (e-)',
         'ENC std std (e-)',
     ])
-
     #salvataggio e plot
-    df.to_csv(f'G:/Shared drives/PHD/FALCON/measures/new/enc/enc_{config.config_bits_str}_{datetime_str}_{lemo_name}_background{"" if not background else "background"}_{"absolute" if absolute else ""}.tsv', sep='\t')
-
+    df.to_csv(f'G:Shared drives/FALCON/measures/new/enc/enc_{config.config_bits_str}_{datetime_str}_{lemo_name}.tsv', sep='\t')
+    print(f"\nfile tsv enc per {cfg_item} salvato\n")
     colours = list(mcolors.TABLEAU_COLORS.keys())
     fig, ax = plt.subplots(4, 4)
     fig.set_figheight(8)
@@ -164,16 +175,6 @@ for gain_item, cfg_item in zip(gain, selected_configs):
     fig.text(0.5, 0.04, 'Shaper output voltage [mV]', ha='center')
     fig.text(0.04, 0.5, 'Number of occurrences', va='center', rotation='vertical')
 
-    fig.savefig(f'G:/Shared drives/PHD/FALCON/measures/new/enc/distributions_{config.config_bits_str}_{datetime_str}_{lemo_name}_background{"" if not background else "background"}_{"absolute" if absolute else ""}.pdf', dpi=300)
+    fig.savefig(f'G:Shared drives/FALCON/measures/new/enc/distributions_{config.config_bits_str}_{datetime_str}_{lemo_name}.pdf', dpi=300)
+    print(f"\nfile pdf distributions per {cfg_item} salvato\n")
 
-
-
-'''
-fatto veloce:
-ho prelevato le 4 configurazioni di shap sulla base della configurazione di csa
-ora per ogni configurazione di shap devo fare enc sulla base del guadagno
-per ogni guadagno fare le cose fatte in enc.ipynb
-
-
-da controllare e testare
-'''

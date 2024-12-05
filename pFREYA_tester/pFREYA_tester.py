@@ -324,85 +324,115 @@ gui = pFREYA_GUI(root)
 
 import time
 #seconda gui
-def run_script_csa():  
-    #metodo transient csa
-    print("Reset FPGA")
+def run_script_csa():
+    print("\n--- RUNNING SCRIPT CSA---")  
+    
+    print("\n--Reset FPGA--")
     reset_iniziale()
     time.sleep(2)
 
-    print("start clk")
+    print("\n--start clk--")
     auto_clock()
     time.sleep(2)
-    print("end clk")
+    print("--end clk\n")
 
-    print("start csa_reset_n")
+    print("--start csa_reset_n--")
     auto_csa_reset()
-    print("end csa_reset_n")
+    print("--end csa_reset_n\n")
     time.sleep(3)
+
+    print("--TRANSIENT CSA START\n")
     subprocess.run(["python", "transient_auto_csa.py"]) #metodo transient csa
+    print("--TRANSIENT CSA END--")
     time.sleep(0.5)
     
-    print("Reset FPGA")
+    print("\n--Reset FPGA--")
     reset_iniziale()
     time.sleep(2)
 
-    print("start clk")
+    print("\n--start clk--")
     auto_clock()
     time.sleep(2)
-    print("end clk")
+    print("--end clk--")
 
-    print("start csa_reset_n")
+    print("--start csa_reset_n--")
     auto_csa_reset()
-    print("end csa_reset_n")
+    print("--end csa_reset_n\n")
     time.sleep(3)
 
+    print("--TRANCHARACTERISTICS CSA START--")
     subprocess.run(["python", "transcharacteristics_auto_csa.py"]) #metodo transcharacteristics csa
+    print("--TRANCHARACTERISTICS CSA END--")
+    print("\n---SCRIPT CSA ENDED---\n")  
 
 def run_script_shap():
-    #metodo transient csa
-    print("Reset FPGA")
+    print("\n--- RUNNING SCRIPT SHAPER---")
+
+    print("\n--Reset FPGA--")
     reset_iniziale()
     time.sleep(2)
 
-    print("start clk")
+    print("\n--start clk--")
     auto_clock()
     time.sleep(2)
-    print("end clk")
+    print("--end clk--")
 
-    print("start csa_reset_n")
+    print("--start csa_reset_n--")
     auto_csa_reset()
-    print("end csa_reset_n")
-    time.sleep(3)  
-    #metodo transient csa
-    subprocess.run(["python", "transient_auto_shap.py"]) #metodo transient csa
-
-    print("Reset FPGA")
-    reset_iniziale()
-    time.sleep(2)
-
-    print("start clk")
-    auto_clock()
-    time.sleep(2)
-    print("end clk")
-
-    print("start csa_reset_n")
-    auto_csa_reset()
-    print("end csa_reset_n")
+    print("--end csa_reset_n\n")
     time.sleep(3)
-    subprocess.run(["python", "transcharacteristics_auto_shap.py"]) #metodo transcharacteristics csa
 
+    #metodo transient shap
+    print("--TRANSIENT SHAP START--\n")
+    subprocess.run(["python", "transient_auto_shap.py"]) #metodo transient csa
+    print("\nTRANSIENT SHAP END")
+  
+    print("\n--Reset FPGA--")
+    reset_iniziale()
+    time.sleep(2)
+
+    print("\n--start clk--")
+    auto_clock()
+    time.sleep(2)
+    print("--end clk--")
+
+    print("--start csa_reset_n--")
+    auto_csa_reset()
+    print("--end csa_reset_n\n")
+    time.sleep(3)
+
+    print("TRANCHARACTERISTICS SHAP START--\n")
+    subprocess.run(["python", "transcharacteristics_auto_shap.py"]) #metodo transcharacteristics csa
+    print("\n--TRANCHARACTERISTICS SHAP END--")
+    print("\n---SCRIPT SHAP ENDED---\n") 
 
 def run_script_enc():
+    print("\n---RUNNING SCRIPT ENC---") 
+        
+    print("\n--Reset FPGA--")
+    reset_iniziale()
+    time.sleep(2)
 
-  #metodo transient csa
-  subprocess.run(["python", "auto_enc.py"])
+    print("\n--start clk--")
+    auto_clock()
+    time.sleep(2)
+    print("--end clk--")
 
+    print("--start csa_reset_n--")
+    auto_csa_reset()
+    print("--end csa_reset_n\n")
+    time.sleep(3)
+
+    #metodo enc
+    print("--ENC START--\n")
+    subprocess.run(["python", "auto_enc.py"])
+    print("\n--ENC END--")
 
 class gui2(Toplevel):
   def __init__(self,parent):
     super().__init__(parent)
     self.title("pFREYA tester v0 - Automatic testing")
-    self.geometry("400x175")
+    self.geometry("420x175")
     self.resizable(False, False)
     
     frame = Frame(self)

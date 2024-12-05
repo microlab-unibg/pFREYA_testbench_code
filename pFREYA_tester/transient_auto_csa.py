@@ -36,6 +36,9 @@ for item in config_bits_list:
     # Configurazione del setup,cfg_bits cambia per ogni configurazione utilizzata per ogni passo
     config.config(channel='csa', lemo='none', n_steps=8, cfg_bits=item, cfg_inst=True, active_probes=False)
     pYtp.send_slow_ctrl_auto(item,0)
+    # 100 mV/div e -611mV
+    config.lecroy.set_vdiv(channel=1,vdiv='100e-3')
+    config.lecroy.set_voffset(channel=1,voffset='-611e-3')
     config.lecroy.set_tdiv(tdiv='100NS')
     config.lecroy.set_toffset(toffset='-240e-9')
     config.ps.write(':SOUR:CURR:LEV -0.0e-6')

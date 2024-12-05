@@ -64,6 +64,9 @@ for item in config_bits_list:
     print(f"energy level {energy_level}Kev")
     # Configurazione del setup,cfg_bits cambia per ogni configurazione utilizzata per ogni passo
     config.config(channel='shap', lemo='none', n_steps=8, cfg_bits=item, cfg_inst=True, active_probes=False)
+    # 100 mV/div e -463mV
+    config.lecroy.set_vdiv(channel=2,vdiv='100e-3')
+    config.lecroy.set_voffset(channel=2,voffset='-463e-3')
     config.lecroy.set_tdiv(tdiv='200NS')
     config.lecroy.set_toffset(toffset='-400e-9')
     pYtp.send_slow_ctrl_auto(item,1)

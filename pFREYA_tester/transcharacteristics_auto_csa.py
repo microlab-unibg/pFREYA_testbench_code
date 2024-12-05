@@ -110,15 +110,13 @@ for item in config_bits_list:
     df = pd.DataFrame(mis)
     datetime_str = datetime.now().strftime('%Y%m%d%H%M')
 
-    # Sostituire percorso del drive e salvare il file
     df.to_csv(f'G:Shared drives/FALCON/measures/new/transcharacteristics/csa/{channel_name}_{config.config_bits_str}_nominal_{lemo_name}_{datetime_str}.tsv', sep='\t', index=False)
     tsv_files.append(f'G:Shared drives/FALCON/measures/new/transcharacteristics/csa/{channel_name}_{config.config_bits_str}_nominal_{lemo_name}_{datetime_str}.tsv')
     print("File tsv salvato con successo.")
 
-    # Controlla la lunghezza dei dati
+    
     photon_span = np.linspace(0, 256, 20)
-
-    # Genera il grafico
+ 
     fig, ax = plt.subplots()
     fig.set_figheight(4)
     fig.set_figwidth(5)
@@ -137,7 +135,6 @@ for item in config_bits_list:
     inl = 100 * np.abs(max_diff) / ln.slope / 256
     print(ln)
 
-    # Aggiungi tabella informativa
     ax.table(cellText=[
         ['$\\gamma$ energy [keV]', f'{config.photon_energy}'],  # Sostituisci N/A con {config.photon_energy}
         ['Peaking time [ns]', f'{config.peaking_time}'],  # sostituisci 318 con {config.peaking_time}
@@ -172,14 +169,13 @@ data.to_csv(f'G:Shared drives/FALCON/measures/new/transcharacteristics/csa/data/
 # Colori per ogni configurazione
 colours = list(mcolors.TABLEAU_COLORS.keys())
 
-# Modelli di energia (aggiorna con i tuoi dati)
+# Modalità di energia (aggiorna con i tuoi dati)
 modes = [5, 9, 18, 25]
-# Caricamento dei DataFrame
 
 # Caricamento dei DataFrame
 dfs = [pd.read_csv(file, sep='\t') for file in tsv_files]
 
-# Creazione del grafico
+#plot
 datetime_str = datetime.strftime(datetime.now(), '%d%m%y_%H%M')
 fig, ax = plt.subplots()
 fig.set_figheight(4)
@@ -187,7 +183,6 @@ fig.set_figwidth(5)
 
 photon_span = np.linspace(0, 256, 20)
 
-# Creazione dei grafici per ciascuna configurazione
 for i in range(4):
     ax.errorbar(
         photon_span,
@@ -238,10 +233,9 @@ for i in range(4):
     data_summary['Gain [mV/fC]'].append(f'{np.round(lns[i].slope*10**3/modes[i]*config.conv_kev_c*10**-15, 3)}')
     data_summary['INL [%]'].append(f'{np.round(inls[i], 2)}')
 
-#salvo df come csv
 summary =pd.DataFrame(data_summary)
 summary.to_csv(f'G:Shared drives/FALCON/measures/new/transcharacteristics/csa/summary/{channel_name}_{config.config_bits_str}_nominal_{lemo_name}_{datetime_str}.tsv',sep='\t', index=False)
-# Aggiungi la tabella con i parametri
+
 ax.table(cellText=[
     ['Mode [keV]', f'{modes[0]}', f'{modes[1]}', f'{modes[2]}', f'{modes[3]}'],
     ['Gain [mV/γ]', f'{np.round(lns[0].slope*10**3, 3)}', f'{np.round(lns[1].slope*10**3, 3)}', f'{np.round(lns[2].slope*10**3, 3)}', f'{np.round(lns[3].slope*10**3, 3)}'],
@@ -249,7 +243,7 @@ ax.table(cellText=[
     ['INL [%]', f'{np.round(inls[0], 2)}', f'{np.round(inls[1], 2)}', f'{np.round(inls[2], 2)}', f'{np.round(inls[3], 2)}'],
 ], colWidths=[.25, .11, .11, .11, .11], loc='lower right')
 
-# Aggiungi la legenda
+
 ax.legend([f'{x} keV' for x in modes],
           title='γ energy',
           frameon=False)
