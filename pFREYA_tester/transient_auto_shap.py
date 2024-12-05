@@ -34,7 +34,7 @@ def get_shap_bits(cfg_bits):
 
 # Configurazione dei test per le diverse configurazioni di cfg_bits
 config_bits_list = [
-    # Configurazione da 9 a 25 keV 
+    # Configurazione da 9 keV 
     [0, 1, 1, 1, 0, 1, 1],  #shaper tp = 432 ns
     [0, 1, 1, 0, 0, 1, 1],  #shaper tp = 234 ns 
     [0, 1, 1, 0, 1, 1, 1],  #shaper tp = 332 ns   
@@ -44,7 +44,7 @@ config_bits_list = [
     [0, 0, 1, 0, 0, 1, 1],  #shaper tp = 234 ns  
     [0, 0, 1, 0, 1, 1, 1],  #shaper tp = 332 ns  
     [0, 0, 1, 1, 1, 1, 1],  #shaper tp = 535 ns  
-    # Configurazione 9 keV
+    # Configurazione 18 keV
     [1, 0, 1, 1, 0, 1, 1],  #shaper tp = 432 ns  
     [1, 0, 1, 0, 0, 1, 1],  #shaper tp = 234 ns  
     [1, 0, 1, 0, 1, 1, 1],  #shaper tp = 332 ns  

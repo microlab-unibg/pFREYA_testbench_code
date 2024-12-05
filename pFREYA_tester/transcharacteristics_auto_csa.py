@@ -30,8 +30,8 @@ def get_energy_level(cfg_bits):
 
 config_bits_list = [
     [1, 1, 1, 1, 1, 1, 1],  # Configurazione 5 keV
-    [1, 0, 1, 1, 1, 1, 1],  # Configurazione 9 keV
-    [0, 1, 1, 1, 1, 1, 1],  # Configurazione 18 keV
+    [1, 0, 1, 1, 1, 1, 1],  # Configurazione 18 keV
+    [0, 1, 1, 1, 1, 1, 1],  # Configurazione 9 keV
     [0, 0, 1, 1, 1, 1, 1],  # Configurazione 25 keV
 ]
 

@@ -38,9 +38,9 @@ def get_shap_bits(cfg_bits):
 
 # Configurazione dei test per le diverse configurazioni di cfg_bits
 config_bits_list = [
-    [0, 1, 1, 1, 0, 1, 1],  [0, 1, 1, 0, 0, 1, 1],  [0, 1, 1, 0, 1, 1, 1],  [0, 1, 1, 1, 1, 1, 1],  # 18 keV
+    [0, 1, 1, 1, 0, 1, 1],  [0, 1, 1, 0, 0, 1, 1],  [0, 1, 1, 0, 1, 1, 1],  [0, 1, 1, 1, 1, 1, 1],  # 9 keV
     [0, 0, 1, 1, 0, 1, 1],  [0, 0, 1, 0, 0, 1, 1],  [0, 0, 1, 0, 1, 1, 1],  [0, 0, 1, 1, 1, 1, 1],  # 25 keV
-    [1, 0, 1, 1, 0, 1, 1],  [1, 0, 1, 0, 0, 1, 1],  [1, 0, 1, 0, 1, 1, 1],  [1, 0, 1, 1, 1, 1, 1],  # 9 keV
+    [1, 0, 1, 1, 0, 1, 1],  [1, 0, 1, 0, 0, 1, 1],  [1, 0, 1, 0, 1, 1, 1],  [1, 0, 1, 1, 1, 1, 1],  # 18 keV
     [1, 1, 1, 1, 0, 1, 1],  [1, 1, 1, 0, 0, 1, 1],  [1, 1, 1, 0, 1, 1, 1],  [1, 1, 1, 1, 1, 1, 1],  # 5 keV
 ]
 
@@ -226,7 +226,7 @@ for energy_level, dataframes in groups.items():  # Sostituisci con i percorsi re
 
     #per ogni configurazione di shap salvo dati
     summary =pd.DataFrame(data_summary)
-    summary.to_csv(f'G:Shared drives/FALCON/measures/new/transcharacteristics/shap/summary/{channel_name}_{config.config_bits_str}_nominal_{lemo_name}_{datetime_str}.tsv',sep='\t', index=False)
+    summary.to_csv(f'G:Shared drives/FALCON/measures/new/transcharacteristics/shap/summary/{channel_name}_{energy_level}_keV_{datetime_str}.tsv',sep='\t', index=False)
     
     # Tabella dei risultati
     ax.table([
