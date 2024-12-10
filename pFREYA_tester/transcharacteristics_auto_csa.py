@@ -14,7 +14,10 @@ T = 30e-9 # s
 t_r = 3e-9 # s
 N_pulses = 10 # adimensional
 conv_kev_c = 3.65/1000 * 1/1.602e-19 # Energy in silicon for e-/h * no of electrons per coulomb [keV/e-] * [e-/C]
-# Funzioni per determinare energia e peaking time dalla configurazione dei bit
+'''
+funzione per determinare keV sulla base della configurazione dei bit passata come parametro, sulla base delle prime due cifre
+della configurazione
+'''
 def get_energy_level(cfg_bits):
     if cfg_bits[0] == 1 and cfg_bits[1] == 1:
         return 5  # 5 keV
@@ -35,7 +38,9 @@ config_bits_list = [
     [0, 0, 1, 1, 1, 1, 1],  # Configurazione 25 keV
 ]
 
-#dizionario utilizzato per salvare dati di ogni configurazione
+'''
+dizionario per salvare dati di configurazione
+'''
 dati = {
     'energy level [keV]': [],
     'Peaking time [ns]': [],
@@ -44,13 +49,31 @@ dati = {
     'R$^2$': []
 }
 tsv_files = []
-#cfg_bits_template = [0, 1, 0, 0, 0, 1, 1]  lo utilizzo per definire un template base per poi iterare le diverse config di bits
-# Creazione del DataFrame
+
+'''
+per ogni configigurazione presente nella lista:
+-configurazione dei parametri
+-slow control del csa
+-definizione dei parametri temporali
+-definizione di un dizionario (mis) dove vengono memorizzati i dati prelevati durante l'analisi
+
+-itero sui diversi livelli di corrente, dove per ogni step prelevo:
+    -Indice del livello di corrente (i)
+    -Valore della corrente (level)
+    -Carica iniettata (iinj_int)
+    -Fotoni equivalenti (eq_ph)
+
+    -vengono prelevati "N_samples" campioni
+    -calcolo media e deviazione standard
+    -plot
+'''
+
 for item in config_bits_list:
     import config
     config.config(channel='csa',lemo='none',n_steps=20,cfg_bits=item,cfg_inst=True, active_probes=False)
 
     config.lecroy.write(f'C2:CRS HREL')
+
     pYtp.send_slow_ctrl_auto(item,0)
     time.sleep(5)
     ndiv = 10 # positive and negative around delay

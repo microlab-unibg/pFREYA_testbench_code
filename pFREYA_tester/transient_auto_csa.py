@@ -5,8 +5,10 @@ from datetime import datetime
 import config
 import pFREYA_tester_processing as pYtp
 
-# Definizione delle configurazioni dei livelli di energia in base ai primi 2 bit di cfg_bits
-# Funzioni per determinare energia e peaking time dalla configurazione dei bit
+'''
+funzione per determinare keV sulla base della configurazione dei bit passata come parametro, sulla base delle prime due cifre
+della configurazione
+'''
 def get_energy_level(cfg_bits):
     if cfg_bits[0] == 1 and cfg_bits[1] == 1:
         return 5  # 5 keV
@@ -27,8 +29,16 @@ config_bits_list = [
     [0, 1, 1, 1, 1, 1, 1],  # Configurazione 9  keV
     [0, 0, 1, 1, 1, 1, 1],  # Configurazione 25 keV
 ]
-
-# Loop per ogni configurazione di cfg_bits
+'''
+Iterazione sulle configurazioni di setup:
+    -Per ogni elemento nella lista config_bits_list, trovo il valore di keV con get_energy_level() 
+    -configurazione dell'oscilloscopio con la funzione config.lecroy andando a definire i parametri di divisione 
+    verticale/orizzontale.
+    -analisi su diversi livelli di corrente:
+        -per ogni livello di corrente definito in config.current_lev viene impostato un valore del ps.
+        -calcolo il segnale corretto in base al guadagno e all'attenuazione, normalizzando rispetto al valore iniziale.
+    -Elaborazione e salvataggio dati in .tsv e plot
+'''
 for item in config_bits_list:
     # Ottenere il livello di energia
     energy_level = get_energy_level(item)
