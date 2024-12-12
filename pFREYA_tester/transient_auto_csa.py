@@ -92,7 +92,7 @@ for item in config_bits_list:
         str_type = ''
     
     df['Time (s)'] = df['Time (s)'] + 200e-9
-    df.to_csv(f'G:Shared drives/FALCON/measures/new/transient/csa/{channel_name}_{config.config_bits_str}_nominal_{lemo_name}_{datetime_str}.tsv', sep='\t')
+    df.to_csv(f'G:Drive condivisi/FALCON/measures/new/transient/csa/{channel_name}_{config.config_bits_str}_nominal_{lemo_name}_{datetime_str}.tsv', sep='\t')
     
     print(f"Misura completata per cfg_bits {item} con livello di energia {energy_level:} A")
 
@@ -104,7 +104,7 @@ for item in config_bits_list:
     import time
     from datetime import datetime
     import matplotlib.colors as mcolors
-    path=(f'G:Shared drives/FALCON/measures/new/transient/csa/{channel_name}_{config.config_bits_str}_nominal_{lemo_name}_{datetime_str}.tsv')
+    path=(f'G:Drive condivisi/FALCON/measures/new/transient/csa/{channel_name}_{config.config_bits_str}_nominal_{lemo_name}_{datetime_str}.tsv')
     df = pd.read_csv(path, sep = '\t')
     datetime_str = datetime.strftime(datetime.now(), '%d%m%y_%H%M')
     arr_split = path.split('/')
@@ -139,5 +139,5 @@ for item in config_bits_list:
     if channel_name == 'shap':
         ax.text(.01,.01,f'$t_p$ = {config.peaking_time} ns',ha='left',va='bottom',transform=ax.transAxes)
 
-    plt.savefig(f'G:Shared drives/FALCON/measures/new/transient/csa/{channel_name}_{config.config_bits_str}_nominal_{lemo_name}_{datetime_str}.pdf',dpi=300)
+    plt.savefig(f'G:Drive condivisi/FALCON/measures/new/transient/csa/{channel_name}_{config.config_bits_str}_nominal_{lemo_name}_{datetime_str}.pdf',dpi=300)
 

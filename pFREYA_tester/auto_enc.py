@@ -75,7 +75,7 @@ if tsv_files:
         reverse=True
     )
 
-    latest_file = tsv_files[0]
+    latest_file = tsv_files[3]
     print(f"L'ultimo file .tsv salvato è: {latest_file}")
 
     df = pd.read_csv(latest_file, sep='\t')  

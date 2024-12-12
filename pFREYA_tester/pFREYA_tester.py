@@ -780,6 +780,4 @@ ttk.Button(ser_lframe, text="Reset FPGA", command=lambda: pYtp.send_reset_FPGA()
 root.mainloop()
 
 
-#metodo per shap(stessa cosa per per csa)
-#transcharacteristics shap
-#transient shap
+

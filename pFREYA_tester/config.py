@@ -112,7 +112,7 @@ def config(channel: str, lemo: str, n_steps: int, cfg_bits: list, cfg_inst: bool
             lemo_gain = 56*27/(56+27)/10
         else:
             lemo_gain = 1
-    N_samples = 100
+    N_samples = 20
 
     T = 30e-9 # s
     t_r = 3e-9 # s
@@ -127,27 +127,27 @@ def config(channel: str, lemo: str, n_steps: int, cfg_bits: list, cfg_inst: bool
             photon_energy = 9 # keV
             offset_charge = 8.5e-15 # C *tentative
             #min_current = 0.03e-6 # A for active probes
-            min_current = .075e-6 # A
-            max_current = 1.8e-6 #1.6e-6 # A
+            min_current = .13e-6 # A
+            max_current = 1.71e-6 #1.6e-6 # A
             #max_current = .75e-6 # active probes
             corr_fact = 1 #105.8/103.2
         case [0,0]:
             photon_energy = 25 # keV
             offset_charge = 8.5e-15 # C *tentative
-            min_current = .075e-6 # A
-            max_current = 4.6e-6 #4.1e-6 # A
+            min_current = .13e-6 # A
+            max_current = 4.13e-6 #4.1e-6 # A
             corr_fact = 1 #105.8/103.2
         case [1,0]:
             photon_energy = 18 # keV
             offset_charge = 8.5e-15 # C *tentative
-            min_current = .075e-6 # A
+            min_current = .13e-6 # A
             max_current = 3.5e-6 # A
             corr_fact = 1 #105.8/103.2
         case [1,1]:
             photon_energy = 5 # keV
             offset_charge = 0 #8.5e-15 # C *tentative
-            min_current = .055e-6 # A
-            max_current = 1.1e-6 # A
+            min_current = .13e-6 # A
+            max_current = 9.98e-7 # A
             corr_fact = 1 #105.8/103.2
     match shap_bits:
         case [1,0]: 

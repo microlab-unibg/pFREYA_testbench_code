@@ -73,13 +73,13 @@ for item in config_bits_list:
     config.config(channel='csa',lemo='none',n_steps=20,cfg_bits=item,cfg_inst=True, active_probes=False)
 
     config.lecroy.write(f'C2:CRS HREL')
-
+    config.ps.write(f':SOUR:CURR:LEV 0')
     pYtp.send_slow_ctrl_auto(item,0)
     time.sleep(5)
     ndiv = 10 # positive and negative around delay
-    tdelay = -648  #ns
+    tdelay = -680  #ns
     tdiv = 100 # ns/div
-    osc_ts = 700 # ns
+    osc_ts = 735 # ns
     osc_te = osc_ts + config.peaking_time + 10 # 10 ns to avoid switching time
     osc_offset = - ndiv/2*tdiv - tdelay
     div_s = (osc_ts - osc_offset)/tdiv
@@ -114,6 +114,7 @@ for item in config_bits_list:
 
     for i, level in enumerate(config.current_lev):
         config.ps.write(f':SOUR:CURR:LEV {level}')
+        print(f'{i} : {level}')
         #mis['CSA Bits'].append(config)
         mis['Current Level Step'].append(i)
         mis['Current Level (A)'].append(level)
@@ -133,8 +134,8 @@ for item in config_bits_list:
     df = pd.DataFrame(mis)
     datetime_str = datetime.now().strftime('%Y%m%d%H%M')
 
-    df.to_csv(f'G:Shared drives/FALCON/measures/new/transcharacteristics/csa/{channel_name}_{config.config_bits_str}_nominal_{lemo_name}_{datetime_str}.tsv', sep='\t', index=False)
-    tsv_files.append(f'G:Shared drives/FALCON/measures/new/transcharacteristics/csa/{channel_name}_{config.config_bits_str}_nominal_{lemo_name}_{datetime_str}.tsv')
+    df.to_csv(f'G:Drive condivisi/FALCON/measures/new/transcharacteristics/csa/{channel_name}_{config.config_bits_str}_nominal_{lemo_name}_{datetime_str}.tsv', sep='\t', index=False)
+    tsv_files.append(f'G:Drive condivisi/FALCON/measures/new/transcharacteristics/csa/{channel_name}_{config.config_bits_str}_nominal_{lemo_name}_{datetime_str}.tsv')
     print("File tsv salvato con successo.")
 
     
@@ -176,7 +177,7 @@ for item in config_bits_list:
 
     # Salva il grafico
     try:
-        output_file = f'G:Shared drives/FALCON/measures/new/transcharacteristics/csa/{channel_name}_{config.config_bits_str}_nominal_{lemo_name}_{datetime_str}.pdf'
+        output_file = f'G:Drive condivisi/FALCON/measures/new/transcharacteristics/csa/{channel_name}_{config.config_bits_str}_nominal_{lemo_name}_{datetime_str}.pdf'
         plt.savefig(output_file, dpi=300)
         plt.close(fig)  # Chiude il grafico corrente per liberare risorse
         print(f"File plot salvato con successo: {output_file}")
@@ -184,7 +185,7 @@ for item in config_bits_list:
         print(f"Errore durante il salvataggio del file plot: {e}")
 
 data = pd.DataFrame(dati)
-data.to_csv(f'G:Shared drives/FALCON/measures/new/transcharacteristics/csa/data/{channel_name}_nominal_{lemo_name}_{datetime_str}.tsv', sep='\t', index=False)
+data.to_csv(f'G:Drive condivisi/FALCON/measures/new/transcharacteristics/csa/data/{channel_name}_nominal_{lemo_name}_{datetime_str}.tsv', sep='\t', index=False)
 
 
 
@@ -257,7 +258,7 @@ for i in range(4):
     data_summary['INL [%]'].append(f'{np.round(inls[i], 2)}')
 
 summary =pd.DataFrame(data_summary)
-summary.to_csv(f'G:Shared drives/FALCON/measures/new/transcharacteristics/csa/summary/{channel_name}_{config.config_bits_str}_nominal_{lemo_name}_{datetime_str}.tsv',sep='\t', index=False)
+summary.to_csv(f'G:Drive condivisi/FALCON/measures/new/transcharacteristics/csa/summary/{channel_name}_{config.config_bits_str}_nominal_{lemo_name}_{datetime_str}.tsv',sep='\t', index=False)
 
 ax.table(cellText=[
     ['Mode [keV]', f'{modes[0]}', f'{modes[1]}', f'{modes[2]}', f'{modes[3]}'],
@@ -271,4 +272,4 @@ ax.legend([f'{x} keV' for x in modes],
           title='γ energy',
           frameon=False)
 
-plt.savefig(f'G:Shared drives/FALCON/measures/new/transcharacteristics/csa/summary/{channel_name}_{config.config_bits_str}_nominal_{lemo_name}_{datetime_str}.pdf')
+plt.savefig(f'G:Drive condivisi/FALCON/measures/new/transcharacteristics/csa/summary/{channel_name}_nominal_{lemo_name}_{datetime_str}.pdf')
