@@ -2,11 +2,11 @@
     "__pFREYA_GUI__": true,
     "clocks": {
         "slow_ck": "40",
-        "sel_ck": "4095",
-        "adc_ck": "4095",
+        "sel_ck": "262143",
+        "adc_ck": "262143",
         "inj_stb": "1",
-        "ser_ck": "4095",
-        "dac_sck": "4095"
+        "ser_ck": "262143",
+        "dac_sck": "262143"
     },
     "DAC": {
         "source": "1",
@@ -33,32 +33,32 @@
         "csa_reset_n": {
             "delay": "1",
             "high": "60",
-            "low": "4000"
+            "low": "262143"
         },
         "sh_phi1d_inf": {
-            "delay": "4095",
-            "high": "4095",
-            "low": "4095"
+            "delay": "262143",
+            "high": "262143",
+            "low": "262143"
         },
         "sh_phi1d_sup": {
-            "delay": "4095",
-            "high": "4095",
-            "low": "4095"
+            "delay": "262143",
+            "high": "262143",
+            "low": "262143"
         },
         "adc_start": {
-            "delay": "4095",
-            "high": "4095",
-            "low": "4095"
+            "delay": "262143",
+            "high": "262143",
+            "low": "262143"
         },
         "ser_reset_n": {
-            "delay": "4095",
-            "high": "4095",
-            "low": "4095"
+            "delay": "262143",
+            "high": "262143",
+            "low": "262143"
         },
         "ser_read": {
-            "delay": "4095",
-            "high": "4095",
-            "low": "4095"
+            "delay": "262143",
+            "high": "262143",
+            "low": "262143"
         }
     }
 }
