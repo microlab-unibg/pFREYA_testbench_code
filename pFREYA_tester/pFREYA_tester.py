@@ -474,7 +474,7 @@ def open_child():
 # Start GUI window
 root = Tk()
 root.title("pFREYA tester v1 - Manual/Auto testing")
-root.geometry("1200x800")
+root.geometry("1200x800+0+0")
 gui = pFREYA_GUI(root)
 
 # Scrollbar
