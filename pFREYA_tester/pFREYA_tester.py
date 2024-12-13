@@ -9,6 +9,7 @@ import pFREYA_tester_processing as pYtp
 import UART_definitions as UARTdef
 
 import pyvisa
+import time
 
 # === CONSTANTS ===
 # The other constants have been moved to the config file
@@ -94,6 +95,14 @@ def show_about():
     about_frame.pack()
     about_root.pack()
 
+def on_canvas_configure(event):
+    # Update the scroll region to match the content in the frame
+    canvas.configure(scrollregion=canvas.bbox("all"))
+
+def on_mouse_scroll(event):
+    # Enable scrolling using the mouse wheel
+    canvas.yview_scroll(-1 * (event.delta // 120), "units")
+
 def check_fpga_clocks(strvar):
     value = strvar.get()
     if (not value.isnumeric()):
@@ -157,9 +166,17 @@ class pFREYA_GUI():
         self.sel_ck = StringVar(value=json_config.get("clocks","").get("sel_ck",""))
         self.adc_ck = StringVar(value=json_config.get("clocks","").get("adc_ck",""))
         self.inj_stb = StringVar(value=json_config.get("clocks","").get("inj_stb",""))
-        self.dac_ck = StringVar(value=json_config.get("clocks","").get("dac_ck",""))
         self.ser_ck = StringVar(value=json_config.get("clocks","").get("ser_ck",""))
         self.dac_sck = StringVar(value=json_config.get("clocks","").get("dac_sck",""))
+
+        self.clock_map = {
+            UARTdef.SLOW_CTRL_CK_CODE : self.slow_ck,
+            UARTdef.SEL_CK_CODE       : self.sel_ck,
+            UARTdef.ADC_CK_CODE       : self.adc_ck,
+            UARTdef.INJ_STB_CODE      : self.inj_stb,
+            UARTdef.SER_CK_CODE       : self.ser_ck,
+            UARTdef.DAC_SCK_CODE      : self.dac_sck
+        }
 
         # DAC config
         self.dac = {}
@@ -317,12 +334,7 @@ def get_json(self, use_csa=False):
         return self.to_json_CSA() 
     else: 
         return self.to_json()
-# Start GUI window
-root = Tk()
-root.title("pFREYA tester v0 - Manual testing")
-gui = pFREYA_GUI(root)
 
-import time
 #seconda gui
 def run_script_csa():
     print("\n--- RUNNING SCRIPT CSA---")  
@@ -459,10 +471,24 @@ def open_child():
     print("opening gui2")
     child=gui2(root)
 
+# Start GUI window
+root = Tk()
+root.title("pFREYA tester v1 - Manual/Auto testing")
+root.geometry("1200x800")
+gui = pFREYA_GUI(root)
+
+# Scrollbar
+canvas = Canvas(root, highlightthickness=0)
+canvas.pack(side=LEFT, fill=BOTH, expand=True)
+
+# Create a vertical scrollbar linked to the canvas
+scrollbar = ttk.Scrollbar(root, orient=VERTICAL, command=canvas.yview)
+scrollbar.pack(side=RIGHT, fill=Y)
+canvas.configure(yscrollcommand=scrollbar.set)
 
 # Build the GUI
-main_frame = ttk.Frame(root, padding=10)
-main_frame.pack()
+main_frame = ttk.Frame(canvas, padding=10)
+canvas.create_window((0, 0), window=main_frame, anchor="nw")
 
 # Menu
 menubar = Menu(root)
@@ -485,36 +511,42 @@ current_entry = ttk.Entry(ck_lframe, textvariable=gui.slow_ck, width=UARTdef.WID
 current_entry.bind("<FocusOut>", lambda x: check_fpga_clocks(gui.slow_ck))
 current_entry.grid(column=1, row=row_idx, padx=5)
 ttk.Label(ck_lframe, text="FP").grid(column=2, row=row_idx)
+ttk.Button(ck_lframe, text="Send", command=lambda: pYtp.send_CSA_RESET_N(gui)).grid(column=3, columnspan=1, row=row_idx, pady=[0,0], sticky=EW)
 row_idx += 1
 ttk.Label(ck_lframe, text="Selection clock:").grid(column=0, row=row_idx, sticky=E)
 current_entry = ttk.Entry(ck_lframe, textvariable=gui.sel_ck, width=UARTdef.WIDTH_ENTRY)
 current_entry.bind("<FocusOut>", lambda x: check_fpga_clocks (gui.sel_ck))
 current_entry.grid(column=1, row=row_idx, padx=5)
 ttk.Label(ck_lframe, text="FP").grid(column=2, row=row_idx)
+ttk.Button(ck_lframe, text="Send", command=lambda: pYtp.send_CSA_RESET_N(gui)).grid(column=3, columnspan=1, row=row_idx, pady=[0,0], sticky=EW)
 row_idx += 1
 ttk.Label(ck_lframe, text="ADC clock:").grid(column=0, row=row_idx, sticky=E)
 current_entry = ttk.Entry(ck_lframe, textvariable=gui.adc_ck, width=UARTdef.WIDTH_ENTRY)
 current_entry.bind("<FocusOut>", lambda x: check_fpga_clocks (gui.adc_ck))
 current_entry.grid(column=1, row=row_idx, padx=5)
 ttk.Label(ck_lframe, text="FP").grid(column=2, row=row_idx)
+ttk.Button(ck_lframe, text="Send", command=lambda: pYtp.send_CSA_RESET_N(gui)).grid(column=3, columnspan=1, row=row_idx, pady=[0,0], sticky=EW)
 row_idx += 1
 ttk.Label(ck_lframe, text="INJ strobe:").grid(column=0, row=row_idx, sticky=E)
 current_entry = ttk.Entry(ck_lframe, textvariable=gui.inj_stb, width=UARTdef.WIDTH_ENTRY)
 current_entry.bind("<FocusOut>", lambda x: check_fpga_clocks (gui.inj_stb))
 current_entry.grid(column=1, row=row_idx, padx=5)
 ttk.Label(ck_lframe, text="FP").grid(column=2, row=row_idx)
+ttk.Button(ck_lframe, text="Send", command=lambda: pYtp.send_CSA_RESET_N(gui)).grid(column=3, columnspan=1, row=row_idx, pady=[0,0], sticky=EW)
 row_idx += 1
 ttk.Label(ck_lframe, text="Serialiser clock:").grid(column=0, row=row_idx, sticky=E)
 current_entry = ttk.Entry(ck_lframe, textvariable=gui.ser_ck, width=UARTdef.WIDTH_ENTRY)
 current_entry.bind("<FocusOut>", lambda x: check_fpga_clocks (gui.ser_ck))
 current_entry.grid(column=1, row=row_idx, padx=5)
 ttk.Label(ck_lframe, text="FP").grid(column=2, row=row_idx)
+ttk.Button(ck_lframe, text="Send", command=lambda: pYtp.send_CSA_RESET_N(gui)).grid(column=3, columnspan=1, row=row_idx, pady=[0,0], sticky=EW)
 row_idx += 1
 ttk.Label(ck_lframe, text="DAC SPI clock:").grid(column=0, row=row_idx, sticky=E)
 current_entry = ttk.Entry(ck_lframe, textvariable=gui.dac_sck, width=UARTdef.WIDTH_ENTRY)
 current_entry.bind("<FocusOut>", lambda x: check_fpga_clocks (gui.dac_sck))
 current_entry.grid(column=1, row=row_idx, padx=5)
 ttk.Label(ck_lframe, text="FP").grid(column=2, row=row_idx)
+ttk.Button(ck_lframe, text="Send", command=lambda: pYtp.send_CSA_RESET_N(gui)).grid(column=3, columnspan=1, row=row_idx, pady=[0,0], sticky=EW)
 row_idx += 1
 ttk.Button(ck_lframe, text="Send clocks", command=lambda: pYtp.send_clocks(gui)).grid(column=1, columnspan=2, row=row_idx, pady=[10,0], sticky=SE)
 
@@ -776,6 +808,10 @@ ser_lframe = ttk.Labelframe(main_frame, text="Special FPGA controls", padding=10
 ser_lframe.grid(column=0, row=5, columnspan=5, padx=5, sticky=NSEW)
 ttk.Button(ser_lframe, text="Sync signals", command=lambda: pYtp.send_sync_time_bases()).grid(column=0, row=0, sticky=SE)
 ttk.Button(ser_lframe, text="Reset FPGA", command=lambda: pYtp.send_reset_FPGA()).grid(column=1, row=0, sticky=SE)
+
+# Bind events to update the canvas scroll region and enable mouse scrolling
+main_frame.bind("<Configure>", on_canvas_configure)
+canvas.bind_all("<MouseWheel>", on_mouse_scroll)
 
 root.mainloop()
 

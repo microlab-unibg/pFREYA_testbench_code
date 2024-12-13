@@ -280,6 +280,42 @@ def send_ADC_START(gui):
     
     return 0
 
+def send_clock_single(gui, clock):
+    """Function to set a clock in the FPGA
+
+    Parameters
+    ----------
+    gui : pFREYA_GUI
+        The structure containing all the data related to the tester.
+    clock : str
+        The clock to be set.
+    
+    Returns
+    ----------
+    int
+        0 if everything was ok, 1 otherwise.
+    """
+    try:
+        cmd = create_cmd(UARTdef.SET_CK_CMD, clock)
+        send_UART(cmd,'')
+        print('CMD sent: ',cmd)
+        for data in create_data(convert_strvar_bin(gui.clock_map[clock],UARTdef.DATA_PACKET_LENGTH)):
+            send_UART('', data)
+            print('Data sent: ',data)
+
+        if (clock == UARTdef.SLOW_CTRL_CK_CODE):
+            gui.slow_ck_sent = True
+        elif (clock == UARTdef.SEL_CK_CODE):
+            gui.sel_ck_sent = True
+        elif (clock == UARTdef.DAC_SCK_CODE):
+            gui.dac_sck_sent = True
+
+        time.sleep(1)
+                
+    except Exception:
+        print(traceback.format_exc())
+        return 1
+    
 def send_clocks(gui):
     """Function to set clocks in the FPGA
 
@@ -294,56 +330,13 @@ def send_clocks(gui):
         0 if everything was ok, 1 otherwise.
     """
     try:
-        cmd = create_cmd(UARTdef.SET_CK_CMD, UARTdef.SLOW_CTRL_CK_CODE)
-        send_UART(cmd,'')
-        print('CMD sent: ',cmd)
-        for data in create_data(convert_strvar_bin(gui.slow_ck,UARTdef.DATA_PACKET_LENGTH)):
-            send_UART('', data)
-            print('Data sent: ',data)
-        gui.slow_ck_sent = True
-        time.sleep(1)
+        send_clock_single(gui,UARTdef.SLOW_CTRL_CK_CODE)
+        send_clock_single(gui,UARTdef.SEL_CK_CODE)
+        send_clock_single(gui,UARTdef.ADC_CK_CODE)
+        send_clock_single(gui,UARTdef.INJ_STB_CODE)
+        send_clock_single(gui,UARTdef.DAC_SCK_CODE)
+        send_clock_single(gui,UARTdef.SER_CK_CODE)
 
-        cmd = create_cmd(UARTdef.SET_CK_CMD, UARTdef.SEL_CK_CODE)
-        send_UART(cmd,'')
-        print('CMD sent: ',cmd)
-        for data in create_data(convert_strvar_bin(gui.sel_ck,UARTdef.DATA_PACKET_LENGTH)):
-            send_UART('', data)
-            print('Data sent: ',data)
-        gui.sel_ck_sent = True
-        time.sleep(1)
-
-        cmd = create_cmd(UARTdef.SET_CK_CMD, UARTdef.ADC_CK_CODE)
-        send_UART(cmd,'')
-        print('CMD sent: ',cmd)
-        for data in create_data(convert_strvar_bin(gui.adc_ck,UARTdef.DATA_PACKET_LENGTH)):
-            send_UART('', data)
-            print('Data sent: ',data)
-        time.sleep(1)
-
-        cmd = create_cmd(UARTdef.SET_CK_CMD, UARTdef.INJ_STB_CODE)
-        send_UART(cmd,'')
-        print('CMD sent: ',cmd)
-        for data in create_data(convert_strvar_bin(gui.inj_stb,UARTdef.DATA_PACKET_LENGTH)):
-            send_UART('', data)
-            print('Data sent: ',data)
-        time.sleep(1)
-
-        cmd = create_cmd(UARTdef.SET_CK_CMD, UARTdef.DAC_SCK_CODE)
-        send_UART(cmd,'')
-        print('CMD sent: ',cmd)
-        for data in create_data(convert_strvar_bin(gui.dac_sck,UARTdef.DATA_PACKET_LENGTH)):
-            send_UART('', data)
-            print('Data sent: ',data)
-        gui.dac_sck_sent = True
-        time.sleep(1)
-
-        cmd = create_cmd(UARTdef.SET_CK_CMD, UARTdef.SER_CK_CODE)
-        send_UART(cmd,'')
-        print('CMD sent: ',cmd)
-        for data in create_data(convert_strvar_bin(gui.ser_ck,UARTdef.DATA_PACKET_LENGTH)):
-            send_UART('', data)
-            print('Data sent: ',data)
-        time.sleep(1)
     except Exception:
         print(traceback.format_exc())
         return 1
