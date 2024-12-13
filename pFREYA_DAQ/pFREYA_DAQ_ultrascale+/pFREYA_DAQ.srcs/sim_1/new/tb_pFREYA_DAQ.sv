@@ -271,11 +271,11 @@ module tb_pFREYA_DAQ;
         #200000 uart_to_send <= {CMD_PACKET,`SET_CK_CMD,`INJ_STB_CODE};
         #10000 uart_write_byte(uart_to_send);
         // set inj_stb delay divider
-        #500000 uart_to_send <= {DATA_PACKET,NOTLAST_UART_PACKET,6'd7};
+        #500000 uart_to_send <= {DATA_PACKET,NOTLAST_UART_PACKET,6'd5};
         #10000 uart_write_byte(uart_to_send);
         #500000 uart_to_send <= {DATA_PACKET,NOTLAST_UART_PACKET,6'd5};
         #10000 uart_write_byte(uart_to_send);
-        #500000 uart_to_send <= {DATA_PACKET,LAST_UART_PACKET,6'd7};
+        #500000 uart_to_send <= {DATA_PACKET,LAST_UART_PACKET,6'd5};
         #10000 uart_write_byte(uart_to_send);
 
         // // send a command to set csa_reset_n delay divider
