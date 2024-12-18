@@ -32,9 +32,9 @@ def get_energy_level(cfg_bits):
 
 
 config_bits_list = [
+    [0, 1, 1, 1, 1, 1, 1],  # Configurazione 9 keV
     [1, 1, 1, 1, 1, 1, 1],  # Configurazione 5 keV
     [1, 0, 1, 1, 1, 1, 1],  # Configurazione 18 keV
-    [0, 1, 1, 1, 1, 1, 1],  # Configurazione 9 keV
     [0, 0, 1, 1, 1, 1, 1],  # Configurazione 25 keV
 ]
 
@@ -68,25 +68,39 @@ per ogni configigurazione presente nella lista:
     -plot
 '''
 
+import config
+
 for item in config_bits_list:
-    import config
     config.config(channel='csa',lemo='none',n_steps=20,cfg_bits=item,cfg_inst=True, active_probes=False)
 
     config.lecroy.write(f'C2:CRS HREL')
-    config.ps.write(f':SOUR:CURR:LEV 0')
     pYtp.send_slow_ctrl_auto(item,0)
+    
+    # 100 mV/div e -611mV
+    # config.lecroy.set_vdiv(channel=1,vdiv='100e-3')
+    # config.lecroy.set_voffset(channel=1,voffset='-611e-3')
+    config.lecroy.set_vdiv(channel=1,vdiv='450e-3')
+    config.lecroy.set_voffset(channel=1,voffset='1.46')
+    config.lecroy.set_tdiv(tdiv='100NS')
+    config.lecroy.set_toffset(toffset='-240e-9')
+    
+    config.ps.write(f':SOUR:CURR:LEV {config.current_lev[0]}')
+    config.ps.write(':OUTP:STAT ON')
+
+    #corrente iniziale
+    
     time.sleep(5)
     ndiv = 10 # positive and negative around delay
-    tdelay = -680  #ns
+    tdelay = -240  #ns +20ns respect to time base
     tdiv = 100 # ns/div
-    osc_ts = 735 # ns
+    osc_ts = 300 # ns
     osc_te = osc_ts + config.peaking_time + 10 # 10 ns to avoid switching time
     osc_offset = - ndiv/2*tdiv - tdelay
     div_s = (osc_ts - osc_offset)/tdiv
     if config.channel_name == 'shap':
         div_e = (osc_te - osc_offset)/tdiv
     else:
-        div_e = (432 - osc_offset)/tdiv
+        div_e = (-10 - osc_offset)/tdiv
     config.lecroy.write(f'C1:CRST HDIF,{div_s},HREF,{div_e}')
     channel_name = config.channel_name
     lemo_name = config.lemo_name
@@ -99,7 +113,7 @@ for item in config_bits_list:
     # set cursor positions
     #config.lecroy.write(f'C2:CRS HREL')
     # reset inj
-    time.sleep(2)
+    time.sleep(5)
 
     mis = {
         #'CSA Bits': [],
@@ -114,6 +128,7 @@ for item in config_bits_list:
 
     for i, level in enumerate(config.current_lev):
         config.ps.write(f':SOUR:CURR:LEV {level}')
+        time.sleep(1)
         print(f'{i} : {level}')
         #mis['CSA Bits'].append(config)
         mis['Current Level Step'].append(i)
@@ -123,7 +138,7 @@ for item in config_bits_list:
         data = []
         for _ in range(N_samples):
             data.append(float(config.lecroy.query(f'C{config.channel_num}:CRVA? HREL').split(',')[2]))
-            time.sleep(0.03)
+            time.sleep(0.05)
         
         # Calcola la media e la deviazione standard e memorizza nel DataFrame i diversi valori di tensione
         mis['Voltage output average (V)'].append(np.average(data)/gain)
@@ -134,8 +149,8 @@ for item in config_bits_list:
     df = pd.DataFrame(mis)
     datetime_str = datetime.now().strftime('%Y%m%d%H%M')
 
-    df.to_csv(f'G:Drive condivisi/FALCON/measures/new/transcharacteristics/csa/{channel_name}_{config.config_bits_str}_nominal_{lemo_name}_{datetime_str}.tsv', sep='\t', index=False)
-    tsv_files.append(f'G:Drive condivisi/FALCON/measures/new/transcharacteristics/csa/{channel_name}_{config.config_bits_str}_nominal_{lemo_name}_{datetime_str}.tsv')
+    df.to_csv(f'G:/Shared drives/FALCON/measures/new/transcharacteristics/csa/{channel_name}_{config.config_bits_str}_nominal_{lemo_name}_{datetime_str}.tsv', sep='\t', index=False)
+    tsv_files.append(f'G:/Shared drives/FALCON/measures/new/transcharacteristics/csa/{channel_name}_{config.config_bits_str}_nominal_{lemo_name}_{datetime_str}.tsv')
     print("File tsv salvato con successo.")
 
     
@@ -161,7 +176,7 @@ for item in config_bits_list:
 
     ax.table(cellText=[
         ['$\\gamma$ energy [keV]', f'{config.photon_energy}'],  # Sostituisci N/A con {config.photon_energy}
-        ['Peaking time [ns]', f'{config.peaking_time}'],  # sostituisci 318 con {config.peaking_time}
+        #['Peaking time [ns]', f'{config.peaking_time}'],  # sostituisci 318 con {config.peaking_time}
         ['Slope [mV/#$\\gamma$]', f'{np.round(ln.slope*10**3,3)}'],
         ['INL [%]', f'{np.round(inl, 2)}'],
         ['R$^2$', f'{np.round(ln.rvalue**2, 3)}']
@@ -177,7 +192,7 @@ for item in config_bits_list:
 
     # Salva il grafico
     try:
-        output_file = f'G:Drive condivisi/FALCON/measures/new/transcharacteristics/csa/{channel_name}_{config.config_bits_str}_nominal_{lemo_name}_{datetime_str}.pdf'
+        output_file = f'G:/Shared drives/FALCON/measures/new/transcharacteristics/csa/{channel_name}_{config.config_bits_str}_nominal_{lemo_name}_{datetime_str}.pdf'
         plt.savefig(output_file, dpi=300)
         plt.close(fig)  # Chiude il grafico corrente per liberare risorse
         print(f"File plot salvato con successo: {output_file}")
@@ -185,7 +200,7 @@ for item in config_bits_list:
         print(f"Errore durante il salvataggio del file plot: {e}")
 
 data = pd.DataFrame(dati)
-data.to_csv(f'G:Drive condivisi/FALCON/measures/new/transcharacteristics/csa/data/{channel_name}_nominal_{lemo_name}_{datetime_str}.tsv', sep='\t', index=False)
+data.to_csv(f'G:/Shared drives/FALCON/measures/new/transcharacteristics/csa/data/{channel_name}_nominal_{lemo_name}_{datetime_str}.tsv', sep='\t', index=False)
 
 
 
@@ -258,7 +273,7 @@ for i in range(4):
     data_summary['INL [%]'].append(f'{np.round(inls[i], 2)}')
 
 summary =pd.DataFrame(data_summary)
-summary.to_csv(f'G:Drive condivisi/FALCON/measures/new/transcharacteristics/csa/summary/{channel_name}_{config.config_bits_str}_nominal_{lemo_name}_{datetime_str}.tsv',sep='\t', index=False)
+summary.to_csv(f'G:/Shared drives/FALCON/measures/new/transcharacteristics/csa/summary/{channel_name}_{config.config_bits_str}_nominal_{lemo_name}_{datetime_str}.tsv',sep='\t', index=False)
 
 ax.table(cellText=[
     ['Mode [keV]', f'{modes[0]}', f'{modes[1]}', f'{modes[2]}', f'{modes[3]}'],
@@ -272,4 +287,4 @@ ax.legend([f'{x} keV' for x in modes],
           title='γ energy',
           frameon=False)
 
-plt.savefig(f'G:Drive condivisi/FALCON/measures/new/transcharacteristics/csa/summary/{channel_name}_nominal_{lemo_name}_{datetime_str}.pdf')
+plt.savefig(f'G:/Shared drives/FALCON/measures/new/transcharacteristics/csa/summary/{channel_name}_nominal_{lemo_name}_{datetime_str}.pdf')

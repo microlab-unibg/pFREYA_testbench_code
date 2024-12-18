@@ -9,6 +9,8 @@ import time
 from datetime import datetime
 import matplotlib.colors as mcolors
 
+# FPGA CONFIG ARE WITH A TERMINAL 0 TO SYNC THE SIGNALS
+
 def config_inst() -> None:
     """Function to initialise instruments
     """
@@ -22,10 +24,10 @@ def config_inst() -> None:
 
     # to deal with already initialised oscilloscope
     lecroy = None
-    ps = rm.open_resource('GPIB0::23::INSTR')
+    ps = rm.open_resource('GPIB1::23::INSTR')
     print(ps.query('*IDN?'))
 
-    ps.write(':OUTP:LOW FLO')
+    ps.write(':OUTP:LOW FLO') # or GRO?
     ps.write(':OUTP:OFF:AUTO ON')
     ps.write(':OUTP:PROT ON')
     ps.write(':OUTP:RES:MODE FIX')
@@ -97,21 +99,23 @@ def config(channel: str, lemo: str, n_steps: int, cfg_bits: list, cfg_inst: bool
     config_bits = cfg_bits
     # ==== SET CORRECT GAIN =====
     #lemo_gain = 1.56/.53 if channel_name == 'csa' else 2.1/.65 # now with measurements against probe, before (from res is) 5.6/2
-    lemo_gain = 56*33/(56+33)/10 if channel_name == 'csa' else 56*27/(56+27)/10
-    if channel_name == 'csa':
-        if lemo == 'hi':
-            lemo_gain = 56/10
-        elif lemo == 'lo':
-            lemo_gain = 56*33/(56+33)/10
-        else:
-            lemo_gain = 1
-    else:
-        if lemo == 'hi':
-            lemo_gain = 56/10
-        elif lemo == 'lo':
-            lemo_gain = 56*27/(56+27)/10
-        else:
-            lemo_gain = 1
+    # gain -> 510 ohm and 100 ohm, for a gain (1+510/100)=6.1 V/V
+    lemo_gain = 6/1.13
+    #lemo_gain = 56*33/(56+33)/10 if channel_name == 'csa' else 56*27/(56+27)/10
+    # if channel_name == 'csa':
+    #     if lemo == 'hi':
+    #         lemo_gain = 56/10
+    #     elif lemo == 'lo':
+    #         lemo_gain = 56*33/(56+33)/10
+    #     else:
+    #         lemo_gain = 1
+    # else:
+    #     if lemo == 'hi':
+    #         lemo_gain = 56/10
+    #     elif lemo == 'lo':
+    #         lemo_gain = 56*27/(56+27)/10
+    #     else:
+    #         lemo_gain = 1
     N_samples = 20
 
     T = 30e-9 # s
@@ -127,27 +131,27 @@ def config(channel: str, lemo: str, n_steps: int, cfg_bits: list, cfg_inst: bool
             photon_energy = 9 # keV
             offset_charge = 8.5e-15 # C *tentative
             #min_current = 0.03e-6 # A for active probes
-            min_current = .13e-6 # A
-            max_current = 1.71e-6 #1.6e-6 # A
+            min_current = .15e-6 # A
+            max_current = 1.75e-6 #1.6e-6 # A
             #max_current = .75e-6 # active probes
             corr_fact = 1 #105.8/103.2
         case [0,0]:
             photon_energy = 25 # keV
             offset_charge = 8.5e-15 # C *tentative
-            min_current = .13e-6 # A
-            max_current = 4.13e-6 #4.1e-6 # A
+            min_current = .15e-6 # A
+            max_current = 4.55e-6 #4.1e-6 # A
             corr_fact = 1 #105.8/103.2
         case [1,0]:
             photon_energy = 18 # keV
             offset_charge = 8.5e-15 # C *tentative
-            min_current = .13e-6 # A
-            max_current = 3.5e-6 # A
+            min_current = .15e-6 # A
+            max_current = 3.75e-6 # A
             corr_fact = 1 #105.8/103.2
         case [1,1]:
             photon_energy = 5 # keV
             offset_charge = 0 #8.5e-15 # C *tentative
-            min_current = .13e-6 # A
-            max_current = 9.98e-7 # A
+            min_current = .15e-6 # A
+            max_current = 1.1e-6 # A
             corr_fact = 1 #105.8/103.2
     match shap_bits:
         case [1,0]: 

@@ -484,7 +484,7 @@ def send_current_level(gui):
     str
         Current level as a string representing a binary.
     """
-    ps = gui.rm.open_resource('GPIB0::23::INSTR')
+    ps = gui.rm.open_resource('GPIB1::23::INSTR')
     print(ps.query('*IDN?'))
     print(gui.current_level)
 

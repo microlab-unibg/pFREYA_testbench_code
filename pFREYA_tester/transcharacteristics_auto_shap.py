@@ -26,13 +26,13 @@ def get_energy_level(cfg_bits):
 
 def get_shap_bits(cfg_bits):
     if cfg_bits[3] == 1 and cfg_bits[4] == 1:
-        return 535  
+        return 530  
     elif cfg_bits[3] == 0 and cfg_bits[4] == 1:
-        return 432 
+        return 340 
     elif cfg_bits[3] == 1 and cfg_bits[4] == 0:
-        return 332 
+        return 440 
     elif cfg_bits[3] == 0 and cfg_bits[4] == 0:
-        return 234 
+        return 250 
     else:
         raise ValueError("Configurazione shap_bits non valida")
 
@@ -62,8 +62,14 @@ for item in config_bits_list:
     energy_level = get_energy_level(item)
     shap_bits = get_shap_bits(item)
     pYtp.send_slow_ctrl_auto(item,1)
-
-    config.ps.write(':SOUR:CURR:LEV -.0e-6')
+    
+    # 100 mV/div e -611mV
+    config.lecroy.set_vdiv(channel=2,vdiv='100e-3')
+    config.lecroy.set_voffset(channel=2,voffset='-466e-3')
+    config.lecroy.set_tdiv(tdiv='200NS')
+    config.lecroy.set_toffset(toffset='-400e-9')
+    config.ps.write(f':SOUR:CURR:LEV {config.current_lev[0]}')
+    config.ps.write(':OUTP:STAT ON')
     time.sleep(5)
 
 
@@ -99,6 +105,8 @@ for item in config_bits_list:
     
     for i, level in enumerate(config.current_lev):
         config.ps.write(f':SOUR:CURR:LEV {level}')
+        print(f'{i} : {level}')
+        time.sleep(1)
         mis['Current Level Step'].append(i)
         mis['Current Level (A)'].append(level)
         mis['iinj_int (C)'].append(config.iinj_int[i])
@@ -106,14 +114,13 @@ for item in config_bits_list:
         data=[]
         for _ in range(N_samples):
             data.append(float(config.lecroy.query(f'C{config.channel_num}:CRVA? HREL').split(',')[2]))
-            #time.sleep(0.001)
+            time.sleep(0.05)
         mis['Voltage output average (V)'].append(np.average(data)/config.lemo_gain)
         mis['Voltage output std (V)'].append(np.std(data) / config.lemo_gain)
-        time.sleep(0.5)
 
     df = pd.DataFrame(mis)
     datetime_str = datetime.now().strftime('%Y%m%d%H%M')
-    output_file = f'G:Drive condivisi/FALCON/measures/new/transcharacteristics/shap/{config.channel_name}_{config.config_bits_str}_nominal_{config.lemo_name}_shapconfig_{shap_bits}_{datetime_str}.tsv'
+    output_file = f'G:/Shared drives/FALCON/measures/new/transcharacteristics/shap/{config.channel_name}_{config.config_bits_str}_nominal_{config.lemo_name}_shapconfig_{shap_bits}_{datetime_str}.tsv'
     df.to_csv(output_file, sep='\t', index=False)
     print("File tsv salvato con successo.")
     # Aggiungi il file al gruppo di energia corrispondente per il grafico totale, cosi poi plotto dalla lista corrispondente
@@ -157,14 +164,14 @@ for item in config_bits_list:
 
     # Salva il grafico
     try:
-        output_file = f'G:Drive condivisi/FALCON/measures/new/transcharacteristics/shap/{channel_name}_{config.config_bits_str}_nominal_{lemo_name}_shapconfig_{shap_bits}_{datetime_str}.pdf'
+        output_file = f'G:/Shared drives/FALCON/measures/new/transcharacteristics/shap/{channel_name}_{config.config_bits_str}_nominal_{lemo_name}_shapconfig_{shap_bits}_{datetime_str}.pdf'
         plt.savefig(output_file, dpi=300)
         plt.close(fig)  # Chiude il grafico corrente per liberare risorse
         print(f"File plot salvato con successo: {output_file}")
     except Exception as e:
         print(f"Errore durante il salvataggio del file plot: {e}")
 data = pd.DataFrame(dati)
-data.to_csv(f'G:Drive condivisi/FALCON/measures/new/transcharacteristics/shap/data/{channel_name}_nominal_{lemo_name}_shapconfig_{shap_bits}_{datetime_str}.tsv', sep='\t', index=False)
+data.to_csv(f'G:/Shared drives/FALCON/measures/new/transcharacteristics/shap/data/{channel_name}_nominal_{lemo_name}_shapconfig_{shap_bits}_{datetime_str}.tsv', sep='\t', index=False)
 ###summary###
 colours = list(mcolors.TABLEAU_COLORS.keys())
 for energy_level, dataframes in groups.items():  # Sostituisci con i percorsi reali
@@ -227,7 +234,7 @@ for energy_level, dataframes in groups.items():  # Sostituisci con i percorsi re
 
     #per ogni configurazione di shap salvo dati
     summary =pd.DataFrame(data_summary)
-    summary.to_csv(f'G:Drive condivisi/FALCON/measures/new/transcharacteristics/shap/summary/{channel_name}_{energy_level}_keV_{datetime_str}.tsv',sep='\t', index=False)
+    summary.to_csv(f'G:/Shared drives/FALCON/measures/new/transcharacteristics/shap/summary/{channel_name}_{energy_level}_keV_{datetime_str}.tsv',sep='\t', index=False)
     
     # Tabella dei risultati
     ax.table([
@@ -244,5 +251,5 @@ for energy_level, dataframes in groups.items():  # Sostituisci con i percorsi re
     ax.legend([f'{x} ns' for x in pt], title=f"Peaking time", frameon=False)
 
     # Salvataggio del grafico
-    plt.savefig(f'G:Drive condivisi/FALCON/measures/new/transcharacteristics/shap/summary/shap_summary_nominal_{energy_level}_keV_{datetime_str}.pdf', dpi=300)
+    plt.savefig(f'G:/Shared drives/FALCON/measures/new/transcharacteristics/shap/summary/shap_summary_nominal_{energy_level}_keV_{datetime_str}.pdf', dpi=300)
     print(f"Grafico salvato per {energy_level} keV")
