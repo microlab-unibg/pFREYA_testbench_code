@@ -65,13 +65,13 @@ for item in config_bits_list:
     # Configurazione del setup,cfg_bits cambia per ogni configurazione utilizzata per ogni passo
     config.config(channel='shap', lemo='none', n_steps=8, cfg_bits=item, cfg_inst=True, active_probes=False)
     # 100 mV/div e -463mV
-    config.lecroy.set_vdiv(channel=2,vdiv='100e-3')
-    config.lecroy.set_voffset(channel=2,voffset='-463e-3')
+    config.lecroy.set_vdiv(channel=1,vdiv='450e-3')
+    config.lecroy.set_voffset(channel=1,voffset='1.46')
     config.lecroy.set_tdiv(tdiv='200NS')
     config.lecroy.set_toffset(toffset='-400e-9')
     pYtp.send_slow_ctrl_auto(item,1)
     
-    config.ps.write(':SOUR:CURR:LEV -0.0e-6')
+    config.ps.write(f':SOUR:CURR:LEV {config.current_lev[0]}')
     config.ps.write(':OUTP:STAT ON')
     time.sleep(5)
     #corrente iniziale
@@ -90,7 +90,7 @@ for item in config_bits_list:
         # Imposta il livello di corrente
         config.ps.write(f':SOUR:CURR:LEV {cl}')
         print(f'{i}:{cl}')
-        time.sleep(1)
+        time.sleep(2)
         # N sample to average and extract std from
         data = pd.DataFrame.from_dict(
             config.lecroy.get_channel(channel_name='C', n_channel=config.channel_num)['waveforms'][0]
@@ -108,7 +108,7 @@ for item in config_bits_list:
         str_type='active_prbs' 
     else: 
         str_type = ''
-    df.to_csv(f'G:Drive condivisi/FALCON/measures/new/transient/shap/{channel_name}_{config.config_bits_str}_nominal_{lemo_name}_shapconfig_{shap_bits}_{datetime_str}.tsv', sep='\t')
+    df.to_csv(f'G:Shared drives/FALCON/measures/new/transient/shap/{channel_name}_{config.config_bits_str}_nominal_{lemo_name}_shapconfig_{shap_bits}_{datetime_str}.tsv', sep='\t')
     
     print(f"Misura completata per cfg_bits {item} con livello di energia {energy_level:} A")
 
@@ -120,7 +120,7 @@ for item in config_bits_list:
     import time
     from datetime import datetime
     import matplotlib.colors as mcolors
-    path=(f'G:Drive condivisi/FALCON/measures/new/transient/shap/{channel_name}_{config.config_bits_str}_nominal_{lemo_name}_shapconfig_{shap_bits}_{datetime_str}.tsv')
+    path=(f'G:Shared drives/FALCON/measures/new/transient/shap/{channel_name}_{config.config_bits_str}_nominal_{lemo_name}_shapconfig_{shap_bits}_{datetime_str}.tsv')
     df = pd.read_csv(path, sep = '\t')
     datetime_str = datetime.strftime(datetime.now(), '%d%m%y_%H%M')
     arr_split = path.split('/')
@@ -155,4 +155,4 @@ for item in config_bits_list:
     if channel_name == 'shap':
         ax.text(.01,.01,f'$t_p$ = {config.peaking_time} ns',ha='left',va='bottom',transform=ax.transAxes)
     
-    plt.savefig(f'G:Drive condivisi/FALCON/measures/new/transient/shap/shap_{config.config_bits_str}_nominal_{lemo_name}_shapconfig_{shap_bits}_{datetime_str}.pdf',dpi=300)
+    plt.savefig(f'G:Shared drives/FALCON/measures/new/transient/shap/shap_{config.config_bits_str}_nominal_{lemo_name}_shapconfig_{shap_bits}_{datetime_str}.pdf',dpi=300)

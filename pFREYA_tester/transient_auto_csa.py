@@ -25,8 +25,8 @@ def get_energy_level(cfg_bits):
 # Configurazione dei test per le diverse configurazioni di cfg_bits
 config_bits_list = [
     [1, 1, 1, 1, 1, 1, 1],  # Configurazione 5  keV
-    [1, 0, 1, 1, 1, 1, 1],  # Configurazione 18 keV
     [0, 1, 1, 1, 1, 1, 1],  # Configurazione 9  keV
+    [1, 0, 1, 1, 1, 1, 1],  # Configurazione 18 keV
     [0, 0, 1, 1, 1, 1, 1],  # Configurazione 25 keV
 ]
 '''
@@ -46,17 +46,17 @@ for item in config_bits_list:
     # Configurazione del setup,cfg_bits cambia per ogni configurazione utilizzata per ogni passo
     config.config(channel='csa', lemo='none', n_steps=8, cfg_bits=item, cfg_inst=True, active_probes=False)
     pYtp.send_slow_ctrl_auto(item,0)
-    # 100 mV/div e -611mV
-    config.lecroy.set_vdiv(channel=1,vdiv='100e-3')
-    config.lecroy.set_voffset(channel=1,voffset='-611e-3')
+    
+    config.lecroy.set_vdiv(channel=1,vdiv='450e-3')
+    config.lecroy.set_voffset(channel=1,voffset='1.46')
     config.lecroy.set_tdiv(tdiv='100NS')
     config.lecroy.set_toffset(toffset='-240e-9')
-    config.ps.write(':SOUR:CURR:LEV -0.0e-6')
+    config.ps.write(f':SOUR:CURR:LEV {config.current_lev[0]}')
     config.ps.write(':OUTP:STAT ON')
 
     #corrente iniziale
     
-    time.sleep(2)
+    time.sleep(5)
 
     
     channel_name = config.channel_name
@@ -72,7 +72,8 @@ for item in config_bits_list:
     for i, cl in enumerate(config.current_lev):
         # Imposta il livello di corrente
         config.ps.write(f':SOUR:CURR:LEV {cl}')
-        time.sleep(1)
+        print(f'{i} : {cl}')
+        time.sleep(2)
         # N sample to average and extract std from
         data = pd.DataFrame.from_dict(
             config.lecroy.get_channel(channel_name='C', n_channel=config.channel_num)['waveforms'][0]
