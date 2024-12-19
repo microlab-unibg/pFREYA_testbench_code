@@ -95,12 +95,14 @@ def config(channel: str, lemo: str, n_steps: int, cfg_bits: list, cfg_inst: bool
     channel_name = channel
     lemo_name = lemo
     channel_num = 1 if channel_name == 'csa' else 2
+    channel_num_mon = 3
     num_steps = n_steps
     config_bits = cfg_bits
     # ==== SET CORRECT GAIN =====
     #lemo_gain = 1.56/.53 if channel_name == 'csa' else 2.1/.65 # now with measurements against probe, before (from res is) 5.6/2
     # gain -> 510 ohm and 100 ohm, for a gain (1+510/100)=6.1 V/V
     lemo_gain = 6/1.13
+    gain_mon = 1
     #lemo_gain = 56*33/(56+33)/10 if channel_name == 'csa' else 56*27/(56+27)/10
     # if channel_name == 'csa':
     #     if lemo == 'hi':
