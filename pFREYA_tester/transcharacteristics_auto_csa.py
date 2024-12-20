@@ -79,8 +79,8 @@ for item in config_bits_list:
     # 100 mV/div e -611mV
     # config.lecroy.set_vdiv(channel=1,vdiv='100e-3')
     # config.lecroy.set_voffset(channel=1,voffset='-611e-3')
-    config.lecroy.set_vdiv(channel=1,vdiv='450e-3')
-    config.lecroy.set_voffset(channel=1,voffset='1.46')
+    config.lecroy.set_vdiv(channel=1,vdiv='230e-3')
+    config.lecroy.set_voffset(channel=1,voffset='690e-3')
     config.lecroy.set_tdiv(tdiv='100NS')
     config.lecroy.set_toffset(toffset='-240e-9')
     
@@ -113,7 +113,6 @@ for item in config_bits_list:
     # set cursor positions
     #config.lecroy.write(f'C2:CRS HREL')
     # reset inj
-    time.sleep(5)
 
     mis = {
         #'CSA Bits': [],
@@ -190,7 +189,7 @@ for item in config_bits_list:
 
     #salvataggio valori misurati su nel dataframe dati, in maniera che li salvi in un .tsv
     dati['energy level [keV]'].append(f'{config.photon_energy}')
-    dati['Offset [ns]'].append(f'{np.round(offset*10**3,3)}')
+    dati['Offset [mV]'].append(f'{np.round(offset*10**3,3)}')
     dati['Slope [mV/#$\\gamma$]'].append(f'{np.round(ln.slope*10**3,3)}')
     dati['INL [%]'].append(f'{np.round(inl, 2)}')
     dati['R$^2$'].append(f'{np.round(ln.rvalue**2, 3)}')
@@ -285,7 +284,7 @@ summary.to_csv(f'G:/Shared drives/FALCON/measures/new/transcharacteristics/csa/s
 
 ax.table(cellText=[
     ['Mode [keV]', f'{modes[0]}', f'{modes[1]}', f'{modes[2]}', f'{modes[3]}'],
-    ['Mode [keV]', f'{data_summary['Offset [mV]'][0]}', f'{data_summary['Offset [mV]'][1]}', f'{data_summary['Offset [mV]'][2]}', f'{data_summary['Offset [mV]'][3]}'],
+    ['Offset [mV]', f'{data_summary['Offset [mV]'][0]}', f'{data_summary['Offset [mV]'][1]}', f'{data_summary['Offset [mV]'][2]}', f'{data_summary['Offset [mV]'][3]}'],
     ['Gain [mV/γ]', f'{np.round(lns[0].slope*10**3, 3)}', f'{np.round(lns[1].slope*10**3, 3)}', f'{np.round(lns[2].slope*10**3, 3)}', f'{np.round(lns[3].slope*10**3, 3)}'],
     ['Gain [mV/fC]', f'{np.round(lns[0].slope*10**3/modes[0]*config.conv_kev_c*10**-15, 3)}', f'{np.round(lns[1].slope*10**3/modes[1]*config.conv_kev_c*10**-15, 3)}', f'{np.round(lns[2].slope*10**3/modes[2]*config.conv_kev_c*10**-15, 3)}', f'{np.round(lns[3].slope*10**3/modes[3]*config.conv_kev_c*10**-15, 3)}'],
     ['INL [%]', f'{np.round(inls[0], 2)}', f'{np.round(inls[1], 2)}', f'{np.round(inls[2], 2)}', f'{np.round(inls[3], 2)}'],

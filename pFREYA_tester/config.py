@@ -101,7 +101,7 @@ def config(channel: str, lemo: str, n_steps: int, cfg_bits: list, cfg_inst: bool
     # ==== SET CORRECT GAIN =====
     #lemo_gain = 1.56/.53 if channel_name == 'csa' else 2.1/.65 # now with measurements against probe, before (from res is) 5.6/2
     # gain -> 510 ohm and 100 ohm, for a gain (1+510/100)=6.1 V/V
-    lemo_gain = 6/1.13
+    lemo_gain = 6/1.13/2 # the 2 factor is 50 ohm - 50 ohm
     gain_mon = 1
     #lemo_gain = 56*33/(56+33)/10 if channel_name == 'csa' else 56*27/(56+27)/10
     # if channel_name == 'csa':
@@ -133,35 +133,35 @@ def config(channel: str, lemo: str, n_steps: int, cfg_bits: list, cfg_inst: bool
             photon_energy = 9 # keV
             offset_charge = 8.5e-15 # C *tentative
             #min_current = 0.03e-6 # A for active probes
-            min_current = .2e-6 # A
+            min_current = .13e-6 # A
             max_current = 1.6e-6 #1.6e-6 # A
             #max_current = .75e-6 # active probes
             corr_fact = 1 #105.8/103.2
         case [0,0]:
             photon_energy = 25 # keV
             offset_charge = 8.5e-15 # C *tentative
-            min_current = .2e-6 # A
+            min_current = .13e-6 # A
             max_current = 4.12e-6 #4.1e-6 # A
             corr_fact = 1 #105.8/103.2
         case [1,0]:
             photon_energy = 18 # keV
             offset_charge = 8.5e-15 # C *tentative
-            min_current = .2e-6 # A
-            max_current = 3.25e-6 # A
+            min_current = .13e-6 # A
+            max_current = 3.35e-6 # A
             corr_fact = 1 #105.8/103.2
         case [1,1]:
             photon_energy = 5 # keV
             offset_charge = 0 #8.5e-15 # C *tentative
-            min_current = .2e-6 # A
+            min_current = .13e-6 # A
             max_current = 1e-6 # A
             corr_fact = 1 #105.8/103.2
     match shap_bits:
         case [1,0]: 
-            peaking_time = 440 # old 405 # ns (from mean dyn), 432 ns (from max dyn), 432 ns (from theory)
+            peaking_time = 450 # old 405 # ns (from mean dyn), 432 ns (from max dyn), 432 ns (from theory)
             inj_shap_corr_fact = 1#575/613 # probe out vs lemo out/gain
             gain_shap = 2.416 # from measurements mV/ph
         case [0,0]: 
-            peaking_time = 240 # old 220 # ns (from mean dyn), 261 ns (from max dyn), 234 ns (from theory)
+            peaking_time = 260 # old 220 # ns (from mean dyn), 261 ns (from max dyn), 234 ns (from theory)
             inj_shap_corr_fact = 1#602/627 # 
             gain_shap = 2.525 # from measurements
         case [0,1]: 
@@ -169,7 +169,7 @@ def config(channel: str, lemo: str, n_steps: int, cfg_bits: list, cfg_inst: bool
             inj_shap_corr_fact = 1#585/634 # 
             gain_shap = 2.414 # from measurements
         case [1,1]: 
-            peaking_time = 530# old 493 # ns (from mean dyn), 535 ns (from max dyn), 535 ns (from theory)
+            peaking_time = 540# old 493 # ns (from mean dyn), 535 ns (from max dyn), 535 ns (from theory)
             inj_shap_corr_fact = 1#565/572 # 
             gain_shap = 2.31 # from measurements
             

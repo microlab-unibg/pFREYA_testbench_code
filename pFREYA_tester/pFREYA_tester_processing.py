@@ -5,6 +5,7 @@ import serial
 import math
 import time
 import traceback
+import subprocess
 
 def send_UART(cmd='', data=''):
     """Function to send UART commands and data to FPGA
@@ -723,4 +724,20 @@ def send_reset_FPGA():
         print(traceback.format_exc())
         return 1
     
+def upload_bitstream():
+    """Function to upload the bitstream in the FPGA
+    
+    Returns
+    ----------
+    int
+        0 if everything was ok, 1 otherwise.
+    """
+    try:
+        cmd_string = "vivado -mode batch -source upload_bitstream.tcl -nolog -nojournal -notrace"
+        subprocess.run(cmd_string, shell=True)
+        
+        time.sleep(1)
+    except Exception:
+        print(traceback.format_exc())
+        return 1
     return 0

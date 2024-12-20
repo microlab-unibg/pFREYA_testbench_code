@@ -38,23 +38,40 @@ def get_shap_bits(cfg_bits):
 
 # Configurazione dei test per le diverse configurazioni di cfg_bits
 config_bits_list = [
-    [0, 1, 1, 1, 0, 1, 1],  [0, 1, 1, 0, 0, 1, 1],  [0, 1, 1, 0, 1, 1, 1],  [0, 1, 1, 1, 1, 1, 1],  # 9 keV
-    [0, 0, 1, 1, 0, 1, 1],  [0, 0, 1, 0, 0, 1, 1],  [0, 0, 1, 0, 1, 1, 1],  [0, 0, 1, 1, 1, 1, 1],  # 25 keV
-    [1, 0, 1, 1, 0, 1, 1],  [1, 0, 1, 0, 0, 1, 1],  [1, 0, 1, 0, 1, 1, 1],  [1, 0, 1, 1, 1, 1, 1],  # 18 keV
-    [1, 1, 1, 1, 0, 1, 1],  [1, 1, 1, 0, 0, 1, 1],  [1, 1, 1, 0, 1, 1, 1],  [1, 1, 1, 1, 1, 1, 1],  # 5 keV
+    # Configurazione da 9 keV 
+    [0, 1, 1, 1, 0, 1, 1],  #shaper tp = 432 ns
+    [0, 1, 1, 0, 0, 1, 1],  #shaper tp = 234 ns 
+    [0, 1, 1, 0, 1, 1, 1],  #shaper tp = 332 ns   
+    [0, 1, 1, 1, 1, 1, 1],  #shaper tp = 535 ns  
+    # Configurazione 25 keV
+    [0, 0, 1, 1, 0, 1, 1],  #shaper tp = 432 ns  
+    [0, 0, 1, 0, 0, 1, 1],  #shaper tp = 234 ns  
+    [0, 0, 1, 0, 1, 1, 1],  #shaper tp = 332 ns  
+    [0, 0, 1, 1, 1, 1, 1],  #shaper tp = 535 ns  
+    # Configurazione 18 keV
+    [1, 0, 1, 1, 0, 1, 1],  #shaper tp = 432 ns  
+    [1, 0, 1, 0, 0, 1, 1],  #shaper tp = 234 ns  
+    [1, 0, 1, 0, 1, 1, 1],  #shaper tp = 332 ns  
+    [1, 0, 1, 1, 1, 1, 1],  #shaper tp = 535 ns  
+    # Configurazione 5 keV
+    [1, 1, 1, 1, 0, 1, 1],  #shaper tp = 432 ns  
+    [1, 1, 1, 0, 0, 1, 1],  #shaper tp = 234 ns  
+    [1, 1, 1, 0, 1, 1, 1],  #shaper tp = 332 ns  
+    [1, 1, 1, 1, 1, 1, 1],  #shaper tp = 535 ns  
 ]
 
 #dizionario utilizzato per salvare dati di ogni configurazione
 dati = {
     'energy level [keV]': [],
     'Peaking time [ns]': [],
+    'Offset [mV]': [],
     'Slope [mV/#$\\gamma$]': [],
     'INL [%]': [],
     'R$^2$': []
 }
 # Elenco dei livelli di energia (da associare ai rispettivi gruppi di configurazioni)
-energy_levels = [18, 25, 9, 5]
-groups = {18:[] ,9: [], 25: [], 5: []}
+energy_levels = [9, 25, 18, 5]
+groups = {9:[] ,25: [], 18: [], 5: []}
 
 # Raggruppa i file TSV per energia
 for item in config_bits_list:
@@ -64,10 +81,10 @@ for item in config_bits_list:
     pYtp.send_slow_ctrl_auto(item,1)
     
     # 100 mV/div e -611mV
-    config.lecroy.set_vdiv(channel=2,vdiv='100e-3')
-    config.lecroy.set_voffset(channel=2,voffset='-466e-3')
+    config.lecroy.set_vdiv(channel=2,vdiv='305e-3')
+    config.lecroy.set_voffset(channel=2,voffset='-415e-3')
     config.lecroy.set_tdiv(tdiv='200NS')
-    config.lecroy.set_toffset(toffset='-400e-9')
+    config.lecroy.set_toffset(toffset='-820e-9')
     config.ps.write(f':SOUR:CURR:LEV {config.current_lev[0]}')
     config.ps.write(':OUTP:STAT ON')
     time.sleep(5)
@@ -80,10 +97,10 @@ for item in config_bits_list:
     #config.lecroy.write(f'C2:CRS HREL')
     # reset inj
     ndiv = 10 # positive and negative around delay
-    tdelay = -400 # ns
+    tdelay = -820 # ns
     tdiv = 200 # ns/div
-    osc_ts = 298 # ns
-    osc_te = 298 + config.peaking_time 
+    osc_ts = 300 # ns
+    osc_te = osc_ts + config.peaking_time 
     osc_offset = - ndiv/2*tdiv - tdelay
     div_s = (osc_ts - osc_offset)/tdiv
     div_e = (osc_te - osc_offset)/tdiv
@@ -100,6 +117,7 @@ for item in config_bits_list:
         'iinj_int (C)': [], 
         'Equivalent Photons': [], 
         'Voltage output average (V)': [],
+        'Voltage output average no ofs (V)': [],
         'Voltage output std (V)': []
           }
     
@@ -118,6 +136,9 @@ for item in config_bits_list:
         mis['Voltage output average (V)'].append(np.average(data)/config.lemo_gain)
         mis['Voltage output std (V)'].append(np.std(data) / config.lemo_gain)
 
+    offset = mis['Voltage output average (V)'][0]
+    mis['Voltage output average no ofs (V)'] = mis['Voltage output average (V)'] - offset
+
     df = pd.DataFrame(mis)
     datetime_str = datetime.now().strftime('%Y%m%d%H%M')
     output_file = f'G:/Shared drives/FALCON/measures/new/transcharacteristics/shap/{config.channel_name}_{config.config_bits_str}_nominal_{config.lemo_name}_shapconfig_{shap_bits}_{datetime_str}.tsv'
@@ -132,17 +153,17 @@ for item in config_bits_list:
     fig.set_figheight(4)
     fig.set_figwidth(5)
 
-    ax.errorbar(photon_span, df['Voltage output average (V)'],
+    ax.errorbar(photon_span, df['Voltage output average no ofs (V)'],
                 xerr=np.tile(1, df.shape[0]), yerr=df['Voltage output std (V)'],
                 fmt='s', markersize=1, capsize=3)
     ax.set_xlabel('Equivalent input photons [#]')
-    ax.set_ylabel(f'{channel_name.upper()} output voltage [V]')
+    ax.set_ylabel(f'{channel_name.upper()} output voltage, no offset [V]')
     ax.tick_params(right=True, top=True, direction='in')
     from scipy.stats import linregress
-    ln = linregress(photon_span, df['Voltage output average (V)'].astype(float))
+    ln = linregress(photon_span, df['Voltage output average no ofs (V)'].astype(float))
     linear_output = ln.intercept + ln.slope * np.linspace(0, 256, 20)
     ax.plot(photon_span, linear_output)
-    max_diff = np.max(df['Voltage output average (V)'] - linear_output)
+    max_diff = np.max(df['Voltage output average no ofs (V)'] - linear_output)
     inl = 100 * np.abs(max_diff) / ln.slope / 256
     print(ln)
 
@@ -150,6 +171,7 @@ for item in config_bits_list:
     ax.table(cellText=[
         ['$\\gamma$ energy [keV]', f'{config.photon_energy}'],  # Sostituisci N/A con {config.photon_energy}
         ['Peaking time [ns]', f'{config.peaking_time}'],  # sostituisci 318 con {config.peaking_time}
+        ['Offset [mV]', f'{np.round(offset*10**3,3)}'],  # sostituisci 318 con {config.peaking_time}
         ['Slope [mV/#$\\gamma$]', f'{np.round(ln.slope*10**3,3)}'],
         ['INL [%]', f'{np.round(inl, 2)}'],
         ['R$^2$', f'{np.round(ln.rvalue**2, 3)}']
@@ -158,6 +180,7 @@ for item in config_bits_list:
     #salvataggio valori misurati su nel dataframe dati, in maniera che li salvi in un .tsv
     dati['energy level [keV]'].append(f'{config.photon_energy}')
     dati['Peaking time [ns]'].append(f'{config.peaking_time}')
+    dati['Offset [mV]'].append(f'{np.round(offset*10**3,3)}')
     dati['Slope [mV/#$\\gamma$]'].append(f'{np.round(ln.slope*10**3,3)}')
     dati['INL [%]'].append(f'{np.round(inl, 2)}')
     dati['R$^2$'].append(f'{np.round(ln.rvalue**2, 3)}')
@@ -184,13 +207,13 @@ for energy_level, dataframes in groups.items():  # Sostituisci con i percorsi re
     fig.set_figwidth(5)
 
     photon_span = np.linspace(0, 256, 20)
-    pt = [234, 332, 432, 535]  # Tempi di picco per ciascun file (modifica come necessario)
+    pt = [260, 350, 450, 540]  # Tempi di picco per ciascun file (modifica come necessario)
 
     # Grafico dei dati con errore
     for i in range(4):
         ax.errorbar(
             photon_span,
-            dfs[i]['Voltage output average (V)'],
+            dfs[i]['Voltage output average no ofs (V)'],
             xerr=np.tile(1, dfs[i].shape[0]),
             yerr=dfs[i]['Voltage output std (V)'],
             fmt='s', markersize=1, capsize=3,
@@ -209,6 +232,7 @@ for energy_level, dataframes in groups.items():  # Sostituisci con i percorsi re
     #dizionario per risultati totali
     data_summary ={
         'Mode [ns]': [],
+        'Offset [mV]': [],
         'Gain [mV/#$\\gamma$]': [],
         'Gain [mV/fC]': [],
         'INL [%]': []
@@ -217,7 +241,7 @@ for energy_level, dataframes in groups.items():  # Sostituisci con i percorsi re
         from scipy.stats import linregress
         lns.append(linregress(
             photon_span,
-            dfs[i]['Voltage output average (V)'].astype(float)
+            dfs[i]['Voltage output average no ofs (V)'].astype(float)
         ))
         linear_outputs.append(lns[i].intercept + lns[i].slope * np.linspace(0, 256, 20))
         ax.plot(
@@ -225,9 +249,10 @@ for energy_level, dataframes in groups.items():  # Sostituisci con i percorsi re
             linear_outputs[i],
             color=colours[i]
         )
-        max_diffs.append(np.max(dfs[i]['Voltage output average (V)'] - linear_outputs[i]))
+        max_diffs.append(np.max(dfs[i]['Voltage output average no ofs (V)'] - linear_outputs[i]))
         inls.append(100 * np.abs(max_diffs[i]) / lns[i].slope / 256)
         data_summary['Mode [ns]'].append(f'{pt[i]}')
+        data_summary['Offset [mV]'].append(f'{np.round(offset*10**3, 3)}')
         data_summary['Gain [mV/#$\\gamma$]'].append(f'{np.round(lns[i].slope*10**3, 3)}')
         data_summary['Gain [mV/fC]'].append(f'{np.round(lns[i].slope*10**3/pt[i]*config.conv_kev_c*10**-15, 3)}')
         data_summary['INL [%]'].append(f'{np.round(inls[i], 2)}')
@@ -239,6 +264,7 @@ for energy_level, dataframes in groups.items():  # Sostituisci con i percorsi re
     # Tabella dei risultati
     ax.table([
         ['Mode [ns]', f'{pt[0]}', f'{pt[1]}', f'{pt[2]}', f'{pt[3]}'],
+        ['Offset [mV]', f'{data_summary['Offset [mV]'][0]}', f'{data_summary['Offset [mV]'][1]}', f'{data_summary['Offset [mV]'][2]}', f'{data_summary['Offset [mV]'][3]}'],
         ['Gain [mV/#$\\gamma$]', f'{np.round(lns[0].slope * 10**3, 3)}', f'{np.round(lns[1].slope * 10**3, 3)}', f'{np.round(lns[2].slope * 10**3, 3)}', f'{np.round(lns[3].slope * 10**3, 3)}'],
         ['Gain [mV/fC]', f'{np.round(lns[0].slope * 10**3 / pt[0]*config.conv_kev_c * 10**-15, 3)}', f'{np.round(lns[1].slope * 10**3 / pt[1] * config.conv_kev_c * 10**-15, 3)}', f'{np.round(lns[2].slope * 10**3 / pt[2] * config.conv_kev_c * 10**-15, 3)}', f'{np.round(lns[3].slope * 10**3 / pt[3] * config.conv_kev_c * 10**-15, 3)}'],
         ['INL [%]', f'{np.round(inls[0], 2)}', f'{np.round(inls[1], 2)}', f'{np.round(inls[2], 2)}', f'{np.round(inls[3], 2)}'],

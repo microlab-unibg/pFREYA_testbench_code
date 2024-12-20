@@ -47,8 +47,8 @@ for item in config_bits_list:
     config.config(channel='csa', lemo='none', n_steps=8, cfg_bits=item, cfg_inst=True, active_probes=False)
     pYtp.send_slow_ctrl_auto(item,0)
     
-    config.lecroy.set_vdiv(channel=1,vdiv='450e-3')
-    config.lecroy.set_voffset(channel=1,voffset='1.46')
+    config.lecroy.set_vdiv(channel=1,vdiv='230e-3')
+    config.lecroy.set_voffset(channel=1,voffset='690e-3')
     config.lecroy.set_tdiv(tdiv='100NS')
     config.lecroy.set_toffset(toffset='-240e-9')
     config.ps.write(f':SOUR:CURR:LEV {config.current_lev[0]}')

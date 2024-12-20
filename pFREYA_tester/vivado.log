@@ -1,0 +1,49 @@
+#-----------------------------------------------------------
+# Vivado v2024.1 (64-bit)
+# SW Build 5076996 on Wed May 22 18:37:14 MDT 2024
+# IP Build 5075265 on Wed May 22 21:45:21 MDT 2024
+# SharedData Build 5076995 on Wed May 22 18:29:18 MDT 2024
+# Start of session at: Thu Dec 19 16:14:45 2024
+# Process ID: 8016
+# Current directory: C:/Users/Paolo Lazzaroni/Documents/FALCON/pFREYA_testbench_code/pFREYA_tester
+# Command line: vivado.exe -mode batch -source upload_bitstream.tcl
+# Log file: C:/Users/Paolo Lazzaroni/Documents/FALCON/pFREYA_testbench_code/pFREYA_tester/vivado.log
+# Journal file: C:/Users/Paolo Lazzaroni/Documents/FALCON/pFREYA_testbench_code/pFREYA_tester\vivado.jou
+# Running On        :LAPTOP-IBO7CS3E
+# Platform          :Windows Server 2016 or Windows 10
+# Operating System  :22631
+# Processor Detail  :AMD Ryzen 7 5700U with Radeon Graphics         
+# CPU Frequency     :1797 MHz
+# CPU Physical cores:8
+# CPU Logical cores :16
+# Host memory       :14887 MB
+# Swap memory       :939 MB
+# Total Virtual     :15826 MB
+# Available Virtual :6680 MB
+#-----------------------------------------------------------
+source upload_bitstream.tcl
+# open_hw_manager
+open_hw_manager: Time (s): cpu = 00:00:05 ; elapsed = 00:00:06 . Memory (MB): peak = 648.270 ; gain = 203.770
+# connect_hw_server
+INFO: [Labtools 27-2285] Connecting to hw_server url TCP:localhost:3121
+INFO: [Labtools 27-2222] Launching hw_server...
+INFO: [Labtools 27-2221] Launch Output:
+
+****** Xilinx hw_server v2024.1.0
+  **** Build date : Mar  6 2024 at 20:50:54
+    ** Copyright 1986-2022 Xilinx, Inc. All Rights Reserved.
+
+
+INFO: [Labtools 27-3415] Connecting to cs_server url TCP:localhost:0
+INFO: [Labtools 27-3417] Launching cs_server...
+INFO: [Labtools 27-2221] Launch Output:
+
+
+******** Xilinx cs_server v2024.1.0
+  ****** Build date   : Mar 09 2024-01:00:37
+    **** Build number : 2024.1.1709942437
+      ** Copyright 2017-2022 Xilinx, Inc. All Rights Reserved.
+      ** Copyright 2022-2024 Advanced Micro Devices, Inc. All Rights Reserved.
+
+
+
