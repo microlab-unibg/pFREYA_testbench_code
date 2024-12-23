@@ -75,15 +75,15 @@ if tsv_files:
         reverse=True
     )
 
-    latest_file = tsv_files[3]
+    latest_file = tsv_files[0]
     print(f"L'ultimo file .tsv salvato è: {latest_file}")
 
     df = pd.read_csv(latest_file, sep='\t')  
     print(f"\nFile TSV letto:\n{df}")
 
-    if 'Gain [mV/#$\gamma$]' in df.columns:
+    if 'Gain [mV/fC]' in df.columns:
         for i in range(4):
-            gain.append(float(df['Gain [mV/#$\gamma$]'][i]))  
+            gain.append(float(df['Gain [mV/fC]'][i]))  
         print(f"\nguadagni prelevati:\n{gain}\n")
         selected_configs = select_configurations(latest_file, config_bits_list)
         print(f"\nConfigurazioni selezionate:\n{selected_configs}")
@@ -91,54 +91,75 @@ if tsv_files:
 for gain_item, cfg_item in zip(gain, selected_configs):
 
     config.config(channel='shap', lemo='none', n_steps=20, cfg_bits=cfg_item, cfg_inst=True, active_probes=False)
-    pYtp.send_slow_ctrl_auto(cfg_item, 1)
-    
+    pYtp.send_slow_ctrl_auto(cfg_item, 0) # dont send injection    
 
     channel_name = config.channel_name
     lemo_name = config.lemo_name
-    gain_shap = gain_item
-    N_samples = 500
+    elem_charge = config.elem_charge
+    gain = config.lemo_gain
+    gain_shap_fC = gain_item
+    N_samples = 100
 
     # 2 mV/div e -351.8mV
-    config.lecroy.set_vdiv(channel=1,vdiv='2e-3')
-    config.lecroy.set_voffset(channel=1,voffset='-351e-3')
-    ndiv = 10
-    tdelay = -908  # ns
-    tdiv = 200  # ns/div
-    osc_ts = 329  # ns
-    osc_te = osc_ts + config.peaking_time  
-    osc_offset = - ndiv / 2 * tdiv - tdelay
-    div_s = (osc_ts - osc_offset) / tdiv
-    if config.channel_name == 'shap':
-        div_e = (osc_te - osc_offset) / tdiv
-    else:
-        div_e = (432 - osc_offset) / tdiv
+    config.lecroy.set_vdiv(channel=2,vdiv='10e-3') # reset measures
+    config.lecroy.set_vdiv(channel=2,vdiv='5e-3')
+    config.lecroy.set_voffset(channel=2,voffset='0')
+    config.lecroy.set_tdiv(tdiv='200NS')
+    config.lecroy.set_toffset(toffset='-820e-9')
+    ndiv = 10 # positive and negative around delay
+    tdelay = -820 # ns
+    tdiv = 200 # ns/div
+    osc_ts = 300 # ns
+    osc_te = osc_ts + config.peaking_time 
+    osc_offset = - ndiv/2*tdiv - tdelay
+    div_s = (osc_ts - osc_offset)/tdiv
+    div_e = (osc_te - osc_offset)/tdiv
 
 
-    config.ps.write(':SOUR:CURR:LEV 0')
+    config.ps.write(f':SOUR:CURR:LEV {config.current_lev[0]}')
     config.ps.write(':OUTP:STAT OFF')
+    time.sleep(5)
 
-    N_repetitions = 16
+    N_repetitions = 1
 
     config.lecroy.write(f'C2:CRS HREL')
     config.lecroy.write(f'C2:CRST HDIF,{div_s},HREF,{div_e}')
 
+    diffstd_osc = np.empty(N_repetitions)
+    hstd_osc = np.empty(N_repetitions)
     data = np.empty((N_samples, N_repetitions))
     for i in range(N_repetitions):
+        time.sleep(0.01)
+        print(f'Rep n. {i}')
         for j in range(N_samples):
-            data[j, i] = float(config.lecroy.query(f'C{config.channel_num}:CRVA? HREL').split(',')[2])
+            data[j, i] = float(config.lecroy.query(f'C{config.channel_num}:CRVA? HREL').split(',')[2])/gain
+            time.sleep(0.001)
+        
+        # they might take time to calculate so better here
+        diffstd_osc[i] = float(config.lecroy.query(f'PAST? CUST,AVG,P3').split(',')[5])/gain
+        hstd_osc[i] = float(config.lecroy.query(f'PAST? CUST,AVG,P4').split(',')[5])/gain
 
-    data = data * 10 ** 3  
+    data = data * 10 ** 3
+    diffstd_osc = diffstd_osc * 10**3
+    hstd_osc = hstd_osc * 10**3
 
     noise_std = np.mean(np.std(data, axis=0))
     noise_std_std = np.std(np.std(data, axis=0))
     noise_rms = np.mean(np.sqrt(np.mean(np.square(data), axis=0)))
     noise_rms_std = np.std(np.sqrt(np.mean(np.square(data), axis=0)))
+    noise_diff = np.mean(diffstd_osc)
+    noise_diff_std = np.std(diffstd_osc)
+    noise_hstd = np.mean(hstd_osc)
+    noise_hstd_std = np.std(hstd_osc)
     
-    enc_std = np.sqrt(noise_std ** 2) / gain_shap * keV(cfg_item) / 3.65
-    enc_std_std = noise_std_std / gain_shap * keV(cfg_item) / 3.65
-    enc_rms = np.sqrt(noise_rms ** 2) / gain_shap * keV(cfg_item) / 3.65
-    enc_rms_std = noise_rms_std / gain_shap * keV(cfg_item) / 3.65
+    enc_std = noise_std / gain_shap_fC / elem_charge * 10**-15 # [mV] * [fC/mV] * [e-/fC]
+    enc_std_std = noise_std_std / gain_shap_fC
+    enc_rms = noise_rms / gain_shap_fC / elem_charge * 10**-15
+    enc_rms_std = noise_rms_std / gain_shap_fC
+    enc_diff = noise_diff / gain_shap_fC / elem_charge * 10**-15
+    enc_diff_std = noise_diff_std / gain_shap_fC
+    enc_hstd = noise_hstd / gain_shap_fC / elem_charge * 10**-15
+    enc_hstd_std = noise_hstd_std / gain_shap_fC
 
     datetime_str = datetime.strftime(datetime.now(), '%d%m%y_%H%M%S')
     df = pd.DataFrame([[
@@ -146,35 +167,51 @@ for gain_item, cfg_item in zip(gain, selected_configs):
         noise_std_std,
         noise_rms,
         noise_rms_std,
+        noise_diff,
+        noise_diff_std,
+        noise_hstd,
+        noise_hstd_std,
         enc_std,
         enc_std_std,
         enc_rms,
         enc_rms_std,
+        enc_diff,
+        enc_diff_std,
+        enc_hstd,
+        enc_hstd_std,
     ]], columns=[
         'noise std (mV)',
         'noise std std (mV)',
         'noise rms (mV)',
         'noise rms std (mV)',
+        'noise diff osc (mV)',
+        'noise diff osc std (mV)',
+        'noise hstd osc (mV)',
+        'noise hstd osc std (mV)',
         'ENC std (e-)',
         'ENC std std (e-)',
         'ENC rms (e-)',
-        'ENC std std (e-)',
+        'ENC rms std (e-)',
+        'ENC diff osc (e-)',
+        'ENC diff osc std (e-)',
+        'ENC hstd osc (e-)',
+        'ENC hstd osc std (e-)',
     ])
     #salvataggio e plot
     df.to_csv(f'G:Shared drives/FALCON/measures/new/enc/enc_{config.config_bits_str}_{datetime_str}_{lemo_name}.tsv', sep='\t')
     print(f"\nfile tsv enc per {cfg_item} salvato\n")
-    colours = list(mcolors.TABLEAU_COLORS.keys())
-    fig, ax = plt.subplots(4, 4)
-    fig.set_figheight(8)
-    fig.set_figwidth(8)
-    for i in range(16):
-        if i < N_repetitions:
-            ax[i // 4, i % 4].hist(data[:, i], histtype='step', fill=False, bins=20)
-        ax[i // 4, i % 4].tick_params(right=True, top=True, direction='in')
-    
-    fig.text(0.5, 0.04, 'Shaper output voltage [mV]', ha='center')
-    fig.text(0.04, 0.5, 'Number of occurrences', va='center', rotation='vertical')
+    #colours = list(mcolors.TABLEAU_COLORS.keys())
+    #fig, ax = plt.subplots(3,3)
+    #fig.set_figheight(8)
+    #fig.set_figwidth(8)
+    #for i in range(N_repetitions):
+    #    if i < N_repetitions:
+    #        ax[i // 3, i % 3].hist(data[:, i], histtype='step', fill=False, bins=20)
+    #    ax[i // 3, i % 3].tick_params(right=True, top=True, direction='in')
+    #
+    #fig.text(0.5, 0.04, 'Shaper output voltage [mV]', ha='center')
+    #fig.text(0.04, 0.5, 'Number of occurrences', va='center', rotation='vertical')
 
-    fig.savefig(f'G:Shared drives/FALCON/measures/new/enc/distributions_{config.config_bits_str}_{datetime_str}_{lemo_name}.pdf', dpi=300)
-    print(f"\nfile pdf distributions per {cfg_item} salvato\n")
+    #fig.savefig(f'G:Shared drives/FALCON/measures/new/enc/distributions_{config.config_bits_str}_{datetime_str}_{lemo_name}.pdf', dpi=300)
+    #print(f"\nfile pdf distributions per {cfg_item} salvato\n")
 

@@ -34,7 +34,7 @@ def get_energy_level(cfg_bits):
 config_bits_list = [
     [1, 1, 1, 1, 1, 1, 1],  # Configurazione 5 keV
     [0, 1, 1, 1, 1, 1, 1],  # Configurazione 9 keV
-    [1, 0, 1, 1, 1, 1, 1],  # Configurazione 18 keV -> defective
+    [1, 0, 1, 1, 1, 1, 1],  # Configurazione 18 keV
     [0, 0, 1, 1, 1, 1, 1],  # Configurazione 25 keV
 ]
 
@@ -73,14 +73,14 @@ import config
 for item in config_bits_list:
     config.config(channel='monitor',lemo='none',n_steps=20,cfg_bits=item,cfg_inst=True, active_probes=False)
 
-    config.lecroy.write(f'C2:CRS HREL')
+    config.lecroy.write(f'C3:CRS HREL')
     pYtp.send_slow_ctrl_auto(item,0)
     
     # 100 mV/div e -611mV
     # config.lecroy.set_vdiv(channel=1,vdiv='100e-3')
     # config.lecroy.set_voffset(channel=1,voffset='-611e-3')
-    config.lecroy.set_vdiv(channel=1,vdiv='450e-3')
-    config.lecroy.set_voffset(channel=1,voffset='1.46')
+    config.lecroy.set_vdiv(channel=3,vdiv='112e-3')
+    config.lecroy.set_voffset(channel=3,voffset='-402e-3')
     config.lecroy.set_tdiv(tdiv='100NS')
     config.lecroy.set_toffset(toffset='-240e-9')
     
@@ -101,22 +101,22 @@ for item in config_bits_list:
         div_e = (osc_te - osc_offset)/tdiv
     else:
         div_e = (-10 - osc_offset)/tdiv
-    config.lecroy.write(f'C1:CRST HDIF,{div_s},HREF,{div_e}')
+    config.lecroy.write(f'C3:CRST HDIF,{div_s},HREF,{div_e}')
     channel_name = config.channel_name
     lemo_name = config.lemo_name
     gain = config.lemo_gain
+    gain_mon = config.gain_mon
     N_samples = config.N_samples
 
     # set proper time division for this analysis
     # suppress channel for noise stuff
     #config.lecroy.write('F3:TRA OFF')
     # set cursor positions
-    #config.lecroy.write(f'C2:CRS HREL')
+    #config.lecroy.write(f'C3:CRS HREL')
     # reset inj
-    time.sleep(5)
 
     mis = {
-        #'monitor Bits': [],
+        #'CSA Bits': [],
         'Current Level Step': [],
         'Current Level (A)': [],
         'iinj_int (C)': [],
@@ -131,20 +131,20 @@ for item in config_bits_list:
         config.ps.write(f':SOUR:CURR:LEV {level}')
         time.sleep(1)
         print(f'{i} : {level}')
-        #mis['monitor Bits'].append(config)
+        #mis['CSA Bits'].append(config)
         mis['Current Level Step'].append(i)
         mis['Current Level (A)'].append(level)
         mis['iinj_int (C)'].append(config.iinj_int[i])
         mis['Equivalent Photons'].append(config.eq_ph[i])      
         data = []
         for _ in range(N_samples):
-            data.append(float(config.lecroy.query(f'C{config.channel_num}:CRVA? HREL').split(',')[2]))
+            data.append(float(config.lecroy.query(f'C{config.channel_num_mon}:CRVA? HREL').split(',')[4]))
             time.sleep(0.05)
         
         # Calcola la media e la deviazione standard e memorizza nel DataFrame i diversi valori di tensione
-        mis['Voltage output average (V)'].append(np.average(data)/gain)
-        mis['Voltage output std (V)'].append(np.std(data) / gain)
-    if channel_name == 'monitor':
+        mis['Voltage output average (V)'].append(np.average(data)/gain_mon)
+        mis['Voltage output std (V)'].append(np.std(data) / gain_mon)
+    if channel_name == 'csa':
         mis['Voltage output average (V)'] = [-1* x for x in mis['Voltage output average (V)']]
         #mis['Voltage output average (V)'] = -1*mis['Voltage output average (V)']
     
@@ -190,7 +190,7 @@ for item in config_bits_list:
 
     #salvataggio valori misurati su nel dataframe dati, in maniera che li salvi in un .tsv
     dati['energy level [keV]'].append(f'{config.photon_energy}')
-    dati['Offset [ns]'].append(f'{np.round(offset*10**3,3)}')
+    dati['Offset [mV]'].append(f'{np.round(offset*10**3,3)}')
     dati['Slope [mV/#$\\gamma$]'].append(f'{np.round(ln.slope*10**3,3)}')
     dati['INL [%]'].append(f'{np.round(inl, 2)}')
     dati['R$^2$'].append(f'{np.round(ln.rvalue**2, 3)}')
@@ -240,7 +240,7 @@ for i in range(4):
     )
 
 ax.set_xlabel('Equivalent input photons')
-ax.set_ylabel('|monitor reset amplitude| [V]')
+ax.set_ylabel('|CSA reset amplitude| [V]')
 ax.tick_params(right=True, top=True, direction='in')
 
 lns = []
@@ -285,7 +285,7 @@ summary.to_csv(f'G:/Shared drives/FALCON/measures/new/transcharacteristics/monit
 
 ax.table(cellText=[
     ['Mode [keV]', f'{modes[0]}', f'{modes[1]}', f'{modes[2]}', f'{modes[3]}'],
-    ['Mode [keV]', f'{data_summary['Offset [mV]'][0]}', f'{data_summary['Offset [mV]'][1]}', f'{data_summary['Offset [mV]'][2]}', f'{data_summary['Offset [mV]'][3]}'],
+    ['Offset [mV]', f'{data_summary['Offset [mV]'][0]}', f'{data_summary['Offset [mV]'][1]}', f'{data_summary['Offset [mV]'][2]}', f'{data_summary['Offset [mV]'][3]}'],
     ['Gain [mV/γ]', f'{np.round(lns[0].slope*10**3, 3)}', f'{np.round(lns[1].slope*10**3, 3)}', f'{np.round(lns[2].slope*10**3, 3)}', f'{np.round(lns[3].slope*10**3, 3)}'],
     ['Gain [mV/fC]', f'{np.round(lns[0].slope*10**3/modes[0]*config.conv_kev_c*10**-15, 3)}', f'{np.round(lns[1].slope*10**3/modes[1]*config.conv_kev_c*10**-15, 3)}', f'{np.round(lns[2].slope*10**3/modes[2]*config.conv_kev_c*10**-15, 3)}', f'{np.round(lns[3].slope*10**3/modes[3]*config.conv_kev_c*10**-15, 3)}'],
     ['INL [%]', f'{np.round(inls[0], 2)}', f'{np.round(inls[1], 2)}', f'{np.round(inls[2], 2)}', f'{np.round(inls[3], 2)}'],

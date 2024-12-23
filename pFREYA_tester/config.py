@@ -88,9 +88,9 @@ def config(channel: str, lemo: str, n_steps: int, cfg_bits: list, cfg_inst: bool
     #     Evaluating the offset (@ 9keV, sim) at 0 is 6.16 eq ph or 2.43fA. With a current of 0.02 uA it goes away. In real life it goes with 0.06 uA.
     # With max it is not perfect
     #     doing the same as above, one gets a correction factor of around 105.8fA/103.2fA
-    global T, t_r, N_pulses, conv_kev_c, config_bits, csa_bits, shap_bits, photon_energy, offset_charge, \
+    global T, t_r, N_pulses, conv_kev_c, elem_charge, config_bits, csa_bits, shap_bits, photon_energy, offset_charge, \
         min_current, max_current, corr_fact, peaking_time, current_lev, iinj_int,  eq_ph, config_bits_str, \
-        channel_name, channel_num, num_steps, config_bits, lemo_gain, N_samples, gain_shap, attenuation, active_prbs, lemo_name
+        channel_name, channel_num, channel_num_mon, num_steps, config_bits, lemo_gain, gain_mon, N_samples, gain_shap, attenuation, active_prbs, lemo_name
 
     channel_name = channel
     lemo_name = lemo
@@ -123,7 +123,8 @@ def config(channel: str, lemo: str, n_steps: int, cfg_bits: list, cfg_inst: bool
     T = 30e-9 # s
     t_r = 3e-9 # s
     N_pulses = 10 # adimensional
-    conv_kev_c = 3.65/1000 * 1/1.602e-19 # Energy in silicon for e-/h * no of electrons per coulomb [keV/e-] * [e-/C]
+    elem_charge = 1.602e-19
+    conv_kev_c = 3.65/1000 * 1/elem_charge # Energy in silicon for e-/h * no of electrons per coulomb [keV/e-] * [e-/C]
     csa_bits = config_bits[0:2]
     shap_bits = config_bits[3:5]
 

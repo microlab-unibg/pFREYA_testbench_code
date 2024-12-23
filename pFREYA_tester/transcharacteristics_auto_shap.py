@@ -254,7 +254,7 @@ for energy_level, dataframes in groups.items():  # Sostituisci con i percorsi re
         data_summary['Mode [ns]'].append(f'{pt[i]}')
         data_summary['Offset [mV]'].append(f'{np.round(offset*10**3, 3)}')
         data_summary['Gain [mV/#$\\gamma$]'].append(f'{np.round(lns[i].slope*10**3, 3)}')
-        data_summary['Gain [mV/fC]'].append(f'{np.round(lns[i].slope*10**3/pt[i]*config.conv_kev_c*10**-15, 3)}')
+        data_summary['Gain [mV/fC]'].append(f'{np.round(lns[i].slope*10**3/energy_level*config.conv_kev_c*10**-15, 3)}')
         data_summary['INL [%]'].append(f'{np.round(inls[i], 2)}')
 
     #per ogni configurazione di shap salvo dati
@@ -266,12 +266,12 @@ for energy_level, dataframes in groups.items():  # Sostituisci con i percorsi re
         ['Mode [ns]', f'{pt[0]}', f'{pt[1]}', f'{pt[2]}', f'{pt[3]}'],
         ['Offset [mV]', f'{data_summary['Offset [mV]'][0]}', f'{data_summary['Offset [mV]'][1]}', f'{data_summary['Offset [mV]'][2]}', f'{data_summary['Offset [mV]'][3]}'],
         ['Gain [mV/#$\\gamma$]', f'{np.round(lns[0].slope * 10**3, 3)}', f'{np.round(lns[1].slope * 10**3, 3)}', f'{np.round(lns[2].slope * 10**3, 3)}', f'{np.round(lns[3].slope * 10**3, 3)}'],
-        ['Gain [mV/fC]', f'{np.round(lns[0].slope * 10**3 / pt[0]*config.conv_kev_c * 10**-15, 3)}', f'{np.round(lns[1].slope * 10**3 / pt[1] * config.conv_kev_c * 10**-15, 3)}', f'{np.round(lns[2].slope * 10**3 / pt[2] * config.conv_kev_c * 10**-15, 3)}', f'{np.round(lns[3].slope * 10**3 / pt[3] * config.conv_kev_c * 10**-15, 3)}'],
+        ['Gain [mV/fC]', f'{np.round(lns[0].slope * 10**3 / energy_level*config.conv_kev_c * 10**-15, 3)}', f'{np.round(lns[1].slope * 10**3 / energy_level * config.conv_kev_c * 10**-15, 3)}', f'{np.round(lns[2].slope * 10**3 / energy_level * config.conv_kev_c * 10**-15, 3)}', f'{np.round(lns[3].slope * 10**3 / energy_level * config.conv_kev_c * 10**-15, 3)}'],
         ['INL [%]', f'{np.round(inls[0], 2)}', f'{np.round(inls[1], 2)}', f'{np.round(inls[2], 2)}', f'{np.round(inls[3], 2)}'],
     ], colWidths=[.25, .11, .11, .11, .11], loc='lower right')
 
     # Testo con l'energia fotonica
-    ax.text(.77, .25, f'$\\gamma$ @ {energy_level} keV', ha='left', va='bottom', transform=ax.transAxes)
+    ax.text(.77, .30, f'$\\gamma$ @ {energy_level} keV', ha='left', va='bottom', transform=ax.transAxes)
 
     # Legenda
     ax.legend([f'{x} ns' for x in pt], title=f"Peaking time", frameon=False)
