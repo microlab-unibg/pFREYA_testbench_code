@@ -26,15 +26,18 @@ def get_energy_level(cfg_bits):
 
 def get_shap_bits(cfg_bits):
     if cfg_bits[3] == 1 and cfg_bits[4] == 1:
-        return 530  
+        return 510  
     elif cfg_bits[3] == 0 and cfg_bits[4] == 1:
-        return 340 
+        return 330 
     elif cfg_bits[3] == 1 and cfg_bits[4] == 0:
-        return 440 
+        return 420 
     elif cfg_bits[3] == 0 and cfg_bits[4] == 0:
-        return 250 
+        return 240 
     else:
         raise ValueError("Configurazione shap_bits non valida")
+
+
+pt = [240, 330, 420, 510]  # Tempi di picco per ciascun file (modifica come necessario)
 
 # Configurazione dei test per le diverse configurazioni di cfg_bits
 config_bits_list = [
@@ -124,7 +127,7 @@ for item in config_bits_list:
     for i, level in enumerate(config.current_lev):
         config.ps.write(f':SOUR:CURR:LEV {level}')
         print(f'{i} : {level}')
-        time.sleep(1)
+        time.sleep(2)
         mis['Current Level Step'].append(i)
         mis['Current Level (A)'].append(level)
         mis['iinj_int (C)'].append(config.iinj_int[i])
@@ -207,7 +210,6 @@ for energy_level, dataframes in groups.items():  # Sostituisci con i percorsi re
     fig.set_figwidth(5)
 
     photon_span = np.linspace(0, 256, 20)
-    pt = [260, 350, 450, 540]  # Tempi di picco per ciascun file (modifica come necessario)
 
     # Grafico dei dati con errore
     for i in range(4):

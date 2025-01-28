@@ -128,7 +128,7 @@ for item in config_bits_list:
 
     for i, level in enumerate(config.current_lev):
         config.ps.write(f':SOUR:CURR:LEV {level}')
-        time.sleep(1)
+        time.sleep(2)
         print(f'{i} : {level}')
         #mis['CSA Bits'].append(config)
         mis['Current Level Step'].append(i)

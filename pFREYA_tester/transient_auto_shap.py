@@ -21,13 +21,13 @@ def get_energy_level(cfg_bits):
 
 def get_shap_bits(cfg_bits):
     if cfg_bits[3] == 1 and cfg_bits[4] == 1:
-        return 535  
+        return 510  
     elif cfg_bits[3] == 0 and cfg_bits[4] == 1:
-        return 432 
+        return 420 
     elif cfg_bits[3] == 1 and cfg_bits[4] == 0:
-        return 332 
+        return 330 
     elif cfg_bits[3] == 0 and cfg_bits[4] == 0:
-        return 234 
+        return 240 
     else:
         raise ValueError("Configurazione shap_bits non valida")
 
@@ -90,7 +90,7 @@ for item in config_bits_list:
         # Imposta il livello di corrente
         config.ps.write(f':SOUR:CURR:LEV {cl}')
         print(f'{i}:{cl}')
-        time.sleep(2)
+        time.sleep(5)
         # N sample to average and extract std from
         data = pd.DataFrame.from_dict(
             config.lecroy.get_channel(channel_name='C', n_channel=config.channel_num)['waveforms'][0]

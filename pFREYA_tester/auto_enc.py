@@ -75,7 +75,7 @@ if tsv_files:
         reverse=True
     )
 
-    latest_file = tsv_files[0]
+    latest_file = tsv_files[2] # change here
     print(f"L'ultimo file .tsv salvato è: {latest_file}")
 
     df = pd.read_csv(latest_file, sep='\t')  
@@ -117,7 +117,7 @@ for gain_item, cfg_item in zip(gain, selected_configs):
 
 
     config.ps.write(f':SOUR:CURR:LEV {config.current_lev[0]}')
-    config.ps.write(':OUTP:STAT OFF')
+    config.ps.write(':OUTP:STAT ON')
     time.sleep(5)
 
     N_repetitions = 1

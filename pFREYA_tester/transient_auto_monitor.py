@@ -72,7 +72,7 @@ for item in config_bits_list:
         # Imposta il livello di corrente
         config.ps.write(f':SOUR:CURR:LEV {cl}')
         print(f'{i} : {cl}')
-        time.sleep(2)
+        time.sleep(5)
         # N sample to average and extract std from
         data = pd.DataFrame.from_dict(
             config.lecroy.get_channel(channel_name='C', n_channel=config.channel_num_mon)['waveforms'][0]

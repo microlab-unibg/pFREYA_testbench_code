@@ -536,6 +536,7 @@ def create_slow_ctrl_packet_auto(bits, pixel_idx):
         full_slow_ctrl_packet = full_slow_ctrl_packet + slow_ctrl_packet
 
     # set pixel to be injected
+    
     pixel_idx = pixel_idx*UARTdef.SLOW_CTRL_N_BITS+2 # shouldnt be hard coded
     full_slow_ctrl_packet = full_slow_ctrl_packet[:pixel_idx] + '0' + full_slow_ctrl_packet[pixel_idx+1:]
     # reach a dimension multiple of DATA_POS+1
@@ -543,7 +544,7 @@ def create_slow_ctrl_packet_auto(bits, pixel_idx):
     full_slow_ctrl_packet = full_slow_ctrl_packet + '0'*missing_bits #trailing cause each 6 bits will be reversed when sending data
 
     return full_slow_ctrl_packet
-def send_slow_ctrl_auto(bits, n_pixel):
+def send_slow_ctrl_auto(bits, n_pixel=None):
     """Function to send clocks in the FPGA
 
     Parameters

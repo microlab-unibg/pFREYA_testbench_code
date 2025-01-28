@@ -18,7 +18,7 @@
         "current_level": "0"
     },
     "slow_ctrl": {
-        "csa_mode_n": "10",
+        "csa_mode_n": "01",
         "inj_en_n": "1",
         "shap_mode": "10",
         "ch_en": "1",
