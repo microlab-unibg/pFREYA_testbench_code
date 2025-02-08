@@ -59,6 +59,106 @@ def config_inst() -> None:
     # not setting the whole configuration for the time being, just doing the measurements
     #print(lecroy.query('TEMPLATE?'))
 
+
+config_bits_list_csa = [
+    [1, 1, 1, 1, 1, 1, 1],  # Configurazione 5  keV
+    [0, 1, 1, 1, 1, 1, 1],  # Configurazione 9  keV
+    [1, 0, 1, 1, 1, 1, 1],  # Configurazione 18 keV
+    [0, 0, 1, 1, 1, 1, 1],  # Configurazione 25 keV
+]
+
+config_bits_list_shap= [
+    # Configurazione da 9 keV 
+    [0, 1, 1, 1, 0, 1, 1],  #shaper tp = 432 ns
+    [0, 1, 1, 0, 0, 1, 1],  #shaper tp = 234 ns 
+    [0, 1, 1, 0, 1, 1, 1],  #shaper tp = 332 ns   
+    [0, 1, 1, 1, 1, 1, 1],  #shaper tp = 535 ns  
+    # Configurazione 25 keV
+    [0, 0, 1, 1, 0, 1, 1],  #shaper tp = 432 ns  
+    [0, 0, 1, 0, 0, 1, 1],  #shaper tp = 234 ns  
+    [0, 0, 1, 0, 1, 1, 1],  #shaper tp = 332 ns  
+    [0, 0, 1, 1, 1, 1, 1],  #shaper tp = 535 ns  
+    # Configurazione 18 keV
+    [1, 0, 1, 1, 0, 1, 1],  #shaper tp = 432 ns  
+    [1, 0, 1, 0, 0, 1, 1],  #shaper tp = 234 ns  
+    [1, 0, 1, 0, 1, 1, 1],  #shaper tp = 332 ns  
+    [1, 0, 1, 1, 1, 1, 1],  #shaper tp = 535 ns  
+    # Configurazione 5 keV
+    [1, 1, 1, 1, 0, 1, 1],  #shaper tp = 432 ns  
+    [1, 1, 1, 0, 0, 1, 1],  #shaper tp = 234 ns  
+    [1, 1, 1, 0, 1, 1, 1],  #shaper tp = 332 ns  
+    [1, 1, 1, 1, 1, 1, 1],  #shaper tp = 535 ns  
+]
+config_bits_list_enc = [
+    # Configurazione da 18 keV
+    [1, 0, 1, 0, 0, 1, 1],  #shaper tp = 234 ns
+    [1, 0, 1, 0, 1, 1, 1],  #shaper tp = 332 ns
+    [1, 0, 1, 1, 0, 1, 1],  #shaper tp = 432 ns
+    [1, 0, 1, 1, 1, 1, 1],  #shaper tp = 535 ns
+    # Configurazione 25 keV
+    [0, 0, 1, 0, 0, 1, 1],  #shaper tp = 234 ns
+    [0, 0, 1, 0, 1, 1, 1],  #shaper tp = 332 ns
+    [0, 0, 1, 1, 0, 1, 1],  #shaper tp = 432 ns
+    [0, 0, 1, 1, 1, 1, 1],  #shaper tp = 535 ns
+    # Configurazione 9 keV
+    [0, 1, 1, 0, 0, 1, 1],  #shaper tp = 234 ns
+    [0, 1, 1, 0, 1, 1, 1],  #shaper tp = 332 ns
+    [0, 1, 1, 1, 0, 1, 1],  #shaper tp = 432 ns
+    [0, 1, 1, 1, 1, 1, 1],  #shaper tp = 535 ns
+    # Configurazione 5 keV
+    [1, 1, 1, 0, 0, 1, 1],  #shaper tp = 234 ns
+    [1, 1, 1, 0, 1, 1, 1],  #shaper tp = 332 ns
+    [1, 1, 1, 1, 0, 1, 1],  #shaper tp = 432 ns
+    [1, 1, 1, 1, 1, 1, 1],  #shaper tp = 535 ns
+]
+'''
+vado a leggere l'ultimo file salvato sulla cartella drive in maniera tale da prelevare i guadagni di una determinata 
+configurazione del csa sulle 4 configurazioni[ns] dello shaper
+'''
+
+def select_configurations(file_name, config_bits_list_enc):
+    energy_level = file_name.split('_')[1]  
+    energy_to_config_map = {
+        '5': config_bits_list_enc[12:16],  # Configurazioni per 5 keV (indice 12-15)
+        '9': config_bits_list_enc[8:12],   # Configurazioni per 9 keV (indice 8-11)
+        '25': config_bits_list_enc[4:8],   # Configurazioni per 25 keV (indice 4-7)
+        '18': config_bits_list_enc[0:4]    # Configurazioni per 18 keV (indice 0-3)
+    }
+    selected_configs = energy_to_config_map.get(energy_level, [])
+    return selected_configs
+
+'''
+funzione per determinare keV sulla base della configurazione dei bit passata come parametro, sulla base delle prime due cifre
+della configurazione
+'''
+def get_energy_level(cfg_bits):
+    if cfg_bits[0] == 1 and cfg_bits[1] == 1:
+        return 5  # 5 keV
+    elif cfg_bits[0] == 1 and cfg_bits[1] == 0:
+        return 18  # 18 keV
+    elif cfg_bits[0] == 0 and cfg_bits[1] == 1:
+        return 9 # 9 keV
+    elif cfg_bits[0] == 0 and cfg_bits[1] == 0:
+        return 25 # 25 keV
+    else:
+        raise ValueError("Configurazione cfg_bits non valida")
+'''
+Funzione per determinare energia e peaking time dalla configurazione dei bit
+'''   
+def get_shap_bits(cfg_bits):
+    if cfg_bits[3] == 1 and cfg_bits[4] == 1:
+        return 510  
+    elif cfg_bits[3] == 0 and cfg_bits[4] == 1:
+        return 420 
+    elif cfg_bits[3] == 1 and cfg_bits[4] == 0:
+        return 330 
+    elif cfg_bits[3] == 0 and cfg_bits[4] == 0:
+        return 240 
+    else:
+        raise ValueError("Configurazione shap_bits non valida")
+
+
+
 def config(channel: str, lemo: str, n_steps: int, cfg_bits: list, cfg_inst: bool = True, active_probes = False) -> None:
     """Function to configure parameters for tests
 

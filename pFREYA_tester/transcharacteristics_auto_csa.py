@@ -14,29 +14,7 @@ T = 30e-9 # s
 t_r = 3e-9 # s
 N_pulses = 10 # adimensional
 conv_kev_c = 3.65/1000 * 1/1.602e-19 # Energy in silicon for e-/h * no of electrons per coulomb [keV/e-] * [e-/C]
-'''
-funzione per determinare keV sulla base della configurazione dei bit passata come parametro, sulla base delle prime due cifre
-della configurazione
-'''
-def get_energy_level(cfg_bits):
-    if cfg_bits[0] == 1 and cfg_bits[1] == 1:
-        return 5  # 5 keV
-    elif cfg_bits[0] == 1 and cfg_bits[1] == 0:
-        return 18  # 18 keV
-    elif cfg_bits[0] == 0 and cfg_bits[1] == 1:
-        return 9 # 9 keV
-    elif cfg_bits[0] == 0 and cfg_bits[1] == 0:
-        return 25 # 25 keV
-    else:
-        raise ValueError("Configurazione cfg_bits non valida")
 
-
-config_bits_list = [
-    [1, 1, 1, 1, 1, 1, 1],  # Configurazione 5 keV
-    [0, 1, 1, 1, 1, 1, 1],  # Configurazione 9 keV
-    [1, 0, 1, 1, 1, 1, 1],  # Configurazione 18 keV
-    [0, 0, 1, 1, 1, 1, 1],  # Configurazione 25 keV
-]
 
 '''
 dizionario per salvare dati di configurazione
@@ -70,15 +48,11 @@ per ogni configigurazione presente nella lista:
 
 import config
 
-for item in config_bits_list:
+for item in config.config_bits_list_csa:
     config.config(channel='csa',lemo='none',n_steps=20,cfg_bits=item,cfg_inst=True, active_probes=False)
 
     config.lecroy.write(f'C2:CRS HREL')
     pYtp.send_slow_ctrl_auto(item,0)
-    
-    # 100 mV/div e -611mV
-    # config.lecroy.set_vdiv(channel=1,vdiv='100e-3')
-    # config.lecroy.set_voffset(channel=1,voffset='-611e-3')
     config.lecroy.set_vdiv(channel=1,vdiv='230e-3')
     config.lecroy.set_voffset(channel=1,voffset='690e-3')
     config.lecroy.set_tdiv(tdiv='100NS')
@@ -107,15 +81,8 @@ for item in config_bits_list:
     gain = config.lemo_gain
     N_samples = config.N_samples
 
-    # set proper time division for this analysis
-    # suppress channel for noise stuff
-    #config.lecroy.write('F3:TRA OFF')
-    # set cursor positions
-    #config.lecroy.write(f'C2:CRS HREL')
-    # reset inj
 
     mis = {
-        #'CSA Bits': [],
         'Current Level Step': [],
         'Current Level (A)': [],
         'iinj_int (C)': [],

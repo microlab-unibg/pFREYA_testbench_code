@@ -11,57 +11,8 @@ import os
 import pFREYA_tester_processing as pYtp
 from scipy.stats import linregress
 
-# Funzioni per determinare energia e peaking time dalla configurazione dei bit
-def get_energy_level(cfg_bits):
-    if cfg_bits[0] == 1 and cfg_bits[1] == 1:
-        return 5  # 5 keV
-    elif cfg_bits[0] == 1 and cfg_bits[1] == 0:
-        return 18  # 18 keV
-    elif cfg_bits[0] == 0 and cfg_bits[1] == 1:
-        return 9 # 9 keV
-    elif cfg_bits[0] == 0 and cfg_bits[1] == 0:
-        return 25 # 25 keV
-    else:
-        raise ValueError("Configurazione cfg_bits non valida")
-
-def get_shap_bits(cfg_bits):
-    if cfg_bits[3] == 1 and cfg_bits[4] == 1:
-        return 510  
-    elif cfg_bits[3] == 0 and cfg_bits[4] == 1:
-        return 330 
-    elif cfg_bits[3] == 1 and cfg_bits[4] == 0:
-        return 420 
-    elif cfg_bits[3] == 0 and cfg_bits[4] == 0:
-        return 240 
-    else:
-        raise ValueError("Configurazione shap_bits non valida")
-
-
 pt = [240, 330, 420, 510]  # Tempi di picco per ciascun file (modifica come necessario)
 
-# Configurazione dei test per le diverse configurazioni di cfg_bits
-config_bits_list = [
-    # Configurazione da 9 keV 
-    [0, 1, 1, 1, 0, 1, 1],  #shaper tp = 432 ns
-    [0, 1, 1, 0, 0, 1, 1],  #shaper tp = 234 ns 
-    [0, 1, 1, 0, 1, 1, 1],  #shaper tp = 332 ns   
-    [0, 1, 1, 1, 1, 1, 1],  #shaper tp = 535 ns  
-    # Configurazione 25 keV
-    [0, 0, 1, 1, 0, 1, 1],  #shaper tp = 432 ns  
-    [0, 0, 1, 0, 0, 1, 1],  #shaper tp = 234 ns  
-    [0, 0, 1, 0, 1, 1, 1],  #shaper tp = 332 ns  
-    [0, 0, 1, 1, 1, 1, 1],  #shaper tp = 535 ns  
-    # Configurazione 18 keV
-    [1, 0, 1, 1, 0, 1, 1],  #shaper tp = 432 ns  
-    [1, 0, 1, 0, 0, 1, 1],  #shaper tp = 234 ns  
-    [1, 0, 1, 0, 1, 1, 1],  #shaper tp = 332 ns  
-    [1, 0, 1, 1, 1, 1, 1],  #shaper tp = 535 ns  
-    # Configurazione 5 keV
-    [1, 1, 1, 1, 0, 1, 1],  #shaper tp = 432 ns  
-    [1, 1, 1, 0, 0, 1, 1],  #shaper tp = 234 ns  
-    [1, 1, 1, 0, 1, 1, 1],  #shaper tp = 332 ns  
-    [1, 1, 1, 1, 1, 1, 1],  #shaper tp = 535 ns  
-]
 
 #dizionario utilizzato per salvare dati di ogni configurazione
 dati = {
@@ -77,13 +28,12 @@ energy_levels = [9, 25, 18, 5]
 groups = {9:[] ,25: [], 18: [], 5: []}
 
 # Raggruppa i file TSV per energia
-for item in config_bits_list:
+for item in config.config_bits_list_shap:
     config.config(channel='shap', lemo='none', n_steps=20, cfg_bits=item, cfg_inst=True, active_probes=False)
-    energy_level = get_energy_level(item)
-    shap_bits = get_shap_bits(item)
+    energy_level = config.get_energy_level(item)
+    shap_bits = config.get_shap_bits(item)
     pYtp.send_slow_ctrl_auto(item,1)
-    
-    # 100 mV/div e -611mV
+
     config.lecroy.set_vdiv(channel=2,vdiv='305e-3')
     config.lecroy.set_voffset(channel=2,voffset='-415e-3')
     config.lecroy.set_tdiv(tdiv='200NS')
@@ -92,13 +42,6 @@ for item in config_bits_list:
     config.ps.write(':OUTP:STAT ON')
     time.sleep(5)
 
-
-    # set proper time division for this analysis
-    # suppress channel for noise stuff
-    #config.lecroy.write('F3:TRA OFF')
-    # set cursor positions
-    #config.lecroy.write(f'C2:CRS HREL')
-    # reset inj
     ndiv = 10 # positive and negative around delay
     tdelay = -820 # ns
     tdiv = 200 # ns/div
@@ -112,7 +55,7 @@ for item in config_bits_list:
     lemo_name = config.lemo_name
     gain = config.lemo_gain
     N_samples = config.N_samples
-
+    
     # Raccogli i dati
     mis = {
         'Current Level Step': [],

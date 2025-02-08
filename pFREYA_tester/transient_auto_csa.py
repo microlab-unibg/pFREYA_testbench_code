@@ -6,32 +6,8 @@ import config
 import pFREYA_tester_processing as pYtp
 
 '''
-funzione per determinare keV sulla base della configurazione dei bit passata come parametro, sulla base delle prime due cifre
-della configurazione
-'''
-def get_energy_level(cfg_bits):
-    if cfg_bits[0] == 1 and cfg_bits[1] == 1:
-        return 5  # 5 keV
-    elif cfg_bits[0] == 1 and cfg_bits[1] == 0:
-        return 18  # 18 keV
-    elif cfg_bits[0] == 0 and cfg_bits[1] == 1:
-        return 9 # 9 keV
-    elif cfg_bits[0] == 0 and cfg_bits[1] == 0:
-        return 25 # 25 keV
-    else:
-        raise ValueError("Configurazione cfg_bits non valida")
-
-
-# Configurazione dei test per le diverse configurazioni di cfg_bits
-config_bits_list = [
-    [1, 1, 1, 1, 1, 1, 1],  # Configurazione 5  keV
-    [0, 1, 1, 1, 1, 1, 1],  # Configurazione 9  keV
-    [1, 0, 1, 1, 1, 1, 1],  # Configurazione 18 keV
-    [0, 0, 1, 1, 1, 1, 1],  # Configurazione 25 keV
-]
-'''
 Iterazione sulle configurazioni di setup:
-    -Per ogni elemento nella lista config_bits_list, trovo il valore di keV con get_energy_level() 
+    -Per ogni elemento nella lista config.config_bits_list_csa, trovo il valore di keV con get_energy_level() 
     -configurazione dell'oscilloscopio con la funzione config.lecroy andando a definire i parametri di divisione 
     verticale/orizzontale.
     -analisi su diversi livelli di corrente:
@@ -39,9 +15,9 @@ Iterazione sulle configurazioni di setup:
         -calcolo il segnale corretto in base al guadagno e all'attenuazione, normalizzando rispetto al valore iniziale.
     -Elaborazione e salvataggio dati in .tsv e plot
 '''
-for item in config_bits_list:
+for item in config.config_bits_list_csa:
     # Ottenere il livello di energia
-    energy_level = get_energy_level(item)
+    energy_level = config.get_energy_level(item)
     print(f"energy level {energy_level}Kev")
     # Configurazione del setup,cfg_bits cambia per ogni configurazione utilizzata per ogni passo
     config.config(channel='csa', lemo='none', n_steps=8, cfg_bits=item, cfg_inst=True, active_probes=False)

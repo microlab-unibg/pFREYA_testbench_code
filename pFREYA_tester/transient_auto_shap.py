@@ -5,62 +5,11 @@ from datetime import datetime
 import config
 import pFREYA_tester_processing as pYtp
 
-# Definizione delle configurazioni dei livelli di energia in base ai primi 2 bit di cfg_bits
-# Funzioni per determinare energia e peaking time dalla configurazione dei bit
-def get_energy_level(cfg_bits):
-    if cfg_bits[0] == 1 and cfg_bits[1] == 1:
-        return 5  # 5 keV
-    elif cfg_bits[0] == 1 and cfg_bits[1] == 0:
-        return 18  # 18 keV
-    elif cfg_bits[0] == 0 and cfg_bits[1] == 1:
-        return 9 # 9 keV
-    elif cfg_bits[0] == 0 and cfg_bits[1] == 0:
-        return 25 # 25 keV
-    else:
-        raise ValueError("Configurazione cfg_bits non valida")
-
-def get_shap_bits(cfg_bits):
-    if cfg_bits[3] == 1 and cfg_bits[4] == 1:
-        return 510  
-    elif cfg_bits[3] == 0 and cfg_bits[4] == 1:
-        return 420 
-    elif cfg_bits[3] == 1 and cfg_bits[4] == 0:
-        return 330 
-    elif cfg_bits[3] == 0 and cfg_bits[4] == 0:
-        return 240 
-    else:
-        raise ValueError("Configurazione shap_bits non valida")
-
-
-# Configurazione dei test per le diverse configurazioni di cfg_bits
-config_bits_list = [
-    # Configurazione da 9 keV 
-    [0, 1, 1, 1, 0, 1, 1],  #shaper tp = 432 ns
-    [0, 1, 1, 0, 0, 1, 1],  #shaper tp = 234 ns 
-    [0, 1, 1, 0, 1, 1, 1],  #shaper tp = 332 ns   
-    [0, 1, 1, 1, 1, 1, 1],  #shaper tp = 535 ns  
-    # Configurazione 25 keV
-    [0, 0, 1, 1, 0, 1, 1],  #shaper tp = 432 ns  
-    [0, 0, 1, 0, 0, 1, 1],  #shaper tp = 234 ns  
-    [0, 0, 1, 0, 1, 1, 1],  #shaper tp = 332 ns  
-    [0, 0, 1, 1, 1, 1, 1],  #shaper tp = 535 ns  
-    # Configurazione 18 keV
-    [1, 0, 1, 1, 0, 1, 1],  #shaper tp = 432 ns  
-    [1, 0, 1, 0, 0, 1, 1],  #shaper tp = 234 ns  
-    [1, 0, 1, 0, 1, 1, 1],  #shaper tp = 332 ns  
-    [1, 0, 1, 1, 1, 1, 1],  #shaper tp = 535 ns  
-    # Configurazione 5 keV
-    [1, 1, 1, 1, 0, 1, 1],  #shaper tp = 432 ns  
-    [1, 1, 1, 0, 0, 1, 1],  #shaper tp = 234 ns  
-    [1, 1, 1, 0, 1, 1, 1],  #shaper tp = 332 ns  
-    [1, 1, 1, 1, 1, 1, 1],  #shaper tp = 535 ns  
-]
-
 # Loop per ogni configurazione di cfg_bits
-for item in config_bits_list:
+for item in config.config_bits_list_shap:
     # Ottenere il livello di energia
-    energy_level = get_energy_level(item)
-    shap_bits = get_shap_bits(item)
+    energy_level = config.get_energy_level(item)
+    shap_bits = config.get_shap_bits(item)
     print(f"energy level {energy_level}Kev")
     # Configurazione del setup,cfg_bits cambia per ogni configurazione utilizzata per ogni passo
     config.config(channel='shap', lemo='none', n_steps=8, cfg_bits=item, cfg_inst=True, active_probes=False)
