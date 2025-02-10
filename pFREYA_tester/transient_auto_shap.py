@@ -4,6 +4,9 @@ import TeledyneLeCroyPy
 from datetime import datetime
 import config
 import pFREYA_tester_processing as pYtp
+import matplotlib.pyplot as plt
+import numpy as np
+import matplotlib.colors as mcolors
 
 # Loop per ogni configurazione di cfg_bits
 for item in config.config_bits_list_shap:
@@ -62,13 +65,6 @@ for item in config.config_bits_list_shap:
     print(f"Misura completata per cfg_bits {item} con livello di energia {energy_level:} A")
 
     #PRELEVO DATI DA MISURAZIONI VECCHIE RIGUARDANTI LA STESSA CONFIGURAZIONE DI BIT
-    import numpy as np
-    import matplotlib.pyplot as plt
-    import numpy as np
-    import pandas as pd
-    import time
-    from datetime import datetime
-    import matplotlib.colors as mcolors
     path=(f'G:Shared drives/FALCON/measures/new/transient/shap/{channel_name}_{config.config_bits_str}_nominal_{lemo_name}_shapconfig_{shap_bits}_{datetime_str}.tsv')
     df = pd.read_csv(path, sep = '\t')
     datetime_str = datetime.strftime(datetime.now(), '%d%m%y_%H%M')
