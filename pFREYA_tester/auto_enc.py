@@ -104,11 +104,13 @@ for gain_item, cfg_item in zip(gain, selected_configs):
     config.lecroy.set_vdiv(channel=2,vdiv='10e-3') # reset measures
     config.lecroy.set_vdiv(channel=2,vdiv='5e-3')
     config.lecroy.set_voffset(channel=2,voffset='0')
-    config.lecroy.set_tdiv(tdiv='200NS')
+    #config.lecroy.set_tdiv(tdiv='200NS')
+    config.lecroy.set_tdiv(tdiv='10US')
     config.lecroy.set_toffset(toffset='-820e-9')
     ndiv = 10 # positive and negative around delay
     tdelay = -820 # ns
-    tdiv = 200 # ns/div
+    #tdiv = 200 # ns/div
+    tdiv = 10*1000
     osc_ts = 300 # ns
     osc_te = osc_ts + config.peaking_time 
     osc_offset = - ndiv/2*tdiv - tdelay
@@ -117,7 +119,7 @@ for gain_item, cfg_item in zip(gain, selected_configs):
 
 
     config.ps.write(f':SOUR:CURR:LEV {config.current_lev[0]}')
-    config.ps.write(':OUTP:STAT ON')
+    config.ps.write(':OUTP:STAT OFF')
     time.sleep(5)
 
     N_repetitions = 1
