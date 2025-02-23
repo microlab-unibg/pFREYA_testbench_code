@@ -336,6 +336,47 @@ def get_json(self, use_csa=False):
         return self.to_json()
 
 #seconda gui
+def run_script_csa_transient():
+    print("\n--- RUNNING SCRIPT CSA---")  
+    
+    print("\n--Reset FPGA--")
+    reset_iniziale()
+    time.sleep(2)
+
+    print("\n--start clk--")
+    auto_clock()
+    time.sleep(2)
+    print("--end clk\n")
+
+    print("--start csa_reset_n--")
+    auto_csa_reset()
+    print("--end csa_reset_n\n")
+    time.sleep(3)
+
+    print("--TRANSIENT CSA START\n")
+    subprocess.run(["python", "transient_auto_csa.py"]) #metodo transient csa
+    print("--TRANSIENT CSA END--")
+
+def run_script_csa_transcharacteristics():
+    time.sleep(0.5)
+    print("\n--Reset FPGA--")
+    reset_iniziale()
+    time.sleep(2)
+
+    print("\n--start clk--")
+    auto_clock()
+    time.sleep(2)
+    print("--end clk--")
+
+    print("--start csa_reset_n--")
+    auto_csa_reset()
+    print("--end csa_reset_n\n")
+    time.sleep(3)
+
+    print("--TRANCHARACTERISTICS CSA START--")
+    subprocess.run(["python", "transcharacteristics_auto_csa.py"]) #metodo transcharacteristics csa
+    print("--TRANCHARACTERISTICS CSA END--")
+
 def run_script_csa():
     print("\n--- RUNNING SCRIPT CSA---")  
     
@@ -418,6 +459,45 @@ def run_script_shap():
     print("\n--TRANCHARACTERISTICS SHAP END--")
     print("\n---SCRIPT SHAP ENDED---\n") 
 
+def run_script_shap_transient():
+    print("\n--Reset FPGA--")
+    reset_iniziale()
+    time.sleep(2)
+
+    print("\n--start clk--")
+    auto_clock()
+    time.sleep(2)
+    print("--end clk--")
+
+    print("--start csa_reset_n--")
+    auto_csa_reset()
+    print("--end csa_reset_n\n")
+    time.sleep(3)
+
+    #metodo transient shap
+    print("--TRANSIENT SHAP START--\n")
+    subprocess.run(["python", "transient_auto_shap.py"]) #metodo transient csa
+    print("\nTRANSIENT SHAP END")
+
+def run_script_shap_transcharacteristics(): 
+    print("\n--Reset FPGA--")
+    reset_iniziale()
+    time.sleep(2)
+
+    print("\n--start clk--")
+    auto_clock()
+    time.sleep(2)
+    print("--end clk--")
+
+    print("--start csa_reset_n--")
+    auto_csa_reset()
+    print("--end csa_reset_n\n")
+    time.sleep(3)
+
+    print("TRANCHARACTERISTICS SHAP START--\n")
+    subprocess.run(["python", "transcharacteristics_auto_shap.py"]) #metodo transcharacteristics csa
+    print("\n--TRANCHARACTERISTICS SHAP END--")
+
 def run_script_enc():
     print("\n---RUNNING SCRIPT ENC---") 
         
@@ -450,17 +530,31 @@ class gui2(Toplevel):
     frame = Frame(self)
     frame.pack(pady=10)
 
-    label1 =Label(frame, text="csa")
+    label1 =Label(frame, text="CSA")
     label1.grid(row=0, column=0, padx=10, pady=10)
-    button1 = Button(frame, text="run", command=run_script_csa)
+
+    button1 = Button(frame, text="all", command=run_script_csa)
     button1.grid(row=0, column=1, padx=10, pady=10)
 
-    label2 = Label(frame, text="shap")
-    label2.grid(row=1, column=0, padx=10, pady=10)
-    button2 = Button(frame, text="run", command=run_script_shap)
-    button2.grid(row=1, column=1, padx=10, pady=10)
+    button11= Button(frame, text="transient", command=run_script_csa_transient)
+    button11.grid(row=0, column=2, padx=10, pady=10)
 
-    label3 = Label(frame, text="enc")
+    button12 = Button(frame, text="transcharacteristics", command=run_script_csa_transcharacteristics)
+    button12.grid(row=0, column=3, padx=10, pady=10)
+
+    label2 = Label(frame, text="Shaper")
+    label2.grid(row=1, column=0, padx=10, pady=10)
+
+    button21 = Button(frame, text="all", command=run_script_shap)
+    button21.grid(row=1, column=1, padx=10, pady=10)
+
+    button22 = Button(frame, text="transient", command=run_script_shap_transient)
+    button22.grid(row=1, column=2, padx=10, pady=10)
+
+    button2 = Button(frame, text="transcharacteristics", command=run_script_shap_transcharacteristics)
+    button2.grid(row=1, column=3, padx=10, pady=10)
+
+    label3 = Label(frame, text="ENC")
     label3.grid(row=2, column=0, padx=10, pady=10)
     button3 = Button(frame, text="run", command=run_script_enc)
     button3.grid(row=2, column=1, padx=10, pady=10)
