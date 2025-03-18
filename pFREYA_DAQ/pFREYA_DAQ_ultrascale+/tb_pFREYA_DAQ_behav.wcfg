@@ -12,15 +12,15 @@
       </db_ref>
    </db_ref_list>
    <zoom_setting>
-      <ZoomStartTime time="0.000000 us"></ZoomStartTime>
-      <ZoomEndTime time="3,795.000001 us"></ZoomEndTime>
-      <Cursor1Time time="213.112614 us"></Cursor1Time>
+      <ZoomStartTime time="2,066.776321 us"></ZoomStartTime>
+      <ZoomEndTime time="3,170.776322 us"></ZoomEndTime>
+      <Cursor1Time time="2,892.776321 us"></Cursor1Time>
    </zoom_setting>
    <column_width_setting>
-      <NameColumnWidth column_width="214"></NameColumnWidth>
+      <NameColumnWidth column_width="206"></NameColumnWidth>
       <ValueColumnWidth column_width="58"></ValueColumnWidth>
    </column_width_setting>
-   <WVObjectSize size="25" />
+   <WVObjectSize size="37" />
    <wvobject fp_name="/tb_pFREYA_DAQ/pFREYA_DAQ_inst/daq_ck" type="logic">
       <obj_property name="ElementShortName">daq_ck</obj_property>
       <obj_property name="ObjectShortName">daq_ck</obj_property>
@@ -38,13 +38,12 @@
       <obj_property name="ObjectShortName">slow_ctrl_ck</obj_property>
    </wvobject>
    <wvobject fp_name="/tb_pFREYA_DAQ/pFREYA_DAQ_inst/pFREYA_IF_inst/slow_ctrl_div" type="array">
-      <obj_property name="ElementShortName">slow_ctrl_div[11:0]</obj_property>
-      <obj_property name="ObjectShortName">slow_ctrl_div[11:0]</obj_property>
+      <obj_property name="ElementShortName">slow_ctrl_div[17:0]</obj_property>
+      <obj_property name="ObjectShortName">slow_ctrl_div[17:0]</obj_property>
    </wvobject>
    <wvobject fp_name="/tb_pFREYA_DAQ/pFREYA_DAQ_inst/uart_data" type="array">
       <obj_property name="ElementShortName">uart_data[7:0]</obj_property>
       <obj_property name="ObjectShortName">uart_data[7:0]</obj_property>
-      <obj_property name="isExpanded"></obj_property>
    </wvobject>
    <wvobject fp_name="/tb_pFREYA_DAQ/pFREYA_DAQ_inst/pFREYA_IF_inst/cmd" type="array">
       <obj_property name="ElementShortName">cmd[3:0]</obj_property>
@@ -83,12 +82,12 @@
       <obj_property name="ObjectShortName">inj_stb</obj_property>
    </wvobject>
    <wvobject fp_name="/tb_pFREYA_DAQ/pFREYA_DAQ_inst/pFREYA_IF_inst/inj_cnt" type="array">
-      <obj_property name="ElementShortName">inj_cnt[11:0]</obj_property>
-      <obj_property name="ObjectShortName">inj_cnt[11:0]</obj_property>
+      <obj_property name="ElementShortName">inj_cnt[17:0]</obj_property>
+      <obj_property name="ObjectShortName">inj_cnt[17:0]</obj_property>
    </wvobject>
    <wvobject fp_name="/tb_pFREYA_DAQ/pFREYA_DAQ_inst/pFREYA_IF_inst/csa_reset_n_cnt" type="array">
-      <obj_property name="ElementShortName">csa_reset_n_cnt[11:0]</obj_property>
-      <obj_property name="ObjectShortName">csa_reset_n_cnt[11:0]</obj_property>
+      <obj_property name="ElementShortName">csa_reset_n_cnt[17:0]</obj_property>
+      <obj_property name="ObjectShortName">csa_reset_n_cnt[17:0]</obj_property>
    </wvobject>
    <wvobject fp_name="/tb_pFREYA_DAQ/csa_reset_n" type="logic">
       <obj_property name="ElementShortName">csa_reset_n</obj_property>
@@ -99,8 +98,8 @@
       <obj_property name="ObjectShortName">data_packet_available</obj_property>
    </wvobject>
    <wvobject fp_name="/tb_pFREYA_DAQ/pFREYA_DAQ_inst/pFREYA_IF_inst/inj_div" type="array">
-      <obj_property name="ElementShortName">inj_div[11:0]</obj_property>
-      <obj_property name="ObjectShortName">inj_div[11:0]</obj_property>
+      <obj_property name="ElementShortName">inj_div[17:0]</obj_property>
+      <obj_property name="ObjectShortName">inj_div[17:0]</obj_property>
    </wvobject>
    <wvobject fp_name="/tb_pFREYA_DAQ/pFREYA_DAQ_inst/pFREYA_IF_inst/slow_ctrl_packet_available" type="logic">
       <obj_property name="ElementShortName">slow_ctrl_packet_available</obj_property>
@@ -117,10 +116,57 @@
    <wvobject fp_name="/tb_pFREYA_DAQ/pFREYA_DAQ_inst/pFREYA_IF_inst/slow_ctrl_packet" type="array">
       <obj_property name="ElementShortName">slow_ctrl_packet[127:0]</obj_property>
       <obj_property name="ObjectShortName">slow_ctrl_packet[127:0]</obj_property>
-      <obj_property name="isExpanded"></obj_property>
    </wvobject>
    <wvobject fp_name="/tb_pFREYA_DAQ/sh_phi1d_inf" type="logic">
       <obj_property name="ElementShortName">sh_phi1d_inf</obj_property>
       <obj_property name="ObjectShortName">sh_phi1d_inf</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_pFREYA_DAQ/pFREYA_DAQ_inst/sh_phi1d_sup" type="logic">
+      <obj_property name="ElementShortName">sh_phi1d_sup</obj_property>
+      <obj_property name="ObjectShortName">sh_phi1d_sup</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_pFREYA_DAQ/pFREYA_DAQ_inst/pFREYA_IF_inst/sh_phi1d_inf_cnt" type="array">
+      <obj_property name="ElementShortName">sh_phi1d_inf_cnt[17:0]</obj_property>
+      <obj_property name="ObjectShortName">sh_phi1d_inf_cnt[17:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_pFREYA_DAQ/pFREYA_DAQ_inst/pFREYA_IF_inst/sh_phi1d_inf_delay_div" type="array">
+      <obj_property name="ElementShortName">sh_phi1d_inf_delay_div[17:0]</obj_property>
+      <obj_property name="ObjectShortName">sh_phi1d_inf_delay_div[17:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_pFREYA_DAQ/pFREYA_DAQ_inst/pFREYA_IF_inst/sh_phi1d_inf_HIGH_div" type="array">
+      <obj_property name="ElementShortName">sh_phi1d_inf_HIGH_div[17:0]</obj_property>
+      <obj_property name="ObjectShortName">sh_phi1d_inf_HIGH_div[17:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_pFREYA_DAQ/pFREYA_DAQ_inst/pFREYA_IF_inst/sh_phi1d_inf_LOW_div" type="array">
+      <obj_property name="ElementShortName">sh_phi1d_inf_LOW_div[17:0]</obj_property>
+      <obj_property name="ObjectShortName">sh_phi1d_inf_LOW_div[17:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_pFREYA_DAQ/pFREYA_DAQ_inst/pFREYA_IF_inst/sh_phi1d_sup_cnt" type="array">
+      <obj_property name="ElementShortName">sh_phi1d_sup_cnt[17:0]</obj_property>
+      <obj_property name="ObjectShortName">sh_phi1d_sup_cnt[17:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_pFREYA_DAQ/pFREYA_DAQ_inst/pFREYA_IF_inst/sh_phi1d_sup_delay_div" type="array">
+      <obj_property name="ElementShortName">sh_phi1d_sup_delay_div[17:0]</obj_property>
+      <obj_property name="ObjectShortName">sh_phi1d_sup_delay_div[17:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_pFREYA_DAQ/pFREYA_DAQ_inst/pFREYA_IF_inst/sh_phi1d_sup_HIGH_div" type="array">
+      <obj_property name="ElementShortName">sh_phi1d_sup_HIGH_div[17:0]</obj_property>
+      <obj_property name="ObjectShortName">sh_phi1d_sup_HIGH_div[17:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_pFREYA_DAQ/pFREYA_DAQ_inst/pFREYA_IF_inst/sh_phi1d_sup_LOW_div" type="array">
+      <obj_property name="ElementShortName">sh_phi1d_sup_LOW_div[17:0]</obj_property>
+      <obj_property name="ObjectShortName">sh_phi1d_sup_LOW_div[17:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_pFREYA_DAQ/pFREYA_DAQ_inst/pFREYA_IF_inst/sh_phi1d_inf_flag" type="array">
+      <obj_property name="ElementShortName">sh_phi1d_inf_flag[1:0]</obj_property>
+      <obj_property name="ObjectShortName">sh_phi1d_inf_flag[1:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_pFREYA_DAQ/pFREYA_DAQ_inst/pFREYA_IF_inst/sh_phi1d_sup_flag" type="array">
+      <obj_property name="ElementShortName">sh_phi1d_sup_flag[1:0]</obj_property>
+      <obj_property name="ObjectShortName">sh_phi1d_sup_flag[1:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_pFREYA_DAQ/pFREYA_DAQ_inst/pFREYA_IF_inst/reset" type="logic">
+      <obj_property name="ElementShortName">reset</obj_property>
+      <obj_property name="ObjectShortName">reset</obj_property>
    </wvobject>
 </wave_config>
