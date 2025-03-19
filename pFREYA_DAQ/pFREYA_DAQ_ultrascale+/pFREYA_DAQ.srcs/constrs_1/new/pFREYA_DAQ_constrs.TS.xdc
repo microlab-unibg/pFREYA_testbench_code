@@ -1,4 +1,5 @@
 # BACK TO NOT TWISTED
+# In TS boards, due to DRIVER_SOT_P2 pinoout is different
 set_property PACKAGE_PIN Y17 [get_ports dac_sdin]
 set_property PACKAGE_PIN AA17 [get_ports dac_sync_n]
 set_property PACKAGE_PIN AB17 [get_ports dac_sck]
@@ -16,9 +17,10 @@ set_property PACKAGE_PIN AB24 [get_ports adc_start]
 #======================================================================================
 # Due to unproper layout AD26 (slow_ctrl_in) and AC26 (sh_phi1d_inf) are shorted on PCB
 #  on TS boards
-#set_property PACKAGE_PIN AC24 [get_ports DRIVER_SOT_P2] !!! NOT TO BE CONTROLLED
+# AC24 is not driven as it is DRIVER_SOT_P2
+# sh_phi1d_sup goes where inf should be to make use of the additional pin
 set_property PACKAGE_PIN AC26 [get_ports sh_phi1d_sup]
-#set_property PACKAGE_PIN AC26 [get_ports sh_phi1d_inf] !!! SAME AS BELOW
+# sh_phi1d_inf = slow_ctrl_in due to short
 set_property PACKAGE_PIN AD26 [get_ports slow_ctrl_in]
 #======================================================================================
 set_property PACKAGE_PIN AB25 [get_ports slow_ctrl_reset_n]
