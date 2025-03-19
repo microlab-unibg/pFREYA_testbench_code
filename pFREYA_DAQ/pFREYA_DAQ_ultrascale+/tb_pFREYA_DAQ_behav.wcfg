@@ -12,15 +12,15 @@
       </db_ref>
    </db_ref_list>
    <zoom_setting>
-      <ZoomStartTime time="2,066.776321 us"></ZoomStartTime>
-      <ZoomEndTime time="3,170.776322 us"></ZoomEndTime>
-      <Cursor1Time time="2,892.776321 us"></Cursor1Time>
+      <ZoomStartTime time="0.973333334 ms"></ZoomStartTime>
+      <ZoomEndTime time="6.533333335 ms"></ZoomEndTime>
+      <Cursor1Time time="1.900000000 ms"></Cursor1Time>
    </zoom_setting>
    <column_width_setting>
-      <NameColumnWidth column_width="206"></NameColumnWidth>
+      <NameColumnWidth column_width="202"></NameColumnWidth>
       <ValueColumnWidth column_width="58"></ValueColumnWidth>
    </column_width_setting>
-   <WVObjectSize size="37" />
+   <WVObjectSize size="39" />
    <wvobject fp_name="/tb_pFREYA_DAQ/pFREYA_DAQ_inst/daq_ck" type="logic">
       <obj_property name="ElementShortName">daq_ck</obj_property>
       <obj_property name="ObjectShortName">daq_ck</obj_property>
@@ -168,5 +168,13 @@
    <wvobject fp_name="/tb_pFREYA_DAQ/pFREYA_DAQ_inst/pFREYA_IF_inst/reset" type="logic">
       <obj_property name="ElementShortName">reset</obj_property>
       <obj_property name="ObjectShortName">reset</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_pFREYA_DAQ/pFREYA_DAQ_inst/pFREYA_IF_inst/sh_phi1d_inf_mask" type="logic">
+      <obj_property name="ElementShortName">sh_phi1d_inf_mask</obj_property>
+      <obj_property name="ObjectShortName">sh_phi1d_inf_mask</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_pFREYA_DAQ/pFREYA_DAQ_inst/pFREYA_IF_inst/slow_ctrl_in_mask" type="logic">
+      <obj_property name="ElementShortName">slow_ctrl_in_mask</obj_property>
+      <obj_property name="ObjectShortName">slow_ctrl_in_mask</obj_property>
    </wvobject>
 </wave_config>

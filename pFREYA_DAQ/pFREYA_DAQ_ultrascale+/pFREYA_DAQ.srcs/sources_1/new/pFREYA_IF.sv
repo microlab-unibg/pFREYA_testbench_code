@@ -89,8 +89,8 @@ module pFREYA_IF(
     // for sh inf (TS)
     logic sh_phi1d_inf_mask = 1'b0;
     logic slow_ctrl_in_mask = 1'b0;
-    logic sh_phi1d_sup = 1'b1;
-    logic sh_phi1d_inf = 1'b1;
+    logic sh_phi1d_sup = 1'b0;
+    logic sh_phi1d_inf = 1'b0;
     // fast control timing
     // generated with counter that reach a divisor, where the divisor changes based on flag
     // flag value is 0 for delay, 1 for HIGH, 2 for LOW (the actual polarity is in the name of the signal)
@@ -331,14 +331,14 @@ module pFREYA_IF(
 
     always_ff @(posedge ck, posedge reset) begin: sh_phi1d_inf_generation
         if (reset) begin
-            sh_phi1d_inf <= 1'b1;
+            sh_phi1d_inf <= 1'b0;
             sh_phi1d_inf_cnt <= -1;
             sh_phi1d_inf_flag <= FAST_CTRL_DELAY;
             // Due to PCB layout error
             sh_phi1d_inf_mask <= 1'b0; // (TS)
         end
         else if (slow_ctrl_in_mask) begin
-            sh_phi1d_inf <= 1'b1;
+            sh_phi1d_inf <= 1'b0;
             sh_phi1d_inf_cnt <= -1;
             sh_phi1d_inf_flag <= FAST_CTRL_DELAY;
             // Due to PCB layout error
@@ -347,7 +347,7 @@ module pFREYA_IF(
         else if (sync_time_base_flag ||
             (sh_phi1d_inf_flag == FAST_CTRL_DELAY && sh_phi1d_inf_delay_div == '0) ||
             (sh_phi1d_inf_HIGH_div == '0 || sh_phi1d_inf_LOW_div == '0)) begin
-            sh_phi1d_inf <= 1'b1;
+            sh_phi1d_inf <= 1'b0;
             sh_phi1d_inf_cnt <= -1;
             sh_phi1d_inf_flag <= FAST_CTRL_DELAY;
             // Due to PCB layout error
@@ -387,14 +387,14 @@ module pFREYA_IF(
 
     always_ff @(posedge ck, posedge reset) begin: sh_phi1d_sup_generation
         if (reset) begin
-            sh_phi1d_sup <= 1'b1;
+            sh_phi1d_sup <= 1'b0;
             sh_phi1d_sup_cnt <= -1;
             sh_phi1d_sup_flag <= FAST_CTRL_DELAY;
         end
         else if (sync_time_base_flag ||
             (sh_phi1d_sup_flag == FAST_CTRL_DELAY && sh_phi1d_sup_delay_div == '0) ||
             (sh_phi1d_sup_HIGH_div == '0 || sh_phi1d_sup_LOW_div == '0)) begin
-            sh_phi1d_sup <= 1'b1;
+            sh_phi1d_sup <= 1'b0;
             sh_phi1d_sup_cnt <= -1;
             sh_phi1d_sup_flag <= FAST_CTRL_DELAY;
         end
