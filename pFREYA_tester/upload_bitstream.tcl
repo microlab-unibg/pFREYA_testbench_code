@@ -12,8 +12,8 @@ set hw_device [lindex [get_hw_devices] 0]
 refresh_hw_device $hw_device
 
 # Program the FPGA with the bitstream
-set_property PROGRAM.FILE "../pFREYA_DAQ/pFREYA_DAQ_ultrascale+/pFREYA_DAQ.runs/impl_1/pFREYA_DAQ.bit" $hw_device
-set_property PROBES.FILE "../pFREYA_DAQ/pFREYA_DAQ_ultrascale+/pFREYA_DAQ.runs/impl_1/pFREYA_DAQ.ltx" [lindex [get_hw_devices] 0]
+set_property PROGRAM.FILE "../pFREYA_DAQ/pFREYA_DAQ_Genesys2/pFREYA_DAQ_Genesys2.runs/impl_1/pFREYA_DAQ.bit" $hw_device
+set_property PROBES.FILE "../pFREYA_DAQ/pFREYA_DAQ_Genesys2/pFREYA_DAQ_Genesys2.runs/impl_1/pFREYA_DAQ.ltx" [lindex [get_hw_devices] 0]
 program_hw_devices $hw_device
 
 # Close the hardware server connection
