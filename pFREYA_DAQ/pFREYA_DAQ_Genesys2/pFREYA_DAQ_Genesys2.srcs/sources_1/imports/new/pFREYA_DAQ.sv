@@ -7,7 +7,7 @@
 // Design Name: 
 // Module Name: pFREYA_DAQ
 // Project Name: pFREYA_DAQ
-// Target Devices: KCU116
+// Target Devices: Genesys 2
 // Tool Versions: 
 // Description: 
 // 
@@ -24,17 +24,27 @@ module pFREYA_DAQ
 #(parameter CKS_PER_BIT=87)
 (
     // ASIC signals
-    output logic dac_sdin, dac_sync_n, dac_sck,
+    output logic dac_sdin,
+    output logic dac_sync_n,
+    output logic dac_sck,
     output logic sel_init_n,
-    output logic sel_ckcol, sel_ckrow,
+    output logic sel_ckcol,
+    output logic sel_ckrow,
     input  logic ser_out,
-    output logic ser_read, ser_reset_n,
+    output logic ser_read,
+    output logic ser_reset_n,
     output logic ser_ck,
     output logic inj_stb,
     output logic csa_reset_n,
-    output logic adc_ck, adc_start,
-    output logic sh_phi1d_sup, sh_phi1d_inf,
-    output logic slow_ctrl_in, slow_ctrl_reset_n, slow_ctrl_ck,
+    output logic adc_ck,
+    output logic adc_start,
+    output logic sh_phi1d_sup,
+    output logic sh_phi1d_inf,
+    output logic slow_ctrl_in,
+    output logic slow_ctrl_reset_n,
+    output logic slow_ctrl_ck,
+
+    output logic csa_reset_n_out,
     // Internal signals
     input  logic btn_reset,
 
@@ -108,9 +118,8 @@ module pFREYA_DAQ
 
     clk_wiz_clocks clk_wiz_clocks_inst (
         // Clock out ports
-        .daq_ck(daq_ck),     // output daq_ck
-        .uart_ck(uart_ck),     // output uart_ck
-        //.ila_ck(ila_ck),     // output ila_ck
+        .daq_ck(daq_ck),             // output daq_ck
+        .uart_ck(uart_ck),           // output uart_ck
         // Status and control signals
         .reset(btn_reset), // input reset
         .locked(locked),       // output locked
@@ -119,37 +128,43 @@ module pFREYA_DAQ
         .clk_in1_n(sys_clk_n)    // input clk_in1_n
     );
 
-    // // Too heavy for the xc7k325t (?)
-    // ila_probes ila_probes_inst (
-    //     .clk(daq_ck), // input wire clk
+    ila_probes ila_probes_inst (
+        .clk(daq_ck), // input wire clk
 
-    //     .probe0(dac_sdin), // input wire [0:0]  probe0  
-    //     .probe1(dac_sync_n), // input wire [0:0]  probe1 
-    //     .probe2(dac_sck), // input wire [0:0]  probe2 
-    //     .probe3(sel_init_n), // input wire [0:0]  probe3 
-    //     .probe4(sel_ckcol), // input wire [0:0]  probe4 
-    //     .probe5(sel_ckrow), // input wire [0:0]  probe5 
-    //     .probe6(ser_read), // input wire [0:0]  probe6
-    //     .probe7(ser_reset_n), // input wire [0:0]  probe7
-    //     .probe8(ser_ck), // input wire [0:0]  probe8
-    //     .probe9(inj_stb), // input wire [0:0]  probe9
-    //     .probe10(csa_reset_n), // input wire [0:0]  probe10
-    //     .probe11(adc_ck), // input wire [0:0]  probe11
-    //     .probe12(adc_start), // input wire [0:0]  probe12
-    //     .probe13(sh_phi1d_sup), // input wire [0:0]  probe13 
-    //     .probe14(sh_phi1d_inf), // input wire [0:0]  probe14
-    //     .probe15(slow_ctrl_in), // input wire [0:0]  probe15 
-    //     .probe16(slow_ctrl_reset_n), // input wire [0:0]  probe16 
-    //     .probe17(slow_ctrl_ck), // input wire [0:0]  probe17
-    //     .probe18(uart_valid) // input wire [0:0]  probe18 
-    // );
+        .probe0(dac_sdin), // input wire [0:0]  probe0  
+        .probe1(dac_sync_n), // input wire [0:0]  probe1 
+        .probe2(dac_sck), // input wire [0:0]  probe2 
+        .probe3(sel_init_n), // input wire [0:0]  probe3 
+        .probe4(sel_ckcol), // input wire [0:0]  probe4 
+        .probe5(sel_ckrow), // input wire [0:0]  probe5 
+        .probe6(ser_read), // input wire [0:0]  probe6
+        .probe7(ser_reset_n), // input wire [0:0]  probe7
+        .probe8(ser_ck), // input wire [0:0]  probe8
+        .probe9(inj_stb), // input wire [0:0]  probe9
+        .probe10(csa_reset_n), // input wire [0:0]  probe10
+        .probe11(adc_ck), // input wire [0:0]  probe11
+        .probe12(adc_start), // input wire [0:0]  probe12
+        .probe13(sh_phi1d_sup), // input wire [0:0]  probe13 
+        .probe14(sh_phi1d_inf), // input wire [0:0]  probe14 (TS)
+        .probe15(slow_ctrl_in), // input wire [0:0]  probe15 
+        .probe16(slow_ctrl_reset_n), // input wire [0:0]  probe16 
+        .probe17(slow_ctrl_ck), // input wire [0:0]  probe17
+        .probe18(uart_valid) // input wire [0:0]  probe18 
+    );
 
-    always_ff @(posedge daq_ck) begin: reset_daq
+    always_ff @(posedge daq_ck, posedge btn_reset) begin: reset_daq
         if (btn_reset) begin
             // reset all registers
             tx_dv <= 1'b0;
             tx_byte <= 1'b0;
             //tx_ser <= 1'b1;
         end
+    end
+
+    always_ff @(posedge daq_ck, posedge btn_reset) begin: csa_reset_n_out_creation
+        if (btn_reset)
+            csa_reset_n_out <= 1'b0;
+        else
+            csa_reset_n_out <= csa_reset_n;
     end
 endmodule
