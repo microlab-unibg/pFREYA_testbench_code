@@ -7,6 +7,7 @@ import json
 import serial
 import pFREYA_tester_processing as pYtp
 import UART_definitions as UARTdef
+import os
 
 import pyvisa
 import time
@@ -61,7 +62,8 @@ def auto_slwctrl():
     pYtp.send_slow_ctrl(gui)
 
 def load_config():
-    with open("pFREYA_tester_config.json", "r") as f:
+    config_path = os.path.join(os.path.dirname(__file__), 'pFREYA_tester_config.json') #MC - prima c'era solo 'pFREYA_tester_config.json' nel try 
+    with open(config_path, "r") as f:
         try:
             json_obj = json.load(f)
         except json.JSONDecodeError:
@@ -69,7 +71,8 @@ def load_config():
     return json_obj
 
 def save_config(gui):
-    with open("pFREYA_tester_config.json", "w") as f:
+    config_path = os.path.join(os.path.dirname(__file__), 'pFREYA_tester_config.json') #MC
+    with open(config_path, "w") as f:
         json_obj = gui.to_json()
         f.write(json.dumps(json_obj, indent=4))
 
@@ -445,11 +448,41 @@ def run_script_enc():
     subprocess.run(["python", "auto_enc.py"])
     print("\n--ENC END--")
 
+#MC
+def run_script_comparator():
+    print("\n---RUNNING SCRIPT COMPARATOR---")
+
+    print("\n--Reset FPGA--")
+    reset_iniziale()
+    time.sleep(2)
+
+    print("\n--start clk--")
+    auto_clock()
+    time.sleep(2)
+    print("--end clk--")
+
+    print("--start csa_reset_n--")
+    auto_csa_reset()
+    print("--end csa_reset_n\n")
+    time.sleep(3)
+
+    print("--TRANSCHARACTERISTICS COMPARATOR--\n")
+    json_path = os.path.join(os.path.dirname(__file__), 'comparator_guiState.json')
+    with open(json_path, "w") as f:
+        json.dump(gui.to_json(), f)
+    
+    # corrente = gui.current_level.get()
+    config_path = os.path.join(os.path.dirname(__file__), 'transcharacteristics_comparator.py') #sempre per il problema che non trova la cartella
+    #subprocess.run(["python", config_path]) #metodo transcharacteristics_comparator
+    subprocess.run(["python", config_path, json_path])
+    print("TRANSCHARACTERISTICS COMPARATOR END")
+#/MC 
+
 class gui2(Toplevel):
   def __init__(self,parent):
     super().__init__(parent)
     self.title("pFREYA tester v0 - Automatic testing")
-    self.geometry("420x175")
+    self.geometry("420x275")
     self.resizable(False, False)
     
     frame = Frame(self)
@@ -469,6 +502,13 @@ class gui2(Toplevel):
     label3.grid(row=2, column=0, padx=10, pady=10)
     button3 = Button(frame, text="run", command=run_script_enc)
     button3.grid(row=2, column=1, padx=10, pady=10)
+
+    #MC
+    label4 = Label(frame, text="Comparator")
+    label4.grid(row=3, column=0, padx=10, pady=10)
+    button4 = Button(frame, text="Run", command=run_script_comparator)
+    button4.grid(row=3, column=1, padx=10, pady=10)
+    #/MC
 
     self.mainloop()
 
