@@ -474,8 +474,8 @@ def run_script_comparator():
     
     #os.path.join ecc sempre per il problema che non trova la cartella 
     #config_path = os.path.join(os.path.dirname(__file__), 'transcharacteristics_comparator.py') 
-    config_path = os.path.join(os.path.dirname(__file__), 'prova_comparator2.py') 
-    #config_path = os.path.join(os.path.dirname(__file__), 'prova_comparator3.py') 
+    # config_path = os.path.join(os.path.dirname(__file__), 'prova_comparator2.py')
+    config_path = os.path.join(os.path.dirname(__file__), 'prova_comparator3.py') 
     
     
     #subprocess.run(["python", config_path]) #metodo transcharacteristics_comparator
