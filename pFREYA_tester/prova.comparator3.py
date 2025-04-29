@@ -6,7 +6,7 @@ import pyvisa
 # from datetime import datetime
 # import time
 # import glob
-# import config
+import config
 # import pFREYA_tester_processing as pYtp
 # import pFREYA_tester as freya
 import sys
@@ -76,7 +76,7 @@ with open(json_file, "r") as f:
 current_level = gui_data["INJ"]["current_level"]
 print(f"Livello corrente: {current_level}")
 
-mis = {
+dict = {
     'Current level' : [],
     'AVG SOT': [],
     '% SOT' : [],
@@ -85,8 +85,12 @@ mis = {
 }
 
 count = 0
+data = []
 for i in np.arange(0.0, -2.0, -0.0025):
-    count += 1
+    #QUI INVIARE LA CORRENTE (i)
+    data.append(float(config.lecroy.query('C1:CRVA? HREL').split(',')[2])) #C1 è il canale 1, CRVA? interroga per il cursor value, HREL è la modalità di come vengono interpretate le posizioni dei cursori (Horizontal relative)
+    dict['Current level'].append(i)
+    
 
 
 
@@ -95,8 +99,8 @@ for i in np.arange(0.0, -2.0, -0.0025):
 
 
 
-# x = [mis['Current level']]
-# y = [mis['% SOT']]
+# x = [dict['Current level']]
+# y = [dict['% SOT']]
 # label = 'null'
 # xlabel = 'Current [μA]'
 # ylabel = 'Scatti [%]'
