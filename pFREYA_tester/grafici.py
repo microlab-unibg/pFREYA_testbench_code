@@ -235,9 +235,6 @@ def errorFunction():
     plt.grid(True)
     plt.legend()
     plt.show()
-
-
-
     return 0
 
 
@@ -247,4 +244,4 @@ def errorFunction():
 #simpleGraph()
 #thrgen_ref()
 #curva_s()
-errorFunction()
+# errorFunction()

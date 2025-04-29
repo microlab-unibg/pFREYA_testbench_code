@@ -8,6 +8,7 @@ import serial
 import pFREYA_tester_processing as pYtp
 import UART_definitions as UARTdef
 import os
+import sys
 
 import pyvisa
 import time
@@ -452,29 +453,31 @@ def run_script_enc():
 def run_script_comparator():
     print("\n---RUNNING SCRIPT COMPARATOR---")
 
-    print("\n--Reset FPGA--")
-    reset_iniziale()
-    time.sleep(2)
+    # print("\n--Reset FPGA--")
+    # reset_iniziale()
+    # time.sleep(2)
 
-    print("\n--start clk--")
-    auto_clock()
-    time.sleep(2)
-    print("--end clk--")
+    # print("\n--start clk--")
+    # auto_clock()
+    # time.sleep(2)
+    # print("--end clk--")
 
-    print("--start csa_reset_n--")
-    auto_csa_reset()
-    print("--end csa_reset_n\n")
-    time.sleep(3)
+    # print("--start csa_reset_n--")
+    # auto_csa_reset()
+    # print("--end csa_reset_n\n")
+    # time.sleep(3)
 
     print("--TRANSCHARACTERISTICS COMPARATOR--\n")
     json_path = os.path.join(os.path.dirname(__file__), 'comparator_guiState.json')
     with open(json_path, "w") as f:
         json.dump(gui.to_json(), f)
     
-    # corrente = gui.current_level.get()
-    config_path = os.path.join(os.path.dirname(__file__), 'transcharacteristics_comparator.py') #sempre per il problema che non trova la cartella
+    #config_path = os.path.join(os.path.dirname(__file__), 'transcharacteristics_comparator.py') #sempre per il problema che non trova la cartella
+    config_path = os.path.join(os.path.dirname(__file__), 'prova_comparator2.py') #versione beta
+    
     #subprocess.run(["python", config_path]) #metodo transcharacteristics_comparator
-    subprocess.run(["python", config_path, json_path])
+    python_path = sys.executable #con un normale "python" al posto di python_path, lo script del comparatore non viene lanciato nel venv ma col python di sistema (e non trova alcune librerie)
+    subprocess.run([python_path, config_path, json_path])
     print("TRANSCHARACTERISTICS COMPARATOR END")
 #/MC 
 

@@ -1,5 +1,5 @@
-# import matplotlib.pyplot as plt
-# import numpy as np
+import matplotlib.pyplot as plt
+import numpy as np
 # import pandas as pd
 import pyvisa
 # import matplotlib.colors as mcolors
@@ -11,6 +11,7 @@ import pyvisa
 # import pFREYA_tester as freya
 import sys
 import json
+import grafici
 
 
 def send_current_level(current):
@@ -44,6 +45,27 @@ def send_current_level(current):
         ''')
     return current
 
+def send_current_level2(current):
+    rm = pyvisa.ResourceManager()
+    ps = rm.open_resource('GPIB1::23::INSTR')
+    print(ps.query('*IDN?'))
+
+    ps.write(':OUTP:LOW FLO')
+    ps.write(':OUTP:OFF:AUTO ON')
+    ps.write(':OUTP:PROT ON')
+    ps.write(':OUTP:RES:MODE FIX')
+    ps.write(':OUTP:RES:SHUN DEF')
+    ps.write(':SOUR:FUNC:MODE CURR')
+    ps.write(':SOUR:CURR:MODE FIX')
+    ps.write(f':SOUR:CURR:LEV {current}E-6')
+    ps.write(':DISP:ENAB OFF')
+    ps.write(':DISP:TEXT:DATA "pFREYA16"')
+    ps.write(':DISP:TEXT:STAT ON')
+    ps.write(':OUTP:STAT ON')
+
+    return current
+
+
 #MAIN
 json_file = sys.argv[1] #sys.argv[1] serve a prendere il parametro (json) col il subprocess.run
 
@@ -54,4 +76,31 @@ with open(json_file, "r") as f:
 current_level = gui_data["INJ"]["current_level"]
 print(f"Livello corrente: {current_level}")
 
-send_current_level(current_level)
+mis = {
+    'Current level' : [],
+    'AVG SOT': [],
+    '% SOT' : [],
+    'Max #SOT': [],
+    'Min #SOT': []
+}
+
+count = 0
+for i in np.arange(0.0, -2.0, -0.0025):
+    count += 1
+
+
+
+
+
+
+
+
+# x = [mis['Current level']]
+# y = [mis['% SOT']]
+# label = 'null'
+# xlabel = 'Current [μA]'
+# ylabel = 'Scatti [%]'
+# title = 'Curva ad S (Thrgen_ref=280, Vthrp = 601, Vthrp = 599)'
+
+# grafici.creaGrafico(x, y, label, xlabel, ylabel, title)
+
