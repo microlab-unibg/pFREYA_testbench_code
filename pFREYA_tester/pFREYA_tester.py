@@ -472,8 +472,11 @@ def run_script_comparator():
     with open(json_path, "w") as f:
         json.dump(gui.to_json(), f)
     
-    #config_path = os.path.join(os.path.dirname(__file__), 'transcharacteristics_comparator.py') #sempre per il problema che non trova la cartella
-    config_path = os.path.join(os.path.dirname(__file__), 'prova_comparator2.py') #versione beta
+    #os.path.join ecc sempre per il problema che non trova la cartella 
+    #config_path = os.path.join(os.path.dirname(__file__), 'transcharacteristics_comparator.py') 
+    config_path = os.path.join(os.path.dirname(__file__), 'prova_comparator2.py') 
+    #config_path = os.path.join(os.path.dirname(__file__), 'prova_comparator3.py') 
+    
     
     #subprocess.run(["python", config_path]) #metodo transcharacteristics_comparator
     python_path = sys.executable #con un normale "python" al posto di python_path, lo script del comparatore non viene lanciato nel venv ma col python di sistema (e non trova alcune librerie)
@@ -509,8 +512,8 @@ class gui2(Toplevel):
     #MC
     label4 = Label(frame, text="Comparator")
     label4.grid(row=3, column=0, padx=10, pady=10)
-    button4 = Button(frame, text="Run", command=run_script_comparator)
-    button4.grid(row=3, column=1, padx=10, pady=10)
+    button4 = ttk.Button(frame, text="Run", command=run_script_comparator)
+    button4.grid(row=3, column=1, padx=10, pady=10, sticky=SE)
     #/MC
 
     self.mainloop()
