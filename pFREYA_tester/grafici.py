@@ -222,7 +222,6 @@ def errorFunction():
     x_smooth = np.linspace(np.min(x), np.max(x), 500)
     y_erf = erf_fit(x_smooth, mu_fit, sigma_fit)
 
-
     plt.plot(x, y, 'o', label='Dati originali')         #'o' mette solo i punti nel grafico, non crea la spezzata
 
     #{mu_fit:.4f} permette di mettere una var e di (.4f) specificarne il numero di decimali (5)

@@ -66,6 +66,7 @@ def send_current_level2(current):
     return current
 
 
+
 #MAIN
 json_file = sys.argv[1] #sys.argv[1] serve a prendere il parametro (json) col il subprocess.run
 

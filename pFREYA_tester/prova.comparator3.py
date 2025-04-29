@@ -108,3 +108,4 @@ for i in np.arange(0.0, -2.0, -0.0025):
 
 # grafici.creaGrafico(x, y, label, xlabel, ylabel, title)
 
+
