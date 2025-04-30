@@ -51,7 +51,7 @@ data.append(float(config.lecroy.query('C1:CRVA? HREL').split(',')[2])) #C1 è il
 
 while(True):
     time.sleep(0.7)
-    val = config.lecroy.query("VBS? 'app.Measure.P5.value'")
+    val = config.lecroy.query("VBS? 'app.Measure.P5.Value'")
     time.sleep(0.3)
     print(str(val))
 
