@@ -46,6 +46,9 @@ with open(json_file, "r") as f:
 
 send_current_level(0)
 
+config.config(channel='csa',lemo='none',n_steps=20,cfg_bits=[0,1,1,1,0,1,0],cfg_inst=True, active_probes=False)
+
+
 dict = {
     'Current level' : [],
     'AVG SOT': [],
