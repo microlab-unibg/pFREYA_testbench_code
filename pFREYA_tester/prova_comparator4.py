@@ -28,6 +28,7 @@ def list_active_measures(lecroy):
 
 rm = pyvisa.ResourceManager()
 ps = rm.open_resource('GPIB1::23::INSTR')
+ps.timeout(8000)
 
 list_active_measures(ps)
 
