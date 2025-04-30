@@ -62,9 +62,11 @@ for i in np.arange(-0.20, -0.35, -0.01):
     #data.append(float(config.lecroy.query('C1:CRVA? HREL').split(',')[2])) #C1 è il canale 1, CRVA? interroga per il cursor value, HREL è la modalità di come vengono interpretate le posizioni dei cursori (Horizontal relative)
     dict['Current level'].append(i)
     print("Current: " + str(i))
-    config.lecroy.set_tdiv(tdiv='100µs')
+    # config.lecroy.set_tdiv(tdiv='100µs')
+    config.lecroy.set_tdiv(tdiv='500ns')
     time.sleep(1)
-    config.lecroy.set_tdiv(tdiv='200µs')
+    # config.lecroy.set_tdiv(tdiv='200µs')
+    config.lecroy.set_tdiv(tdiv='200ns')
     time.sleep(1)
 
     
