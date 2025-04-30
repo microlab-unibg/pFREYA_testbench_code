@@ -94,7 +94,7 @@ def config(channel: str, lemo: str, n_steps: int, cfg_bits: list, cfg_inst: bool
 
     channel_name = channel
     lemo_name = lemo
-    channel_num = 1 if channel_name == 'csa' else 2
+    channel_num = 3 if channel_name == 'csa' else 2
     channel_num_mon = 3
     num_steps = n_steps
     config_bits = cfg_bits
