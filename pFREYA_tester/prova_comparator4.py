@@ -51,7 +51,8 @@ data = []
 
 while(True):
     time.sleep(0.7)
-    val = config.lecroy.query("VBS? 'app.Measure.P5.Mean'")
+    # val = config.lecroy.query("VBS? 'app.Measure.P5.Mean'")
+    val = ps.query("VBS? 'app.Measure.P5.Mean'")
     time.sleep(0.3)
     print(str(val))
 
