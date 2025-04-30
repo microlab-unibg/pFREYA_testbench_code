@@ -4,7 +4,7 @@ import numpy as np
 import pyvisa
 # import matplotlib.colors as mcolors
 # from datetime import datetime
-# import time
+import time
 # import glob
 import config
 # import pFREYA_tester_processing as pYtp
@@ -44,7 +44,7 @@ with open(json_file, "r") as f:
 # current_level = gui_data["INJ"]["current_level"]
 # print(f"Livello corrente: {current_level}")
 
-print("Current: " + send_current_level(0))
+send_current_level(0)
 
 dict = {
     'Current level' : [],
@@ -56,10 +56,12 @@ dict = {
 
 count = 0
 data = []
-for i in np.arange(-0.0025, -0.80, -0.0025):
+for i in np.arange(-0.10, -0.50, -0.0025):
     ps.write(f':SOUR:CURR:LEV {i}E-6')
     #data.append(float(config.lecroy.query('C1:CRVA? HREL').split(',')[2])) #C1 è il canale 1, CRVA? interroga per il cursor value, HREL è la modalità di come vengono interpretate le posizioni dei cursori (Horizontal relative)
     dict['Current level'].append(i)
+    print("Current: " + str(i))
+    time.sleep(0.05)
     
 
 
