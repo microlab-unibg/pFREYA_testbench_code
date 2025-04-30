@@ -13,48 +13,59 @@ import sys
 import json
 import grafici
 
+def list_active_measures(lecroy):
+    print("=== Misure attive sull'oscilloscopio ===")
+    for i in range(1, 9):  # P1 → P8
+        pid = f"P{i}"
+        try:
+            src = lecroy.query(f"VBS? 'app.Measure.{pid}.Source1'").strip().replace('"', '')
+            meas_type = lecroy.query(f"VBS? 'app.Measure.{pid}.Param'").strip().replace('"', '')
+            if src:  # misura attiva
+                print(f"{pid}: tipo='{meas_type}', canale='{src}'")
+        except Exception as e:
+            print(f"{pid}: Errore -> {e}")
 
 
 rm = pyvisa.ResourceManager()
 ps = rm.open_resource('GPIB1::23::INSTR')
-print(ps.query('*IDN?'))
+
+list_active_measures(ps)
 
 
 #MAIN
-json_file = sys.argv[1] #sys.argv[1] serve a prendere il parametro (json) col il subprocess.run
+# json_file = sys.argv[1] #sys.argv[1] serve a prendere il parametro (json) col il subprocess.run
 
-with open(json_file, "r") as f:
-    gui_data = json.load(f)
-
-
-config.config(channel='csa',lemo='none',n_steps=20,cfg_bits=[0,1,1,1,0,1,0],cfg_inst=True, active_probes=False)
+# with open(json_file, "r") as f:
+#     gui_data = json.load(f)
 
 
-dict = {
-    'Current level' : [],
-    'AVG SOT': [],
-    '% SOT' : [],
-    'Max #SOT': [],
-    'Min #SOT': []
-}
+# config.config(channel='csa',lemo='none',n_steps=20,cfg_bits=[0,1,1,1,0,1,0],cfg_inst=True, active_probes=False)
 
-data = []
-# data.append(float(config.lecroy.query('C1:CRVA? HREL').split(',')[2])) #C1 è il canale 1, CRVA? interroga per il cursor value, HREL è la modalità di come vengono interpretate le posizioni dei cursori (Horizontal relative)
-# dict['Current level'].append(i)
 
-# config.lecroy.set_tdiv(tdiv='100us')
-# time.sleep(1)
-# config.lecroy.set_tdiv(tdiv='200us')
-# time.sleep(1)
+# dict = {
+#     'Current level' : [],
+#     'AVG SOT': [],
+#     '% SOT' : [],
+#     'Max #SOT': [],
+#     'Min #SOT': []
+# }
 
-# considerando che in un altra parte del codice per leggere dall'oscilloscopio ho questa funzione config.lecroy.query('C1:CRVA? HREL'), quindi questa istruzione config.lecroy.query("VBS? 'app.Measure.P5.value'") dovrebbe essere giusta?
+# data = []
+# # data.append(float(config.lecroy.query('C1:CRVA? HREL').split(',')[2])) #C1 è il canale 1, CRVA? interroga per il cursor value, HREL è la modalità di come vengono interpretate le posizioni dei cursori (Horizontal relative)
+# # dict['Current level'].append(i)
 
-while(True):
-    time.sleep(0.7)
-    # val = config.lecroy.query("VBS? 'app.Measure.P5.Mean'")
-    val = ps.query("VBS? 'app.Measure.P5.Mean'")
-    time.sleep(0.3)
-    print(str(val))
+# # config.lecroy.set_tdiv(tdiv='100us')
+# # time.sleep(1)
+# # config.lecroy.set_tdiv(tdiv='200us')
+# # time.sleep(1)
+
+# # considerando che in un altra parte del codice per leggere dall'oscilloscopio ho questa funzione config.lecroy.query('C1:CRVA? HREL'), quindi questa istruzione config.lecroy.query("VBS? 'app.Measure.P5.value'") dovrebbe essere giusta?
+
+# while(True):
+#     time.sleep(0.7)
+#     val = config.lecroy.query("VBS? 'app.Measure.P5.Mean'")
+#     time.sleep(0.3)
+#     print(str(val))
 
 
 
