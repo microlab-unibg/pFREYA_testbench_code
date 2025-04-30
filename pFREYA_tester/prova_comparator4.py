@@ -50,8 +50,9 @@ data.append(float(config.lecroy.query('C1:CRVA? HREL').split(',')[2])) #C1 è il
 # considerando che in un altra parte del codice per leggere dall'oscilloscopio ho questa funzione config.lecroy.query('C1:CRVA? HREL'), quindi questa istruzione config.lecroy.query("VBS? 'app.Measure.P5.value'") dovrebbe essere giusta?
 
 while(True):
-    time.sleep(1)
-    val = config.lecroy.query("VBS? 'app.Measure.P5.mean'")
+    time.sleep(0.7)
+    val = config.lecroy.query("VBS? 'app.Measure.P5.max'")
+    time.sleep(0.3)
     print(str(val))
 
 
