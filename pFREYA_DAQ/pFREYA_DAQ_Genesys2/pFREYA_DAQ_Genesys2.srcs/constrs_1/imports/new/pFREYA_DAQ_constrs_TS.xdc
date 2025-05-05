@@ -80,7 +80,7 @@ set_property PULLTYPE PULLUP [get_ports tx_ser]
 set_property SLEW FAST [get_ports inj_stb]
 set_property SLEW SLOW [get_ports adc_ck]
 set_property SLEW SLOW [get_ports adc_start]
-set_property SLEW SLOW [get_ports csa_reset_n]
+set_property SLEW FAST [get_ports csa_reset_n]
 set_property SLEW SLOW [get_ports dac_sck]
 set_property SLEW SLOW [get_ports dac_sdin]
 set_property SLEW SLOW [get_ports dac_sync_n]
@@ -118,10 +118,6 @@ set_property DRIVE 8 [get_ports slow_ctrl_reset_n]
 set_property DRIVE 8 [get_ports tx_ser]
 
 #sample
-set_property PACKAGE_PIN J23 [get_ports csa_reset_n_out]
-set_property IOSTANDARD LVCMOS12 [get_ports csa_reset_n_out]
-set_property SLEW FAST [get_ports csa_reset_n_out]
-set_property PULLTYPE PULLDOWN [get_ports csa_reset_n_out]
 #end sample
 
 create_clock -period 4.999 -name VIRTUAL_daq_ck_clk_wiz_clocks -waveform {0.000 2.500}
@@ -168,7 +164,13 @@ set_output_delay -clock [get_clocks VIRTUAL_daq_ck_clk_wiz_clocks] -min -add_del
 set_output_delay -clock [get_clocks VIRTUAL_daq_ck_clk_wiz_clocks] -max -add_delay 1.000 [get_ports slow_ctrl_reset_n]
 
 
+
+
 set_property OFFCHIP_TERM FP_VTT_50 [get_ports csa_reset_n]
+set_property PULLTYPE PULLDOWN [get_ports csa_reset_n_out]
+set_property SLEW FAST [get_ports csa_reset_n_out]
+set_property IOSTANDARD LVCMOS12 [get_ports csa_reset_n_out]
+set_property PACKAGE_PIN J23 [get_ports csa_reset_n_out]
 set_property C_CLK_INPUT_FREQ_HZ 300000000 [get_debug_cores dbg_hub]
 set_property C_ENABLE_CLK_DIVIDER false [get_debug_cores dbg_hub]
 set_property C_USER_SCAN_CHAIN 1 [get_debug_cores dbg_hub]
