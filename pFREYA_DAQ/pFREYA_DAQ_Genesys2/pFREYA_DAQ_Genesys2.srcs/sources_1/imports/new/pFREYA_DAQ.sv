@@ -32,9 +32,15 @@ module pFREYA_DAQ
     output logic ser_ck,
     output logic inj_stb,
     output logic csa_reset_n,
-    output logic adc_ck, adc_start,
-    output logic sh_phi1d_sup, sh_phi1d_inf,
-    output logic slow_ctrl_in, slow_ctrl_reset_n, slow_ctrl_ck,
+    output logic adc_ck,
+    output logic adc_start,
+    output logic sh_phi1d_sup,
+    output logic sh_phi1d_inf,
+    output logic slow_ctrl_in,
+    output logic slow_ctrl_reset_n,
+    output logic slow_ctrl_ck,
+
+    //output logic csa_reset_n_out,
     // Internal signals
     input  logic btn_reset,
 
@@ -152,4 +158,11 @@ module pFREYA_DAQ
             //tx_ser <= 1'b1;
         end
     end
+
+    // always_ff @(posedge daq_ck, posedge btn_reset) begin: csa_reset_n_out_creation
+    //     if (btn_reset)
+    //         csa_reset_n_out <= 1'b0;
+    //     else
+    //         csa_reset_n_out <= csa_reset_n;
+    // end
 endmodule
