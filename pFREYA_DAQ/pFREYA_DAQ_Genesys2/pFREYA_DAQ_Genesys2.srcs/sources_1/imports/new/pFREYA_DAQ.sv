@@ -44,7 +44,7 @@ module pFREYA_DAQ
     output logic slow_ctrl_reset_n,
     output logic slow_ctrl_ck,
 
-    output logic csa_reset_n_out,
+    //output logic csa_reset_n_out,
     // Internal signals
     input  logic btn_reset,
 
@@ -161,10 +161,10 @@ module pFREYA_DAQ
         end
     end
 
-    always_ff @(posedge daq_ck, posedge btn_reset) begin: csa_reset_n_out_creation
-        if (btn_reset)
-            csa_reset_n_out <= 1'b0;
-        else
-            csa_reset_n_out <= csa_reset_n;
-    end
+    // always_ff @(posedge daq_ck, posedge btn_reset) begin: csa_reset_n_out_creation
+    //     if (btn_reset)
+    //         csa_reset_n_out <= 1'b0;
+    //     else
+    //         csa_reset_n_out <= csa_reset_n;
+    // end
 endmodule
