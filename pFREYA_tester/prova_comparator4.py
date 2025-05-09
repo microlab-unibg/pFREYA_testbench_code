@@ -14,7 +14,7 @@ import sys
 import json
 import grafici
 
-def list_active_measures1(lecroy):
+def list_active_measures2(lecroy):
     print("=== Misure attive sull'oscilloscopio ===")
 
     pid = "P5"
@@ -31,6 +31,15 @@ def list_active_measures1(lecroy):
     except Exception as e:
         print(f"{pid}: Errore -> {e}")
 
+def list_active_measures1(lecroy):
+    print("=== Misure attive sull'oscilloscopio ===")
+    pid = "P1"
+
+    try:
+        avg = lecroy.query("VBS? 'app.Measure.P1.Out.Result.Value'")
+        print(f"{pid}: media={avg}")
+    except Exception as e:
+        print(f"{pid}: Errore -> {e}")
 
 lecroy = None
 if lecroy is None:
