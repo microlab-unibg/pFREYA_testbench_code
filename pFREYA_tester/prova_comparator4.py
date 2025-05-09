@@ -14,7 +14,7 @@ import sys
 import json
 import grafici
 
-def list_active_measures2(lecroy):
+def list_active_measures1(lecroy):
     print("=== Misure attive sull'oscilloscopio ===")
 
     pid = "P5"
@@ -31,7 +31,7 @@ def list_active_measures2(lecroy):
     except Exception as e:
         print(f"{pid}: Errore -> {e}")
 
-def list_active_measures1(lecroy):
+def list_active_measures2(lecroy):
     print("=== Misure attive sull'oscilloscopio ===")
     pid = "P1"
 
@@ -41,12 +41,61 @@ def list_active_measures1(lecroy):
     except Exception as e:
         print(f"{pid}: Errore -> {e}")
 
+def list_active_measures3(lecroy):
+    print("=== Misure attive sull'oscilloscopio ===")
+    pid = "P1"
+
+    try:
+        avg = lecroy.query("VBS? 'app.Measure.P1.Out.Result.Value'")
+        print(f"{pid}: media={avg}")
+    except Exception as e:
+        print(f"{pid}: Errore -> {e}")
+
+
+def list_active_measures4(lecroy):
+    lecroy.write("VBS 'app.Measure.MeasureMode = \"MyMeasure\"'")
+
+    # valore corrente (colonna “value” sullo schermo)
+    value = float( lecroy.query("VBS? 'app.Measure.P1.Out.Result.Value'") )
+
+    # media
+    mean  = float( lecroy.query("VBS? 'app.Measure.P1.Mean.Result.Value'") )
+    mean2 = float( lecroy.query("VBS? 'app.Measure.P1.Statistics(\"mean\").Result.Value'") )
+    print(value)
+    print(mean)
+    print(mean2)
+
+def list_active_measures5(lecroy):
+    lecroy.write("VBS 'app.Measure.MeasureMode = \"MyMeasure\"'")
+
+    # valore corrente (colonna “value” sullo schermo)
+    value = lecroy.query("VBS? 'app.Measure.P1.Out.Result.Value'").strip()
+
+    # media
+    mean  = lecroy.query("VBS? 'app.Measure.P1.Mean.Result.Value'").strip()
+    mean2 = lecroy.query("VBS? 'app.Measure.P1.Statistics(\"mean\").Result.Value'").strip()
+    print(value)
+    print(mean)
+    print(mean2)
+
+def list_active_measures6(lecroy):
+    vmax  = lecroy.query(":MEASure:VMAX? CHAN2").strip()
+    vmin  = lecroy.query(":MEASure:VMIN? CHAN2").strip()
+    vmean = lecroy.query(":MEASure:VAVerage? CHAN2").strip()
+
+    print(vmax)
+    print(vmin)
+    print(vmean)
+
+
+
+
 lecroy = None
 if lecroy is None:
     lecroy = TeledyneLeCroyPy.LeCroyWaveRunner('TCPIP0::169.254.1.214::inst0::INSTR')
     print(lecroy.idn)
+list_active_measures4(lecroy)
 
-list_active_measures1(lecroy)
 
 
 #MAIN
