@@ -7,30 +7,37 @@ import pyvisa
 import time
 # import glob
 import config
+from TeledyneLeCroyPy import TeledyneLeCroyPy
 # import pFREYA_tester_processing as pYtp
 # import pFREYA_tester as freya 
 import sys
 import json
 import grafici
 
-def list_active_measures(lecroy):
+def list_active_measures1(lecroy):
     print("=== Misure attive sull'oscilloscopio ===")
-    for i in range(1, 9):  # P1 → P8
-        pid = f"P{i}"
-        try:
-            src = lecroy.query(f"VBS? 'app.Measure.{pid}.Source1'").strip().replace('"', '')
-            meas_type = lecroy.query(f"VBS? 'app.Measure.{pid}.Param'").strip().replace('"', '')
-            if src:  # misura attiva
-                print(f"{pid}: tipo='{meas_type}', canale='{src}'")
-        except Exception as e:
-            print(f"{pid}: Errore -> {e}")
+
+    pid = "P5"
+    try:
+        src = lecroy.query(f"VBS? 'app.Measure.{pid}.Source1'").strip().replace('"', '')
+        meas_type = lecroy.query(f"VBS? 'app.Measure.{pid}.Param'").strip().replace('"', '')
+
+        # avg = config.lecroy.query("VBS? 'app.Measure.P5.Mean'")  # la versione con config non dovrebbe funzionare perchè lecroy non viene toccato in quel contesto
+        avg = lecroy.query("VBS? 'app.Measure.P5.Mean'")
+
+        if src:  # misura attiva
+            print(f"{pid}: tipo='{meas_type}', canale='{src}'")
+            print(f"{pid}: media={avg}")
+    except Exception as e:
+        print(f"{pid}: Errore -> {e}")
 
 
-rm = pyvisa.ResourceManager()
-ps = rm.open_resource('GPIB1::23::INSTR')
-ps.timeout(8000)
+lecroy = None
+if lecroy is None:
+    lecroy = TeledyneLeCroyPy.LeCroyWaveRunner('TCPIP0::169.254.1.214::inst0::INSTR')
+    print(lecroy.idn)
 
-list_active_measures(ps)
+list_active_measures1(lecroy)
 
 
 #MAIN
@@ -53,12 +60,6 @@ list_active_measures(ps)
 
 # data = []
 # # data.append(float(config.lecroy.query('C1:CRVA? HREL').split(',')[2])) #C1 è il canale 1, CRVA? interroga per il cursor value, HREL è la modalità di come vengono interpretate le posizioni dei cursori (Horizontal relative)
-# # dict['Current level'].append(i)
-
-# # config.lecroy.set_tdiv(tdiv='100us')
-# # time.sleep(1)
-# # config.lecroy.set_tdiv(tdiv='200us')
-# # time.sleep(1)
 
 # # considerando che in un altra parte del codice per leggere dall'oscilloscopio ho questa funzione config.lecroy.query('C1:CRVA? HREL'), quindi questa istruzione config.lecroy.query("VBS? 'app.Measure.P5.value'") dovrebbe essere giusta?
 

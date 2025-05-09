@@ -46,7 +46,6 @@ with open(json_file, "r") as f:
 
 send_current_level(0)
 
-config.config(channel='csa',lemo='none',n_steps=20,cfg_bits=[0,1,1,1,0,1,0],cfg_inst=True, active_probes=False)
 
 
 dict = {
@@ -59,6 +58,9 @@ dict = {
 
 count = 0
 data = []
+
+config.config(channel='csa',lemo='none',n_steps=20,cfg_bits=[0,1,1,1,0,1,0],cfg_inst=True, active_probes=False)
+
 # for i in np.arange(-0.20, -0.35, -0.0025):
 for i in np.arange(-0.20, -0.35, -0.01):
     ps.write(f':SOUR:CURR:LEV {i}E-6')
