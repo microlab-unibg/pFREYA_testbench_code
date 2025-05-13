@@ -52,19 +52,6 @@ def list_active_measures3(lecroy):
         print(f"{pid}: Errore -> {e}")
 
 
-def list_active_measures4(lecroy):
-    lecroy.write("VBS 'app.Measure.MeasureMode = \"MyMeasure\"'")
-
-    # valore corrente (colonna “value” sullo schermo)
-    value = float( lecroy.query("VBS? 'app.Measure.P1.Out.Result.Value'") )
-
-    # media
-    mean  = float( lecroy.query("VBS? 'app.Measure.P1.Mean.Result.Value'") )
-    mean2 = float( lecroy.query("VBS? 'app.Measure.P1.Statistics(\"mean\").Result.Value'") )
-    print(value)
-    print(mean)
-    print(mean2)
-
 def list_active_measures5(lecroy):
     lecroy.write("VBS 'app.Measure.MeasureMode = \"MyMeasure\"'")
 
@@ -79,13 +66,17 @@ def list_active_measures5(lecroy):
     print(mean2)
 
 def list_active_measures6(lecroy):
-    vmax  = lecroy.query(":MEASure:VMAX? CHAN2").strip()
-    vmin  = lecroy.query(":MEASure:VMIN? CHAN2").strip()
-    vmean = lecroy.query(":MEASure:VAVerage? CHAN2").strip()
+    try:
+        lecroy.timeout = 10000
+        # vmax  = lecroy.query(":MEASure:VMAX? CHAN2").strip()
+        # vmin  = lecroy.query(":MEASure:VMIN? CHAN2").strip()
+        vmean = lecroy.query(":MEASure:VAVerage? CHAN2").strip()
 
-    print(vmax)
-    print(vmin)
-    print(vmean)
+        # print(vmax)
+        # print(vmin)
+        print(vmean)
+    except Exception as e:
+        print(e)
 
 
 
@@ -94,7 +85,7 @@ lecroy = None
 if lecroy is None:
     lecroy = TeledyneLeCroyPy.LeCroyWaveRunner('TCPIP0::169.254.1.214::inst0::INSTR')
     print(lecroy.idn)
-list_active_measures4(lecroy)
+list_active_measures6(lecroy)
 
 
 
