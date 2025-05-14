@@ -5,7 +5,6 @@ from scipy.optimize import curve_fit
 from scipy.special import erf
 
 
-
 def sin():
     x = np.linspace(0, 2*np.pi, 200)
     #linspace crea un array dandogli inizio, fine e granularità dei valori. Tra 0 e 2*np.pi ci devono essere 200 valori
@@ -236,24 +235,7 @@ def errorFunction():
     plt.show()
     return 0
 
-def errorFunct(x, y, label, xLabel, yLabel, title):
-
-    current = np.array([
-        -0.2500, -0.2600, -0.2700, -0.2800, -0.2900, -0.3000, -0.3100, -0.3125, -0.3150, -0.3175, -0.3200, -0.3225, -0.3250, -0.3275,
-        -0.3300, -0.3325, -0.3350, -0.3375, -0.3400, -0.3425, -0.3450, -0.3475, -0.3500, -0.3525, -0.3550, -0.3575, -0.3600, -0.3625,
-        -0.3650, -0.3675, -0.3700, -0.3800, -0.3900, -0.4000, -0.4100
-    ])
-    negativo(current)
-
-    scatti = np.array([
-        0.000, 0.000, 0.000, 0.000, 0.000, 0.000, 0.000, 0.000, 0.001, 0.004, 0.020, 0.120, 0.276, 0.748, 2.965, 6.517,
-        12.615, 20.769, 39.804, 53.804, 62.965, 76.406, 89.427, 95.874, 96.643, 98.671, 99.455, 99.762, 99.804, 99.870,
-        99.873, 99.874, 99.877, 99.876, 99.877
-    ])
-    
-    # Dati
-    x = current
-    y = scatti / 100  # normalizza le percentuali in [0,1]
+def errorFunct(x, y, xLabel, yLabel, title):
 
     # Definizione della funzione error function
     def erf_fit(x, mu, sigma):
@@ -284,6 +266,45 @@ def errorFunct(x, y, label, xLabel, yLabel, title):
     return 0
 
 
+def errorFunctSdev(x, y, yerr, xLabel, yLabel, title):
+    # definizione modello
+    def erf_fit(x, mu, sigma):
+        return 0.5*(1 + erf((x-mu)/(sigma*np.sqrt(2))))
+    
+    # FIT pesato
+    popt, pcov = curve_fit(
+        erf_fit, x, y,
+        sigma=yerr,
+        absolute_sigma=True,
+        p0=[0.35, 0.01]
+    )
+    mu_fit, sigma_fit = popt
+    perr = np.sqrt(np.diag(pcov))   # incertezze su mu, sigma
+
+    # preparazione curva “liscia”
+    x_smooth = np.linspace(x.min(), x.max(), 500)
+    y_erf    = erf_fit(x_smooth, mu_fit, sigma_fit)
+
+    # plot dati + barre d’errore
+    plt.errorbar(x, y, yerr=yerr, fmt='o', label='Dati (±σ)')
+    plt.plot(x_smooth, y_erf, '-', 
+             label=f'Fit erf\nμ={mu_fit:.5f}±{perr[0]:.5f}, σ={sigma_fit:.5f}±{perr[1]:.5f}')
+    plt.xlabel(xLabel)
+    plt.ylabel(yLabel)
+    plt.title(title)
+    plt.grid(True)
+    plt.legend()
+    plt.show()
+
+    # opzionale: calcolo del χ² ridotto
+    y_fit_at_x = erf_fit(x, mu_fit, sigma_fit)
+    chi2 = np.sum(((y - y_fit_at_x)/yerr)**2)
+    dof  = len(x) - len(popt)
+    print(f"χ²/dof = {chi2:.1f}/{dof} = {chi2/dof:.2f}")
+    
+    return popt, perr
+
+
 #sin()
 #fun()
 #dots()
@@ -291,6 +312,10 @@ def errorFunct(x, y, label, xLabel, yLabel, title):
 #thrgen_ref()
 #curva_s()
 # errorFunction()
+
+
+
+
 
 # current = np.array([
 #     -0.2500, -0.2600, -0.2700, -0.2800, -0.2900, -0.3000, -0.3100, -0.3125, -0.3150, -0.3175, -0.3200, -0.3225, -0.3250, -0.3275,
@@ -305,9 +330,11 @@ def errorFunct(x, y, label, xLabel, yLabel, title):
 #     99.873, 99.874, 99.877, 99.876, 99.877
 # ])
 
-# label = 'null'
-# xlabel = 'Current [μA]x'
-# ylabel = 'Scatti [%]x'
-# title = 'Curva ad S (Thrgen_ref=280, Vthrp = 601, Vthrp = 599)x'
+# scatti = scatti / 100
 
-# errorFunction2(current, scatti, label, xlabel, ylabel, title)
+# label = 'null'
+# xlabel = 'Current [μA]'
+# ylabel = 'Scatti [%]'
+# title = 'Curva ad S (Thrgen_ref=280, Vthrp = 601, Vthrp = 599)'
+
+# errorFunct(current, scatti, xlabel, ylabel, title)

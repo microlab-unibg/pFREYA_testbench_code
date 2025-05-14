@@ -44,13 +44,13 @@ pid = "P5"
 data = []
 current_level = []
 avg_sot = []
-perc_sot = []
+sdev_sot = []
 max_sot = []
 min_sot = []
 
 
 # for i in np.arange(-0.20, -0.35, -0.0025):
-for i in np.arange(-0.28, -0.32, -0.01):
+for i in np.arange(-0.25, -0.33, -0.01):
 
     config.ps.write(f':SOUR:CURR:LEV {i}E-6')
     print("Current: " + str(i))
@@ -63,7 +63,7 @@ for i in np.arange(-0.28, -0.32, -0.01):
     config.lecroy.set_tdiv(tdiv='100us')
     time.sleep(1)
     config.lecroy.set_tdiv(tdiv='200us')
-    time.sleep(1)
+    time.sleep(3)
 
     #
     #
@@ -74,6 +74,9 @@ for i in np.arange(-0.28, -0.32, -0.01):
     #
     #
     avg_sot.append(config.lecroy.query(f"VBS? 'return=app.Measure.{pid}.Mean.Result.Value'"))
+    sdev_sot.append(config.lecroy.query(f"VBS? 'return=app.Measure.{pid}.Sdev.Result.Value'"))    
+    # max_sot.append(config.lecroy.query(f"VBS? 'return=app.Measure.{pid}.Max.Result.Value'"))
+    # min_sot.append(config.lecroy.query(f"VBS? 'return=app.Measure.{pid}.Min.Result.Value'"))
 
     time.sleep(1)
 
@@ -81,17 +84,28 @@ for i in np.arange(-0.28, -0.32, -0.01):
 
 results = {
     'Current level' : [],
-    'AVG SOT': [],
+    'Mean': [],
     '% SOT' : [],
+    'Sdev' : [],
     'Max #SOT': [],
     'Min #SOT': []
 }
 
 results['Current level'] = np.array(current_level)
-results['AVG SOT'] = np.array(avg_sot, dtype=float)
-results['% SOT'] = np.array(results['AVG SOT'] / 715)
+results['Mean'] = np.array(avg_sot, dtype=float)
+results['% SOT'] = np.array(results['Mean'] / 715)
+results['Sdev'] = np.array(avg_sot, dtype=float)
 # results['Max #SOT'] = np.array(max_sot)
 # results['Min #SOT'] = np.array(min_sot)
 
-print(results['AVG SOT'])
+print(results['Mean'])
 print(results['% SOT'])
+
+x = [results['Current level']]
+y = [results['% SOT']]
+label = 'null'
+xlabel = 'Current [μA]'
+ylabel = 'Scatti [%]'
+title = 'Curva ad S (Thrgen_ref=280, Vthrp = 601, Vthrp = 599)'
+
+grafici.errorFunct(x, y, label, xlabel, ylabel, title)

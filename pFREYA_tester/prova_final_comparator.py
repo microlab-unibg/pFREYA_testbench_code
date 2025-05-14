@@ -187,9 +187,8 @@ dict['% SOT'] = np.array(dict['AVG SOT'] / 715)
 
 x = [dict['Current level']]
 y = [dict['% SOT']]
-label = 'null'
 xlabel = 'Current [μA]'
 ylabel = 'Scatti [%]'
 title = 'Curva ad S (Thrgen_ref=280, Vthrp = 601, Vthrp = 599)'
 
-grafici.errorFunct(x, y, label, xlabel, ylabel, title)
+grafici.errorFunct(x, y, xlabel, ylabel, title)
