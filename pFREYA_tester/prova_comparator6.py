@@ -93,13 +93,13 @@ results = {
 
 results['Current level'] = np.array(current_level)
 results['Mean'] = np.array(avg_sot, dtype=float)
-results['% SOT'] = np.array(results['Mean'] / 715)
+results['% SOT'] = np.array(results['Mean'] / 715, dtype=float)
 results['Sdev'] = np.array(avg_sot, dtype=float)
 # results['Max #SOT'] = np.array(max_sot)
 # results['Min #SOT'] = np.array(min_sot)
 
-print(results['Mean'])
-print(results['% SOT'])
+# print(results['Mean'])
+# print(results['% SOT'])
 
 x = [results['Current level']]
 y = [results['% SOT']]
