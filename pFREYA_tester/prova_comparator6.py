@@ -44,7 +44,7 @@ pid = "P5"
 data = []
 current_level = []
 avg_sot = []
-perc_sot = []
+perc_sot = np.array()
 max_sot = []
 min_sot = []
 
@@ -79,7 +79,7 @@ for i in np.arange(-0.26, -0.33, -0.01):
 
 
 
-dict = {
+results = {
     'Current level' : [],
     'AVG SOT': [],
     '% SOT' : [],
@@ -87,12 +87,11 @@ dict = {
     'Min #SOT': []
 }
 
-dict['Current level'] = np.array(current_level)
-dict['AVG SOT'] = np.array(avg_sot)
-perc_sot = avg_sot / 715
-dict['% SOT'] = np.array(perc_sot)
-# dict['Max #SOT'] = np.array(max_sot)
-# dict['Min #SOT'] = np.array(min_sot)
+results['Current level'] = np.array(current_level)
+results['AVG SOT'] = np.array(avg_sot)
+results['% SOT'] = results['AVG SOT'] / 715
+# results['Max #SOT'] = np.array(max_sot)
+# results['Min #SOT'] = np.array(min_sot)
 
-print(dict['AVG SOT'])
-print(dict['% SOT'])
+print(results['AVG SOT'])
+print(results['% SOT'])
