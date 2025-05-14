@@ -89,7 +89,7 @@ dict = {
 
 dict['Current level'] = np.array(current_level)
 dict['AVG SOT'] = np.array(avg_sot)
-dict['% SOT'] = np.array(dict['AVG SOT'] / 715)
+dict['% SOT'] = np.array(avg_sot / 715)
 # dict['Max #SOT'] = np.array(max_sot)
 # dict['Min #SOT'] = np.array(min_sot)
 
