@@ -44,7 +44,7 @@ pid = "P5"
 data = []
 current_level = []
 avg_sot = []
-perc_sot = np.array()
+perc_sot = []
 max_sot = []
 min_sot = []
 
