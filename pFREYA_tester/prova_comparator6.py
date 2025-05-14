@@ -91,7 +91,7 @@ results = {
     'Min #SOT': []
 }
 
-results['Current level'] = np.array(current_level)
+results['Current level'] = np.array(current_level*(-1))
 results['Mean'] = np.array(avg_sot, dtype=float)
 results['% SOT'] = np.array(results['Mean'] / 715, dtype=float)
 results['Sdev'] = np.array(avg_sot, dtype=float)
@@ -102,7 +102,6 @@ results['Sdev'] = np.array(avg_sot, dtype=float)
 # print(results['% SOT'])
 
 x = results['Current level']
-x = grafici.negativo(x)
 y = results['% SOT']
 label = 'null'
 xlabel = 'Current [μA]'
