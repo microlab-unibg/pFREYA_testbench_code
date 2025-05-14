@@ -71,6 +71,7 @@ def list_active_measures6(lecroy):
         vmax  = lecroy.query(":MEASure:VMAX? CHAN2").strip()
         vmin  = lecroy.query(":MEASure:VMIN? CHAN2").strip()
         vmean = lecroy.query(":MEASure:VAVerage? CHAN2").strip()
+<<<<<<< HEAD
 
         print(vmax)
         print(vmin)
@@ -97,8 +98,6 @@ def list_active_measures7(lecroy):
     mean2 = lecroy.query(f"VBS? 'return=app.Measure.{pid}.Statistics(\"mean\").Result.Value'")
 
 
-
-
 # config.config(channel='csa',lemo='none',n_steps=20,cfg_bits=[0,1,1,1,0,1,0],cfg_inst=True, active_probes=False)
 
 
@@ -108,5 +107,3 @@ if lecroy is None:
     lecroy = TeledyneLeCroyPy.LeCroyWaveRunner('TCPIP0::169.254.1.214::inst0::INSTR')
     lecroy.timeout = 5000
     lecroy.clear()
-    print(lecroy.idn)
-list_active_measures6(lecroy)
