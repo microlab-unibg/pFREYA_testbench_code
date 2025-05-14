@@ -38,9 +38,53 @@ def list_active_measures7(lecroy):
 config.config(channel='csa',lemo='none',n_steps=20,cfg_bits=[0,1,1,1,0,1,0],cfg_inst=True, active_probes=False)
 
 
-#QUESTA PARTE (tranne lecroy.timeout e lecroy.clear()) VIENE GIA' FATTA IN config.config()
-# lecroy = None
-# if lecroy is None:
-#     lecroy = TeledyneLeCroyPy.LeCroyWaveRunner('TCPIP0::169.254.1.214::inst0::INSTR')
-# print(lecroy.idn)
-list_active_measures7(config.lecroy)
+# list_active_measures7(config.lecroy)
+
+data = []
+current_level = []
+avg_sot = []
+# perc_sot = []
+max_sot = []
+min_sot = []
+
+
+# for i in np.arange(-0.20, -0.35, -0.0025):
+for i in np.arange(-0.20, -0.35, -0.01):
+    config.ps.write(f':SOUR:CURR:LEV {i}E-6')
+    
+    #data.append(float(config.lecroy.query('C1:CRVA? HREL').split(',')[2])) #C1 è il canale 1, CRVA? interroga per il cursor value, HREL è la modalità di come vengono interpretate le posizioni dei cursori (Horizontal relative)
+    
+    current_level.append(i)
+    
+    print("Current: " + str(i))
+    config.lecroy.set_tdiv(tdiv='100us')
+    time.sleep(1)
+    config.lecroy.set_tdiv(tdiv='200us')
+    time.sleep(1)
+
+    #
+    #
+    #
+    # LETTURA E SALVATAGGIO DATI DALL'OSCILLOSCOPIO 
+    # avg_sot.append( istruzioneLetturaLecroy )
+    # stessa cosa per max_sot e min_sot
+    #
+    #
+
+    time.sleep(1)
+
+
+
+dict = {
+    'Current level' : [],
+    'AVG SOT': [],
+    '% SOT' : [],
+    'Max #SOT': [],
+    'Min #SOT': []
+}
+
+dict['Current level'] = np.array(current_level)
+dict['AVG SOT'] = np.array(avg_sot)
+dict['% SOT'] = np.array(dict['AVG SOT'] / 715)
+# dict['Max #SOT'] = np.array(max_sot)
+# dict['Min #SOT'] = np.array(min_sot)
