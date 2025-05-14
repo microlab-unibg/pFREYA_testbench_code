@@ -40,6 +40,7 @@ config.config(channel='csa',lemo='none',n_steps=20,cfg_bits=[0,1,1,1,0,1,0],cfg_
 
 # list_active_measures7(config.lecroy)
 
+pid = "P5"
 data = []
 current_level = []
 avg_sot = []
@@ -50,17 +51,19 @@ min_sot = []
 
 # for i in np.arange(-0.20, -0.35, -0.0025):
 for i in np.arange(-0.20, -0.35, -0.01):
+
     config.ps.write(f':SOUR:CURR:LEV {i}E-6')
-    
+    print("Current: " + str(i))
+    time.sleep(1)
+
     #data.append(float(config.lecroy.query('C1:CRVA? HREL').split(',')[2])) #C1 è il canale 1, CRVA? interroga per il cursor value, HREL è la modalità di come vengono interpretate le posizioni dei cursori (Horizontal relative)
     
     current_level.append(i)
     
-    print("Current: " + str(i))
     config.lecroy.set_tdiv(tdiv='100us')
     time.sleep(1)
     config.lecroy.set_tdiv(tdiv='200us')
-    time.sleep(1)
+    time.sleep(3)
 
     #
     #
@@ -70,6 +73,7 @@ for i in np.arange(-0.20, -0.35, -0.01):
     # stessa cosa per max_sot e min_sot
     #
     #
+    avg_sot.append(config.lecroy.query(f"VBS? 'return=app.Measure.{pid}.Mean.Result.Value'"))
 
     time.sleep(1)
 
@@ -88,3 +92,6 @@ dict['AVG SOT'] = np.array(avg_sot)
 dict['% SOT'] = np.array(dict['AVG SOT'] / 715)
 # dict['Max #SOT'] = np.array(max_sot)
 # dict['Min #SOT'] = np.array(min_sot)
+
+print(dict['AVG SOT'])
+print(dict['% SOT'])
