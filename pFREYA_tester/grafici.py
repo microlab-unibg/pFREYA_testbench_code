@@ -236,6 +236,53 @@ def errorFunction():
     plt.show()
     return 0
 
+def errorFunct(x, y, label, xLabel, yLabel, title):
+
+    current = np.array([
+        -0.2500, -0.2600, -0.2700, -0.2800, -0.2900, -0.3000, -0.3100, -0.3125, -0.3150, -0.3175, -0.3200, -0.3225, -0.3250, -0.3275,
+        -0.3300, -0.3325, -0.3350, -0.3375, -0.3400, -0.3425, -0.3450, -0.3475, -0.3500, -0.3525, -0.3550, -0.3575, -0.3600, -0.3625,
+        -0.3650, -0.3675, -0.3700, -0.3800, -0.3900, -0.4000, -0.4100
+    ])
+    negativo(current)
+
+    scatti = np.array([
+        0.000, 0.000, 0.000, 0.000, 0.000, 0.000, 0.000, 0.000, 0.001, 0.004, 0.020, 0.120, 0.276, 0.748, 2.965, 6.517,
+        12.615, 20.769, 39.804, 53.804, 62.965, 76.406, 89.427, 95.874, 96.643, 98.671, 99.455, 99.762, 99.804, 99.870,
+        99.873, 99.874, 99.877, 99.876, 99.877
+    ])
+    
+    # Dati
+    x = current
+    y = scatti / 100  # normalizza le percentuali in [0,1]
+
+    # Definizione della funzione error function
+    def erf_fit(x, mu, sigma):
+        return 0.5 * (1 + erf((x - mu) / (sigma * np.sqrt(2))))
+
+    # Fit dei dati
+    popt, _ = curve_fit(erf_fit, x, y, p0=[0.35, 0.01])  # stima iniziale
+
+    # Valori stimati
+    mu_fit, sigma_fit = popt
+
+    # Genera curva smooth per il plot
+    x_smooth = np.linspace(np.min(x), np.max(x), 500)
+    y_erf = erf_fit(x_smooth, mu_fit, sigma_fit)
+
+    plt.plot(x, y, 'o', label='Dati originali')         #'o' mette solo i punti nel grafico, non crea la spezzata
+
+    #{mu_fit:.4f} permette di mettere una var e di (.4f) specificarne il numero di decimali (5)
+    plt.plot(x_smooth, y_erf, '-', label=f'Fit erf\nμ={mu_fit:.5f}, σ={sigma_fit:.5f}')
+
+    plt.xlabel(xLabel)
+    plt.ylabel(yLabel)
+    plt.title(title)
+
+    plt.grid(True)
+    plt.legend()
+    plt.show()
+    return 0
+
 
 #sin()
 #fun()
@@ -244,3 +291,23 @@ def errorFunction():
 #thrgen_ref()
 #curva_s()
 # errorFunction()
+
+# current = np.array([
+#     -0.2500, -0.2600, -0.2700, -0.2800, -0.2900, -0.3000, -0.3100, -0.3125, -0.3150, -0.3175, -0.3200, -0.3225, -0.3250, -0.3275,
+#     -0.3300, -0.3325, -0.3350, -0.3375, -0.3400, -0.3425, -0.3450, -0.3475, -0.3500, -0.3525, -0.3550, -0.3575, -0.3600, -0.3625,
+#     -0.3650, -0.3675, -0.3700, -0.3800, -0.3900, -0.4000, -0.4100
+# ])
+# negativo(current)
+
+# scatti = np.array([
+#     0.000, 0.000, 0.000, 0.000, 0.000, 0.000, 0.000, 0.000, 0.001, 0.004, 0.020, 0.120, 0.276, 0.748, 2.965, 6.517,
+#     12.615, 20.769, 39.804, 53.804, 62.965, 76.406, 89.427, 95.874, 96.643, 98.671, 99.455, 99.762, 99.804, 99.870,
+#     99.873, 99.874, 99.877, 99.876, 99.877
+# ])
+
+# label = 'null'
+# xlabel = 'Current [μA]x'
+# ylabel = 'Scatti [%]x'
+# title = 'Curva ad S (Thrgen_ref=280, Vthrp = 601, Vthrp = 599)x'
+
+# errorFunction2(current, scatti, label, xlabel, ylabel, title)

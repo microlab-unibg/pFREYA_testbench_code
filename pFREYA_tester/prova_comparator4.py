@@ -23,7 +23,7 @@ def list_active_measures1(lecroy):
         meas_type = lecroy.query(f"VBS? 'app.Measure.{pid}.Param'").strip().replace('"', '')
 
         # avg = config.lecroy.query("VBS? 'app.Measure.P5.Mean'")  # la versione con config non dovrebbe funzionare perchè lecroy non viene toccato in quel contesto
-        avg = lecroy.query("VBS? 'app.Measure.P5.Mean'")
+        avg = lecroy.query(f"VBS? 'app.Measure.{pid}.Mean'")
 
         if src:  # misura attiva
             print(f"{pid}: tipo='{meas_type}', canale='{src}'")
@@ -46,101 +46,67 @@ def list_active_measures3(lecroy):
     pid = "P1"
 
     try:
-        avg = lecroy.query("VBS? 'app.Measure.P1.Out.Result.Value'")
+        avg = lecroy.query(f"VBS? 'app.Measure.{pid}.Out.Result.Value'")
         print(f"{pid}: media={avg}")
     except Exception as e:
         print(f"{pid}: Errore -> {e}")
 
 
-def list_active_measures4(lecroy):
-    lecroy.write("VBS 'app.Measure.MeasureMode = \"MyMeasure\"'")
-
-    # valore corrente (colonna “value” sullo schermo)
-    value = float( lecroy.query("VBS? 'app.Measure.P1.Out.Result.Value'") )
-
-    # media
-    mean  = float( lecroy.query("VBS? 'app.Measure.P1.Mean.Result.Value'") )
-    mean2 = float( lecroy.query("VBS? 'app.Measure.P1.Statistics(\"mean\").Result.Value'") )
-    print(value)
-    print(mean)
-    print(mean2)
-
 def list_active_measures5(lecroy):
+    pid = "P1"
     lecroy.write("VBS 'app.Measure.MeasureMode = \"MyMeasure\"'")
 
     # valore corrente (colonna “value” sullo schermo)
-    value = lecroy.query("VBS? 'app.Measure.P1.Out.Result.Value'").strip()
+    value = lecroy.query(f"VBS? 'app.Measure.{pid}.Out.Result.Value'").strip()
 
     # media
-    mean  = lecroy.query("VBS? 'app.Measure.P1.Mean.Result.Value'").strip()
-    mean2 = lecroy.query("VBS? 'app.Measure.P1.Statistics(\"mean\").Result.Value'").strip()
+    mean  = lecroy.query(f"VBS? 'app.Measure.{pid}.Mean.Result.Value'").strip()
+    mean2 = lecroy.query(f"VBS? 'app.Measure.{pid}.Statistics(\"mean\").Result.Value'").strip()
     print(value)
     print(mean)
     print(mean2)
 
 def list_active_measures6(lecroy):
-    vmax  = lecroy.query(":MEASure:VMAX? CHAN2").strip()
-    vmin  = lecroy.query(":MEASure:VMIN? CHAN2").strip()
-    vmean = lecroy.query(":MEASure:VAVerage? CHAN2").strip()
+    try:
+        vmax  = lecroy.query(":MEASure:VMAX? CHAN2").strip()
+        vmin  = lecroy.query(":MEASure:VMIN? CHAN2").strip()
+        vmean = lecroy.query(":MEASure:VAVerage? CHAN2").strip()
 
-    print(vmax)
-    print(vmin)
-    print(vmean)
+        print(vmax)
+        print(vmin)
+        print(vmean)
+    except Exception as e:
+        print(e)
+
+def list_active_measures7(lecroy):
+    pid = "P1"
+
+    #   PROVARE LE ISTRUZIONI SIA IN MINUSCOLO CHE CON LE INIZIALI MAIUSCOLE
+
+    # lecroy.write(r"""vbs 'app.measure.showmeasure = true ' """)
+    # lecroy.write(r"""vbs 'app.measure.statson = true ' """)
+    # lecroy.write(r"""vbs 'app.measure.p1.view = true ' """)
+    # lecroy.write(r"""vbs 'app.measure.p1.paramengine = "<value>" ' """)
+    # lecroy.write(r"""vbs 'app.measure.p1.source1 = "C1" ' """)
+
+    # lecroy.write("VBS 'app.Measure.ShowMeasure = true'")
+    # lecroy.write("VBS 'app.Measure.StatsOn = true'")
+    # lecroy.write("VBS 'app.Measure.P1.View = true'")
+
+    mean  = lecroy.query(f"VBS? 'return=app.Measure.{pid}.Mean.Result.Value'")
+    mean2 = lecroy.query(f"VBS? 'return=app.Measure.{pid}.Statistics(\"mean\").Result.Value'")
 
 
-
-
-lecroy = None
-if lecroy is None:
-    lecroy = TeledyneLeCroyPy.LeCroyWaveRunner('TCPIP0::169.254.1.214::inst0::INSTR')
-    print(lecroy.idn)
-list_active_measures4(lecroy)
-
-
-
-#MAIN
-# json_file = sys.argv[1] #sys.argv[1] serve a prendere il parametro (json) col il subprocess.run
-
-# with open(json_file, "r") as f:
-#     gui_data = json.load(f)
 
 
 # config.config(channel='csa',lemo='none',n_steps=20,cfg_bits=[0,1,1,1,0,1,0],cfg_inst=True, active_probes=False)
 
 
-# dict = {
-#     'Current level' : [],
-#     'AVG SOT': [],
-#     '% SOT' : [],
-#     'Max #SOT': [],
-#     'Min #SOT': []
-# }
-
-# data = []
-# # data.append(float(config.lecroy.query('C1:CRVA? HREL').split(',')[2])) #C1 è il canale 1, CRVA? interroga per il cursor value, HREL è la modalità di come vengono interpretate le posizioni dei cursori (Horizontal relative)
-
-# # considerando che in un altra parte del codice per leggere dall'oscilloscopio ho questa funzione config.lecroy.query('C1:CRVA? HREL'), quindi questa istruzione config.lecroy.query("VBS? 'app.Measure.P5.value'") dovrebbe essere giusta?
-
-# while(True):
-#     time.sleep(0.7)
-#     val = config.lecroy.query("VBS? 'app.Measure.P5.Mean'")
-#     time.sleep(0.3)
-#     print(str(val))
-
-
-
-
-
-
-
-
-# x = [dict['Current level']]
-# y = [dict['% SOT']]
-# label = 'null'
-# xlabel = 'Current [μA]'
-# ylabel = 'Scatti [%]'
-# title = 'Curva ad S (Thrgen_ref=280, Vthrp = 601, Vthrp = 599)'
-
-# grafici.creaGrafico(x, y, label, xlabel, ylabel, title)
-
-
+#QUESTA PARTE (tranne lecroy.timeout e lecroy.clear()) VIENE GIA' FATTA IN config.config()
+lecroy = None
+if lecroy is None:
+    lecroy = TeledyneLeCroyPy.LeCroyWaveRunner('TCPIP0::169.254.1.214::inst0::INSTR')
+    lecroy.timeout = 5000
+    lecroy.clear()
+    print(lecroy.idn)
+list_active_measures6(lecroy)
