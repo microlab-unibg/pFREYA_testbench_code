@@ -50,7 +50,7 @@ min_sot = []
 
 
 # for i in np.arange(-0.20, -0.35, -0.0025):
-for i in np.arange(-0.25, -0.33, -0.01):
+for i in np.arange(-0.25, -0.33, -0.0025):
 
     config.ps.write(f':SOUR:CURR:LEV {i}E-6')
     print("Current: " + str(i))
