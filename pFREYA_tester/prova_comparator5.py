@@ -79,7 +79,7 @@ def list_active_measures6(lecroy):
         print(e)
 
 def list_active_measures7(lecroy):
-    pid = "P1"
+    pid = "P5"
 
     #   PROVARE LE ISTRUZIONI SIA IN MINUSCOLO CHE CON LE INIZIALI MAIUSCOLE
 
@@ -95,6 +95,8 @@ def list_active_measures7(lecroy):
 
     mean  = lecroy.query(f"VBS? 'return=app.Measure.{pid}.Mean.Result.Value'")
     mean2 = lecroy.query(f"VBS? 'return=app.Measure.{pid}.Statistics(\"mean\").Result.Value'")
+    print(mean)
+    print(mean2)
 
 
 # config.config(channel='csa',lemo='none',n_steps=20,cfg_bits=[0,1,1,1,0,1,0],cfg_inst=True, active_probes=False)
@@ -104,5 +106,5 @@ def list_active_measures7(lecroy):
 lecroy = None
 if lecroy is None:
     lecroy = TeledyneLeCroyPy.LeCroyWaveRunner('TCPIP0::169.254.1.214::inst0::INSTR')
-    lecroy.timeout = 5000
-    lecroy.clear()
+print(lecroy.idn)
+list_active_measures7(lecroy)
