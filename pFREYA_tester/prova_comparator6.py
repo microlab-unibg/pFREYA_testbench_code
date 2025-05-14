@@ -44,13 +44,13 @@ pid = "P5"
 data = []
 current_level = []
 avg_sot = []
-# perc_sot = []
+perc_sot = []
 max_sot = []
 min_sot = []
 
 
 # for i in np.arange(-0.20, -0.35, -0.0025):
-for i in np.arange(-0.20, -0.35, -0.01):
+for i in np.arange(-0.26, -0.33, -0.01):
 
     config.ps.write(f':SOUR:CURR:LEV {i}E-6')
     print("Current: " + str(i))
@@ -89,7 +89,8 @@ dict = {
 
 dict['Current level'] = np.array(current_level)
 dict['AVG SOT'] = np.array(avg_sot)
-dict['% SOT'] = np.array(avg_sot / 715)
+perc_sot = avg_sot / 715
+dict['% SOT'] = np.array(perc_sot)
 # dict['Max #SOT'] = np.array(max_sot)
 # dict['Min #SOT'] = np.array(min_sot)
 
