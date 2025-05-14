@@ -101,8 +101,8 @@ results['Sdev'] = np.array(avg_sot, dtype=float)
 # print(results['Mean'])
 # print(results['% SOT'])
 
-x = [results['Current level']]
-y = [results['% SOT']]
+x = results['Current level']
+y = results['% SOT']
 label = 'null'
 xlabel = 'Current [μA]'
 ylabel = 'Scatti [%]'
