@@ -102,6 +102,7 @@ results['Sdev'] = np.array(avg_sot, dtype=float)
 # print(results['% SOT'])
 
 x = results['Current level']
+x = grafici.negativo(x)
 y = results['% SOT']
 label = 'null'
 xlabel = 'Current [μA]'
