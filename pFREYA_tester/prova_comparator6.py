@@ -84,7 +84,7 @@ min_sot = []
 
 
 # for i in np.arange(-0.20, -0.35, -0.0025):
-for i in np.arange(-0.25, -0.33, -0.0025):
+for i in np.arange(-0.25, -0.33, -0.005):
 
     config.ps.write(f':SOUR:CURR:LEV {i}E-6')
     print("Current: " + str(i))
@@ -113,7 +113,7 @@ for i in np.arange(-0.25, -0.33, -0.0025):
     # min_sot.append(config.lecroy.query(f"VBS? 'return=app.Measure.{pid}.Min.Result.Value'"))
 
     time.sleep(1)
-    break
+    
 
 
 
@@ -149,6 +149,7 @@ current = np.array([
     -0.3300, -0.3325, -0.3350, -0.3375, -0.3400, -0.3425, -0.3450, -0.3475, -0.3500, -0.3525, -0.3550, -0.3575, -0.3600, -0.3625,
     -0.3650, -0.3675, -0.3700, -0.3800, -0.3900, -0.4000, -0.4100
 ])
+current = current * (-1)
 
 scatti = np.array([
     0.000, 0.000, 0.000, 0.000, 0.000, 0.000, 0.000, 0.000, 0.001, 0.004, 0.020, 0.120, 0.276, 0.748, 2.965, 6.517,
@@ -158,4 +159,4 @@ scatti = np.array([
 
 scatti = scatti / 100
 
-errorFunct(current, scatti, xlabel, ylabel, title)
+errorFunct(x, y, xlabel, ylabel, title)
