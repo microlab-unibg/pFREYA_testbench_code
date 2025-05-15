@@ -59,7 +59,7 @@ min_lecroy = []
 
 
 # for i in np.arange(-0.20, -0.35, -0.0025):
-for i in np.arange(-0.25, -0.33, -0.01):
+for i in np.arange(-0.23, -0.34, -0.0025):
 
     config.ps.write(f':SOUR:CURR:LEV {i}E-6')
     print("Current: " + str(i))
@@ -74,44 +74,40 @@ for i in np.arange(-0.25, -0.33, -0.01):
     config.lecroy.set_tdiv(tdiv='200us')
     time.sleep(3)
 
-    #
-    #
-    #
     # LETTURA E SALVATAGGIO DATI DALL'OSCILLOSCOPIO 
-    # avg_sot.append( istruzioneLetturaLecroy )
-    # stessa cosa per max_sot e min_sot
-    #
-    #
     avg_lecroy.append(config.lecroy.query(f"VBS? 'return=app.Measure.{pid}.Mean.Result.Value'"))
     sdev_lecroy.append(config.lecroy.query(f"VBS? 'return=app.Measure.{pid}.Sdev.Result.Value'"))    
-    # max_lecroy.append(config.lecroy.query(f"VBS? 'return=app.Measure.{pid}.Max.Result.Value'"))
-    # min_lecroy.append(config.lecroy.query(f"VBS? 'return=app.Measure.{pid}.Min.Result.Value'"))
+    max_lecroy.append(config.lecroy.query(f"VBS? 'return=app.Measure.{pid}.Max.Result.Value'"))
+    min_lecroy.append(config.lecroy.query(f"VBS? 'return=app.Measure.{pid}.Min.Result.Value'"))
 
     time.sleep(1)
     
 
-
-
-results = {
-    'Current level' : [],
-    'Mean': [],
-    '% SOT' : [],
-    'Sdev' : [],
-    'Max #SOT': [],
-    'Min #SOT': []
-}
-
 current = np.array(current_level)
 current = current * (-1)
+
 avg = np.array(avg_lecroy, dtype=float)
 percScatti = np.array(avg / 715, dtype=float)
 
-# results['Current level'] = np.array(current_level)
-# results['Mean'] = np.array(avg_sot, dtype=float)
-# results['% SOT'] = np.array(results['Mean'] / 715, dtype=float)
-# results['Sdev'] = np.array(avg_sot, dtype=float)
-# results['Max #SOT'] = np.array(max_sot)
-# results['Min #SOT'] = np.array(min_sot)
+sdev = np.array(sdev_lecroy, dtype=float)
+max = np.array(max_lecroy, dtype=float)
+min = np.array(min_lecroy, dtype=float)
+
+
+# results = {
+#     'Current level' : [],
+#     'Mean': [],
+#     '% SOT' : [],
+#     'Sdev' : [],
+#     'Max #SOT': [],
+#     'Min #SOT': []
+# }
+# results['Current level'] = current
+# results['Mean'] = avg
+# results['% SOT'] = percScatti
+# results['Sdev'] = sdev
+# results['Max #SOT'] = max
+# results['Min #SOT'] = min
 
 x = current
 y = percScatti
