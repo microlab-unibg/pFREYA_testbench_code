@@ -84,7 +84,7 @@ min_sot = []
 
 
 # for i in np.arange(-0.20, -0.35, -0.0025):
-for i in np.arange(-0.25, -0.33, -0.005):
+for i in np.arange(-0.25, -0.33, -0.01):
 
     config.ps.write(f':SOUR:CURR:LEV {i}E-6')
     print("Current: " + str(i))
@@ -126,7 +126,12 @@ results = {
     'Min #SOT': []
 }
 
-results['Current level'] = np.array(current_level*(-1))
+current = np.array(current_level)
+current = current * (-1)
+avg = np.array(avg_sot, dtype=float)
+perc = np.array(avg / 715, dtype=float)
+
+results['Current level'] = np.array(current_level)
 results['Mean'] = np.array(avg_sot, dtype=float)
 results['% SOT'] = np.array(results['Mean'] / 715, dtype=float)
 results['Sdev'] = np.array(avg_sot, dtype=float)
@@ -144,19 +149,20 @@ ylabel = 'Scatti [%]'
 title = 'Curva ad S (Thrgen_ref=280, Vthrp = 601, Vthrp = 599)'
 
 
-current = np.array([
-    -0.2500, -0.2600, -0.2700, -0.2800, -0.2900, -0.3000, -0.3100, -0.3125, -0.3150, -0.3175, -0.3200, -0.3225, -0.3250, -0.3275,
-    -0.3300, -0.3325, -0.3350, -0.3375, -0.3400, -0.3425, -0.3450, -0.3475, -0.3500, -0.3525, -0.3550, -0.3575, -0.3600, -0.3625,
-    -0.3650, -0.3675, -0.3700, -0.3800, -0.3900, -0.4000, -0.4100
-])
-current = current * (-1)
+# crt = np.array([
+#     -0.2500, -0.2600, -0.2700, -0.2800, -0.2900, -0.3000, -0.3100, -0.3125, -0.3150, -0.3175, -0.3200, -0.3225, -0.3250, -0.3275,
+#     -0.3300, -0.3325, -0.3350, -0.3375, -0.3400, -0.3425, -0.3450, -0.3475, -0.3500, -0.3525, -0.3550, -0.3575, -0.3600, -0.3625,
+#     -0.3650, -0.3675, -0.3700, -0.3800, -0.3900, -0.4000, -0.4100
+# ])
+# crt = crt * (-1)
+# scatti = np.array([
+#     0.000, 0.000, 0.000, 0.000, 0.000, 0.000, 0.000, 0.000, 0.001, 0.004, 0.020, 0.120, 0.276, 0.748, 2.965, 6.517,
+#     12.615, 20.769, 39.804, 53.804, 62.965, 76.406, 89.427, 95.874, 96.643, 98.671, 99.455, 99.762, 99.804, 99.870,
+#     99.873, 99.874, 99.877, 99.876, 99.877
+# ])
+# scatti = scatti / 100
+print(current)
+print(avg)
+print(perc)
 
-scatti = np.array([
-    0.000, 0.000, 0.000, 0.000, 0.000, 0.000, 0.000, 0.000, 0.001, 0.004, 0.020, 0.120, 0.276, 0.748, 2.965, 6.517,
-    12.615, 20.769, 39.804, 53.804, 62.965, 76.406, 89.427, 95.874, 96.643, 98.671, 99.455, 99.762, 99.804, 99.870,
-    99.873, 99.874, 99.877, 99.876, 99.877
-])
-
-scatti = scatti / 100
-
-errorFunct(x, y, xlabel, ylabel, title)
+# errorFunct(x, y, xlabel, ylabel, title)
