@@ -48,6 +48,46 @@ def errorFunct(x, y, xLabel, yLabel, title):
     return 0
 
 
+def errorFunctSdev(x, y, yerr, xLabel, yLabel, title):
+    # definizione modello
+    def erf_fit(x, mu, sigma):
+        return 0.5*(1 + erf((x-mu)/(sigma*np.sqrt(2))))
+    
+    # FIT pesato
+    popt, pcov = curve_fit(
+        erf_fit, x, y,
+        sigma=yerr,
+        absolute_sigma=True,
+        p0=[0.35, 0.01]
+    )
+    mu_fit, sigma_fit = popt
+    perr = np.sqrt(np.diag(pcov))   # incertezze su mu, sigma
+
+    # preparazione curva “liscia”
+    x_smooth = np.linspace(x.min(), x.max(), 500)
+    y_erf    = erf_fit(x_smooth, mu_fit, sigma_fit)
+
+    # plot dati + barre d’errore
+    plt.errorbar(x, y, yerr=yerr, fmt='o', label='Dati (±σ)')
+    plt.plot(x_smooth, y_erf, '-', 
+             label=f'Fit erf\nμ={mu_fit:.5f}±{perr[0]:.5f}, σ={sigma_fit:.5f}±{perr[1]:.5f}')
+    plt.xlabel(xLabel)
+    plt.ylabel(yLabel)
+    plt.title(title)
+    plt.grid(True)
+    plt.legend()
+    plt.show()
+
+    # opzionale: calcolo del χ² ridotto
+    y_fit_at_x = erf_fit(x, mu_fit, sigma_fit)
+    chi2 = np.sum(((y - y_fit_at_x)/yerr)**2)
+    dof  = len(x) - len(popt)
+    print(f"χ²/dof = {chi2:.1f}/{dof} = {chi2/dof:.2f}")
+    
+    return popt, perr
+
+
+
 config.config(channel='csa',lemo='none',n_steps=20,cfg_bits=[0,1,1,1,0,1,0],cfg_inst=True, active_probes=False)
 
 pid = "P5"
@@ -116,4 +156,5 @@ xlabel = 'Current [μA]'
 ylabel = 'Scatti [%]'
 title = 'Curva ad S (Thrgen_ref=280, Vthrp = 601, Vthrn = 599)'
 
-errorFunct(current, percScatti, xlabel, ylabel, title)
+# errorFunct(current, percScatti, xlabel, ylabel, title)
+errorFunctSdev(current, percScatti, sdev, xlabel, ylabel, title)
