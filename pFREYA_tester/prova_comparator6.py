@@ -165,4 +165,4 @@ print(current)
 print(avg)
 print(perc)
 
-# errorFunct(x, y, xlabel, ylabel, title)
+errorFunct(current, perc, xlabel, ylabel, title)
