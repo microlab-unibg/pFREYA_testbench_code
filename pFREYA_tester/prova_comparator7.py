@@ -156,5 +156,5 @@ xlabel = 'Current [μA]'
 ylabel = 'Scatti [%]'
 title = 'Curva ad S (Thrgen_ref=280, Vthrp = 601, Vthrn = 599)'
 
-# errorFunct(current, percScatti, xlabel, ylabel, title)
-errorFunctSdev(current, percScatti, sdev, xlabel, ylabel, title)
+errorFunct(current, percScatti, xlabel, ylabel, title)
+# errorFunctSdev(current, percScatti, sdev, xlabel, ylabel, title)
