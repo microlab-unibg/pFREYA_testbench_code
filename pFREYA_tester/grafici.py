@@ -335,6 +335,6 @@ def errorFunctSdev(x, y, yerr, xLabel, yLabel, title):
 # label = 'null'
 # xlabel = 'Current [μA]'
 # ylabel = 'Scatti [%]'
-# title = 'Curva ad S (Thrgen_ref=280, Vthrp = 601, Vthrp = 599)'
+# title = 'Curva ad S (Thrgen_ref=280, Vthrp = 601, Vthrn = 599)'
 
 # errorFunct(current, scatti, xlabel, ylabel, title)
