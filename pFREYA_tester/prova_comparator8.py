@@ -145,8 +145,8 @@ while True:
     min_lecroy.append(config.lecroy.query(f"VBS? 'return=app.Measure.{pid}.Min.Result.Value'"))
 
     time.sleep(1)
-    tempMean = config.lecroy.query(f"VBS? 'return=app.Measure.{pid}.Mean.Result.Value'")
-    tempSdev = config.lecroy.query(f"VBS? 'return=app.Measure.{pid}.Sdev.Result.Value'")
+    tempMean = (float)(config.lecroy.query(f"VBS? 'return=app.Measure.{pid}.Mean.Result.Value'"))
+    tempSdev = (float)(config.lecroy.query(f"VBS? 'return=app.Measure.{pid}.Sdev.Result.Value'"))
     if tempMean < 0.01 and tempSdev < 0.01:
         k = k - 0.01
     else:
