@@ -1,9 +1,9 @@
 import matplotlib.pyplot as plt
 import numpy as np
-# import pandas as pd
+import pandas as pd
 import pyvisa
 # import matplotlib.colors as mcolors
-# from datetime import datetime
+from datetime import datetime
 import time
 # import glob
 import config
@@ -42,9 +42,15 @@ def errorFunct(x, y, xLabel, yLabel, title):
     plt.ylabel(yLabel)
     plt.title(title)
 
-    plt.grid(True)
+    plt.grid(False)
     plt.legend()
     plt.show()
+
+    timestamp = datetime.now()
+    timestampStr = timestamp.strftime("%Y-%m-%d_%H:%M")
+    # plt.savefig("C:/Users/ITMACUR3/Downloads/aaaa/fig.pdf")
+    plt.savefig(f'G:/Shared drives/FALCON/measures/new/discriminationChain/{timestampStr}_fig.pdf')
+
     return 0
 
 
@@ -74,8 +80,14 @@ def errorFunctSdev(x, y, yerr, xLabel, yLabel, title):
     plt.xlabel(xLabel)
     plt.ylabel(yLabel)
     plt.title(title)
-    plt.grid(True)
+
+    plt.grid(False)
     plt.legend()
+    
+    timestamp = datetime.now()
+    timestampStr = timestamp.strftime("%Y-%m-%d_%H:%M")
+    # plt.savefig("C:/Users/ITMACUR3/Downloads/aaaa/fig.pdf")
+    plt.savefig(f'G:/Shared drives/FALCON/measures/new/discriminationChain/{timestampStr}_fig.pdf')
     plt.show()
 
     # opzionale: calcolo del χ² ridotto
@@ -151,6 +163,7 @@ while True:
         k = k - 0.01
     else:
         k = k - 0.001
+        # k = k - 0.0005
     
     if tempMean > 713:
         cont = cont + 1
@@ -170,20 +183,29 @@ max = np.array(max_lecroy, dtype=float)
 min = np.array(min_lecroy, dtype=float)
 
 
-# results = {
-#     'Current level' : [],
-#     'Mean': [],
-#     '% SOT' : [],
-#     'Sdev' : [],
-#     'Max #SOT': [],
-#     'Min #SOT': []
-# }
-# results['Current level'] = current
-# results['Mean'] = avg
-# results['% SOT'] = percScatti
-# results['Sdev'] = sdev
-# results['Max #SOT'] = max
-# results['Min #SOT'] = min
+results = {
+    'Current level' : [],
+    'Mean': [],
+    '% SOT' : [],
+    'Sdev' : [],
+    'Max #SOT': [],
+    'Min #SOT': []
+}
+results['Current level'] = current
+results['Mean'] = avg
+results['% SOT'] = percScatti
+results['Sdev'] = sdev
+results['Max #SOT'] = max
+results['Min #SOT'] = min
+
+data = pd.DataFrame(results)
+
+timestamp = datetime.now()
+timestampStr = timestamp.strftime("%Y-%m-%d_%H:%M")
+# data.to_csv("G:/Shared drives/FALCON/measures/new/discriminationChain/results.tsv",sep='\t', index=False)
+# data.to_csv("G:/Shared drives/FALCON/measures/new/discriminationChain/results.csv", sep=',', index=False)
+data.to_csv(f"G:/Shared drives/FALCON/measures/new/discriminationChain/{timestampStr}_results.csv", sep=';', index=False)
+
 
 x = current
 y = percScatti
@@ -195,8 +217,8 @@ Vthrp = 601
 Vthrn = 599
 title = f'S Curve (Thrgen_ref={thrgenRef}, Vthrp = {Vthrp}, Vthrn = {Vthrn})'
 
-errorFunct(current, percScatti, xlabel, ylabel, title)
-# errorFunctSdev(current, percScatti, sdev, xlabel, ylabel, title)
+errorFunct(x, y, xlabel, ylabel, title)
+# errorFunctSdev(x, y, sdev, xlabel, ylabel, title)
 
 """
 TOGLIERE LA GRIGLIA DAL PLOT
