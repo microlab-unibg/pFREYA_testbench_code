@@ -6,14 +6,46 @@ from scipy.optimize import curve_fit
 from scipy.special import erf
 from datetime import datetime
 
-def errorFunct(x, y, xLabel, yLabel, title):
+import numpy as np
+
+def stima_p0(x, y):
+    """
+    Stima iniziale dei parametri [mu, sigma] per fit con error function.
+
+    Parametri:
+    - x: array di ascisse
+    - y: array di ordinate (normalizzate tra 0 e 1)
+
+    Ritorna:
+    - p0: lista [mu, sigma]
+    """
+
+    # μ ~ punto dove y ≈ 0.5
+    idx_mu = np.argmin(np.abs(y - 0.5))
+    mu0 = x[idx_mu]
+
+    # σ ~ (x_90 - x_10) / (2 * sqrt(2))
+    try:
+        x_10 = x[np.argmin(np.abs(y - 0.1))]
+        x_90 = x[np.argmin(np.abs(y - 0.9))]
+        sigma0 = (x_90 - x_10) / (2 * np.sqrt(2))
+    except:
+        # fallback se non riesce
+        sigma0 = 0.02 * np.ptp(x)
+
+    return [mu0, sigma0]
+
+
+def errorFunct(x, y, xLabel, yLabel, title, timestamp_str):
 
     # Definizione della funzione error function
     def erf_fit(x, mu, sigma):
         return 0.5 * (1 + erf((x - mu) / (sigma * np.sqrt(2))))
 
     # Fit dei dati
-    popt, _ = curve_fit(erf_fit, x, y, p0=[0.35, 0.01])  # stima iniziale
+    p0 = stima_p0(x, y)
+    # p0 = [np.mean(x), 0.02 * np.ptp(x)]   stima semplificata
+    popt, _ = curve_fit(erf_fit, x, y, p0)
 
     # Valori stimati
     mu_fit, sigma_fit = popt
@@ -33,14 +65,14 @@ def errorFunct(x, y, xLabel, yLabel, title):
 
     plt.grid(False)
     plt.legend()
-    plt.savefig("C:/Users/ITMACUR3/Downloads/aaaa/fig.pdf")
+    plt.savefig(f"C:/Users/ITMACUR3/Downloads/aaaa/{timestamp_str}_plot.pdf")
     plt.show()
 
 
     return 0
 
 
-def errorFunctSdev(x, y, yerr, xLabel, yLabel, title):
+def errorFunctSdev(x, y, yerr, xLabel, yLabel, title, timestamp_str):
     # definizione modello
     def erf_fit(x, mu, sigma):
         return 0.5*(1 + erf((x-mu)/(sigma*np.sqrt(2))))
@@ -50,7 +82,7 @@ def errorFunctSdev(x, y, yerr, xLabel, yLabel, title):
         erf_fit, x, y,
         sigma=yerr,
         absolute_sigma=True,
-        p0=[0.35, 0.01]
+        p0=stima_p0(x, y)
     )
     mu_fit, sigma_fit = popt
     perr = np.sqrt(np.diag(pcov))   # incertezze su mu, sigma
@@ -68,7 +100,7 @@ def errorFunctSdev(x, y, yerr, xLabel, yLabel, title):
     plt.title(title)
     plt.grid(False)
     plt.legend()
-    plt.savefig("C:/Users/ITMACUR3/Downloads/aaaa/fig.pdf")
+    plt.savefig(f"C:/Users/ITMACUR3/Downloads/aaaa/{timestamp_str}_plot.pdf")
     plt.show()
 
     # opzionale: calcolo del χ² ridotto
@@ -105,9 +137,6 @@ sdev = np.array([
 ])
 sdev = sdev / 100
 
-xlabel = 'Current [μA]'
-ylabel = 'Scatti [%]'
-title = 'Curva ad S (Thrgen_ref=280, Vthrp = 601, Vthrn = 599)'
 
 results = {
     'Current level' : [],
@@ -118,15 +147,20 @@ results['Current level'] = current
 results['% SOT'] = scatti
 results['Sdev'] = sdev
 
-# data = pd.DataFrame(results)
-# # data.to_csv("C:/Users/ITMACUR3/Downloads/aaaa/risultati.tsv",sep='\t', index=False)
-# # data.to_csv("C:/Users/ITMACUR3/Downloads/aaaa/risultati.csv", sep=',', index=False)
-# data.to_csv("C:/Users/ITMACUR3/Downloads/aaaa/risultati.csv", sep=';', index=False)
-
 timestamp = datetime.now()
-timestamp_str = timestamp.strftime("%Y-%m-%d_%H:%M")
+timestamp_str = timestamp.strftime("%Y-%m-%d_%H.%M")
 
-print("Data e ora:", timestamp_str)
+data = pd.DataFrame(results)
+data.to_csv(f"C:/Users/ITMACUR3/Downloads/aaaa/{timestamp_str}_results.csv", sep=';', index=False)
 
-# errorFunct(current, scatti, xlabel, ylabel, title)
-# errorFunctSdev(current, scatti, sdev, xlabel, ylabel, title)
+FC = 256 / (1.64-0.13) * 2500 / 1000 # 423.84105960264907
+charge = FC*current
+
+
+xlabel = 'Current [μA]'
+ylabel = 'Scatti [%]'
+title = 'Curva ad S (Thrgen_ref=280, Vthrp = 601, Vthrn = 599)'
+
+errorFunct(current, scatti, xlabel, ylabel, title, timestamp_str)
+errorFunct(charge, scatti, xlabel, ylabel, title, timestamp_str)
+# errorFunctSdev(current, scatti, sdev, xlabel, ylabel, title, timestamp_str)

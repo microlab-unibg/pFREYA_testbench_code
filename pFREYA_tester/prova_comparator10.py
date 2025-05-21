@@ -17,6 +17,34 @@ from scipy.interpolate import make_interp_spline
 from scipy.optimize import curve_fit
 from scipy.special import erf
 
+def stima_p0(x, y):
+    """
+    Stima iniziale dei parametri [mu, sigma] per fit con error function.
+
+    Parametri:
+    - x: array di ascisse
+    - y: array di ordinate (normalizzate tra 0 e 1)
+
+    Ritorna:
+    - p0: lista [mu, sigma]
+    """
+
+    # μ ~ punto dove y ≈ 0.5
+    idx_mu = np.argmin(np.abs(y - 0.5))
+    mu0 = x[idx_mu]
+
+    # σ ~ (x_90 - x_10) / (2 * sqrt(2))
+    try:
+        x_10 = x[np.argmin(np.abs(y - 0.1))]
+        x_90 = x[np.argmin(np.abs(y - 0.9))]
+        sigma0 = (x_90 - x_10) / (2 * np.sqrt(2))
+    except:
+        # fallback se non riesce
+        sigma0 = 0.02 * np.ptp(x)
+
+    return [mu0, sigma0]
+
+
 def errorFunct(x, y, xLabel, yLabel, title, timestamp_str):
 
     # Definizione della funzione error function
@@ -24,8 +52,10 @@ def errorFunct(x, y, xLabel, yLabel, title, timestamp_str):
         return 0.5 * (1 + erf((x - mu) / (sigma * np.sqrt(2))))
 
     # Fit dei dati
-    popt, _ = curve_fit(erf_fit, x, y, p0=[0.35, 0.01])  # stima iniziale
-
+    p0 = stima_p0(x, y)
+    # p0 = [np.mean(x), 0.02 * np.ptp(x)]   stima semplificata
+    popt, _ = curve_fit(erf_fit, x, y, p0)
+    
     # Valori stimati
     mu_fit, sigma_fit = popt
 
@@ -61,7 +91,7 @@ def errorFunctSdev(x, y, yerr, xLabel, yLabel, title, timestamp_str):
         erf_fit, x, y,
         sigma=yerr,
         absolute_sigma=True,
-        p0=[0.35, 0.01]
+        p0=stima_p0(x, y)
     )
     mu_fit, sigma_fit = popt
     perr = np.sqrt(np.diag(pcov))   # incertezze su mu, sigma
@@ -147,6 +177,11 @@ while True:
 current = np.array(current_level)
 current = current * (-1)
 
+"""
+x ph @ 9 KeV: 256[ph] / (1.64-0.13)[uA] * 2500 [e-/ph]                 -> [uA*e-] (da fare /1000 per ke-)
+quindi fattore di conversione FC = 256 / (1.64-0.13) * 2500 / 1000     -> [Ke-/uA]
+quindi FC[Ke-/uA] * current[uA]                                        -> [Ke-]
+"""
 FC = 256 / (1.64-0.13) * 2500 / 1000 # 423.84105960264907
 charge = FC*current
 
@@ -187,7 +222,6 @@ x = current
 y = percScatti
 xlabel = 'Current [μA]'
 ylabel = 'Hit probability'
-
 thrgenRef = 280
 Vthrp = 601
 Vthrn = 599
@@ -195,9 +229,3 @@ title = f'S Curve (Thrgen_ref={thrgenRef}, Vthrp = {Vthrp}, Vthrn = {Vthrn})'
 
 errorFunct(x, y, xlabel, ylabel, title, timestampStr)
 # errorFunctSdev(x, y, sdev, xlabel, ylabel, title, timestampStr)
-
-"""
-x ph @ 9 KeV: 256[ph] / (1.64-0.13)[uA] * 2500 [e-/ph]                 -> [uA*e-] (da fare /1000 per ke-)
-quindi fattore di conversione FC = 256 / (1.64-0.13) * 2500 / 1000     -> [Ke-/uA]
-quindi FC[Ke-/uA] * current[uA]                                        -> [Ke-]
-"""
