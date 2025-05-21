@@ -55,7 +55,7 @@ def errorFunct(x, y, xLabel, yLabel, title, timestamp_str):
     p0 = stima_p0(x, y)
     # p0 = [np.mean(x), 0.02 * np.ptp(x)]   stima semplificata
     popt, _ = curve_fit(erf_fit, x, y, p0)
-    
+
     # Valori stimati
     mu_fit, sigma_fit = popt
 
@@ -74,9 +74,12 @@ def errorFunct(x, y, xLabel, yLabel, title, timestamp_str):
 
     plt.grid(False)
     plt.legend()
+
+    # plt.savefig(f'G:/Shared drives/FALCON/measures/new/discriminationChain/{timestamp_str}_plot.pdf')
+    plt.savefig(f'C:/Users/Paolo Lazzaroni/Desktop/prova/{timestamp_str}_plot.pdf')
+
     plt.show()
 
-    plt.savefig(f'G:/Shared drives/FALCON/measures/new/discriminationChain/{timestamp_str}_plot.pdf')
 
     return 0
 
@@ -111,7 +114,9 @@ def errorFunctSdev(x, y, yerr, xLabel, yLabel, title, timestamp_str):
     plt.grid(False)
     plt.legend()
     
-    plt.savefig(f'G:/Shared drives/FALCON/measures/new/discriminationChain/{timestamp_str}_plot.pdf')
+    # plt.savefig(f'G:/Shared drives/FALCON/measures/new/discriminationChain/{timestamp_str}_plot.pdf')
+    plt.savefig(f'C:/Users/Paolo Lazzaroni/Desktop/prova/{timestamp_str}_plot.pdf')
+
     plt.show()
 
     # opzionale: calcolo del χ² ridotto
@@ -215,7 +220,8 @@ timestampStr = timestamp.strftime("%Y-%m-%d_%H.%M")
 
 data = pd.DataFrame(results)
 # data.to_csv(f"G:/Shared drives/FALCON/measures/new/discriminationChain/{timestampStr}_results.tsv",sep='\t', index=False)
-data.to_csv(f"G:/Shared drives/FALCON/measures/new/discriminationChain/{timestampStr}_results.csv", sep=';', index=False)
+# data.to_csv(f"G:/Shared drives/FALCON/measures/new/discriminationChain/{timestampStr}_results.csv", sep=';', index=False)
+data.to_csv(f'C:/Users/Paolo Lazzaroni/Desktop/prova/{timestampStr}_results.csv', sep=';', index=False)
 
 
 x = current
@@ -228,4 +234,5 @@ Vthrn = 599
 title = f'S Curve (Thrgen_ref={thrgenRef}, Vthrp = {Vthrp}, Vthrn = {Vthrn})'
 
 errorFunct(x, y, xlabel, ylabel, title, timestampStr)
+errorFunct(charge, y, xlabel, ylabel, title, timestampStr)
 # errorFunctSdev(x, y, sdev, xlabel, ylabel, title, timestampStr)
