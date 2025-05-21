@@ -473,7 +473,7 @@ def run_script_comparator():
         json.dump(gui.to_json(), f)
     
     #os.path.join ecc sempre per il problema che non trova la cartella  
-    config_path = os.path.join(os.path.dirname(__file__), 'prova_comparator10.py') 
+    config_path = os.path.join(os.path.dirname(__file__), 'prova_comparator11.py') 
     
     #subprocess.run(["python", config_path]) #metodo transcharacteristics_comparator
     python_path = sys.executable #con un normale "python" al posto di python_path, lo script del comparatore non viene lanciato nel venv ma col python di sistema (e non trova alcune librerie)
