@@ -6,7 +6,7 @@ def filtro(scatti):
         if scatti[i] == 0 and scatti[i] == scatti[i+1]:
             print(f'{i} skippato')
         else:
-            vett.append()
+            vett.append(scatti[i])
     return vett
 
 current = np.array([

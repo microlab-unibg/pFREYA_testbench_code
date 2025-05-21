@@ -169,7 +169,7 @@ while True:
     if tempMean < 0.01 and tempSdev < 0.01:
         k = k - 0.01
     else:
-        # k = k - 0.001
+        # k = k - 0.001m
         if tempMean < 713:
             k = k - 0.0005
         else:
