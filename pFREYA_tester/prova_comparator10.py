@@ -173,10 +173,11 @@ while True:
         if tempMean < 713:
             k = k - 0.0005
         else:
+            k = k - 0.01
             cont = cont + 1
             if cont >= 5:
                 break
-            
+
     
 
 current = np.array(current_level)
