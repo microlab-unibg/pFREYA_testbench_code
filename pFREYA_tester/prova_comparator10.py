@@ -170,13 +170,13 @@ while True:
         k = k - 0.01
     else:
         # k = k - 0.001
-        k = k - 0.0005
-    
-    if tempMean > 713:
-        cont = cont + 1
-        if cont >= 5:
-            break
-
+        if tempMean < 713:
+            k = k - 0.0005
+        else:
+            cont = cont + 1
+            if cont >= 5:
+                break
+            
     
 
 current = np.array(current_level)
