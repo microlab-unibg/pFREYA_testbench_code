@@ -169,8 +169,8 @@ while True:
     if tempMean < 0.01 and tempSdev < 0.01:
         k = k - 0.01
     else:
-        k = k - 0.001
-        # k = k - 0.0005
+        # k = k - 0.001
+        k = k - 0.0005
     
     if tempMean > 713:
         cont = cont + 1
@@ -200,7 +200,7 @@ min = np.array(min_lecroy, dtype=float)
 
 results = {
     'Current level' : [],
-    # 'Charge' : [],
+    'Charge' : [],
     'Mean': [],
     '% SOT' : [],
     'Sdev' : [],
@@ -208,7 +208,7 @@ results = {
     'Min #SOT': []
 }
 results['Current level'] = current
-# results['Charge'] = charge
+results['Charge'] = charge
 results['Mean'] = avg
 results['% SOT'] = percScatti
 results['Sdev'] = sdev
@@ -233,6 +233,6 @@ Vthrp = 601
 Vthrn = 599
 title = f'S Curve (Thrgen_ref={thrgenRef}, Vthrp = {Vthrp}, Vthrn = {Vthrn})'
 
-errorFunct(x, y, xlabel, ylabel, title, timestampStr)
-errorFunct(charge, y, xlabel, ylabel, title, timestampStr)
+errorFunct(x, y, xlabel, ylabel, title, timestampStr+"_current")
+errorFunct(charge, y, "Charge [Ke-]", ylabel, title, timestampStr+"_charge")
 # errorFunctSdev(x, y, sdev, xlabel, ylabel, title, timestampStr)
