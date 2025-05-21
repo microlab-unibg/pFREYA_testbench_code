@@ -467,7 +467,7 @@ def run_script_comparator():
     # print("--end csa_reset_n\n")
     # time.sleep(3)
 
-    print("--TRANSCHARACTERISTICS COMPARATOR--\n")
+    print("--S Curve COMPARATOR--\n")
     json_path = os.path.join(os.path.dirname(__file__), 'comparator_guiState.json')
     with open(json_path, "w") as f:
         json.dump(gui.to_json(), f)
@@ -478,7 +478,7 @@ def run_script_comparator():
     #subprocess.run(["python", config_path]) #metodo transcharacteristics_comparator
     python_path = sys.executable #con un normale "python" al posto di python_path, lo script del comparatore non viene lanciato nel venv ma col python di sistema (e non trova alcune librerie)
     subprocess.run([python_path, config_path, json_path])
-    print("TRANSCHARACTERISTICS COMPARATOR END")
+    print("S Curve COMPARATOR END")
 #/MC 
 
 class gui2(Toplevel):
