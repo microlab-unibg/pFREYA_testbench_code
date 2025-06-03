@@ -106,15 +106,15 @@ for item in config_bits_list:
             active_probes=False,
         )
         if channel == 'csa':
-            config.lecroy.set_vdiv(channel=1, vdiv='230e-3')
-            config.lecroy.set_voffset(channel=1, voffset='690e-3')
+            config.lecroy.set_vdiv(channel=1, vdiv='200e-3')
+            config.lecroy.set_voffset(channel=1, voffset='-635e-3')
             subfolder = 'Low'
         else:
-            config.lecroy.set_vdiv(channel=2, vdiv='230e-3')
-            config.lecroy.set_voffset(channel=2, voffset='690e-3')
+            config.lecroy.set_vdiv(channel=2, vdiv='200e-3')
+            config.lecroy.set_voffset(channel=2, voffset='-365e-3')
             subfolder = 'High'
-        config.lecroy.set_tdiv(tdiv='100NS')
-        config.lecroy.set_toffset(toffset='-240e-9')
+        config.lecroy.set_tdiv(tdiv='1US')
+        config.lecroy.set_toffset(toffset='-250e-8')
         pYtp.send_slow_ctrl_auto(item, 0 if channel == 'csa' else 1)
         config.ps.write(f':SOUR:CURR:LEV {config.current_lev[0]}')
         config.ps.write(':OUTP:STAT ON')
@@ -136,10 +136,10 @@ for item in config_bits_list:
             time.sleep(5)
             
             data = pd.DataFrame.from_dict(
-                config.lecroy.get_channel(channel_name='X', n_channel=config.channel_num)['waveform'][0]
+                config.lecroy.get_channel(channel_name='C', n_channel=1)['waveforms'][0]
             )
 
-            data['amplitude'] = (data['amplitude(V)'] - data['amplitude(V)'][0]) / gain_lane
+            data['Amplitude (V)'] = (data['Amplitude (V)'] - data['Amplitude (V)'][0]) / gain_lane
             data.insert(0,'Current level step', i )
             data.insert(1,'Current level (A)', cl)
             df = pd.concat((df, data))
@@ -151,7 +151,7 @@ for item in config_bits_list:
         else:
             str_type = ''
         
-        df_path = f'G:Shared drives/FALCON/measures/new/transient/SH/{subfolder}/{channel_name}_{config.config_bits_str}_nominal_{lemo_name}_shapconfig_{shap_bits}_{datetime_str}.tsv' 
+        df_path = f'G:Shared drives/FALCON/measures/new/transient/SH/{subfolder}/{channel_name}_{config.config_bits_str}_{shap_bits}_{datetime_str}.tsv' 
         df.to_csv(df_path, sep='\t')
 
         print(f"Measurment for cfg_bits {item} with energy level {energy_level:}A.")
@@ -181,9 +181,9 @@ for item in config_bits_list:
         plt.savefig(f'G:Shared drives/FALCON/measures/new/transient/SH/{subfolder}/{channel_name}_{config.config_bits_str}_nominal_{lemo_name}_shapconfig_{shap_bits}_{datetime_str}.pdf', dpi=300)            
         plt.close()
 
-path_low = f'G:Shared drives/FALCON/measures/new/transient/SH/Low/{channel_name}_{config.config_bits_str}_nominal_{lemo_name}_shapconfig_{shap_bits}_{datetime_str}.tsv'
-path_high = f'G:Shared drives/FALCON/measures/new/transient/SH/High/{channel_name}_{config.config_bits_str}_nominal_{lemo_name}_shapconfig_{shap_bits}_{datetime_str}.tsv'
-print_differential(path_low, path_high, shap_bits, datetime_str, config.config_bits_str, lemo_name, channel_name)
+#path_low = f'G:Shared drives/FALCON/measures/new/transient/SH/Low/{channel_name}_{config.config_bits_str}_nominal_{lemo_name}_shapconfig_{shap_bits}_{datetime_str}.tsv'
+#path_high = f'G:Shared drives/FALCON/measures/new/transient/SH/High/{channel_name}_{config.config_bits_str}_nominal_{lemo_name}_shapconfig_{shap_bits}_{datetime_str}.tsv'
+#print_differential(path_low, path_high, shap_bits, datetime_str, config.config_bits_str, lemo_name, channel_name)
 
 
 
