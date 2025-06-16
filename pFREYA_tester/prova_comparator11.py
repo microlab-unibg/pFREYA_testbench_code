@@ -149,7 +149,7 @@ max_lecroy = []
 min_lecroy = []
 
 
-k = -0.23
+k = -0.20
 cont = 0
 tempMean = 0
 tempSdev = 0
@@ -161,9 +161,9 @@ while True:
     
     current_level.append(k)
     
-    config.lecroy.set_tdiv(tdiv='100us')
-    time.sleep(1)
     config.lecroy.set_tdiv(tdiv='200us')
+    time.sleep(1)
+    config.lecroy.set_tdiv(tdiv='500us')
     time.sleep(3)
 
     # LETTURA E SALVATAGGIO DATI DALL'OSCILLOSCOPIO 
@@ -202,7 +202,7 @@ FC = 256 / (1.64-0.13) * 2500 / 1000 # 423.84105960264907
 charge = FC*current
 
 avg = np.array(avg_lecroy, dtype=float)
-percScatti = np.array(avg / 715, dtype=float)
+percScatti = np.array(avg / 1000, dtype=float)
 
 sdev = np.array(sdev_lecroy, dtype=float)
 max = np.array(max_lecroy, dtype=float)
