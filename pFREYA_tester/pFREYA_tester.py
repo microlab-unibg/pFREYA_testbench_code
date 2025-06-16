@@ -450,34 +450,28 @@ def run_script_enc():
     print("\n--ENC END--")
 
 #MC
-def run_script_comparator():
+def run_script_comparator(entry_vthp, entry_vthn, entry_thr, entry_step, entry_sleep):
     print("\n---RUNNING SCRIPT COMPARATOR---")
 
-    # print("\n--Reset FPGA--")
-    # reset_iniziale()
-    # time.sleep(2)
-
-    # print("\n--start clk--")
-    # auto_clock()
-    # time.sleep(2)
-    # print("--end clk--")
-
-    # print("--start csa_reset_n--")
-    # auto_csa_reset()
-    # print("--end csa_reset_n\n")
-    # time.sleep(3)
-
     print("--S Curve COMPARATOR--\n")
+
     json_path = os.path.join(os.path.dirname(__file__), 'comparator_guiState.json')
     with open(json_path, "w") as f:
         json.dump(gui.to_json(), f)
     
     #os.path.join ecc sempre per il problema che non trova la cartella  
-    config_path = os.path.join(os.path.dirname(__file__), 'prova_comparator11.py') 
+    # config_path = os.path.join(os.path.dirname(__file__), 'prova_comparator11.py')
+    config_path = os.path.join(os.path.dirname(__file__), 'prova_comparator12.py') 
+
+    vthrp = entry_vthp.get()
+    vthrn = entry_vthn.get()
+    thrgen = entry_thr.get()
+    currentStep = entry_step.get()
+    timeSleep = entry_sleep.get()
     
     #subprocess.run(["python", config_path]) #metodo transcharacteristics_comparator
     python_path = sys.executable #con un normale "python" al posto di python_path, lo script del comparatore non viene lanciato nel venv ma col python di sistema (e non trova alcune librerie)
-    subprocess.run([python_path, config_path, json_path])
+    subprocess.run([python_path, config_path, json_path, vthrp, vthrn, thrgen, currentStep, timeSleep])
     print("S Curve COMPARATOR END")
 #/MC 
 
@@ -485,8 +479,8 @@ class gui2(Toplevel):
   def __init__(self,parent):
     super().__init__(parent)
     self.title("pFREYA tester v0 - Automatic testing")
-    self.geometry("420x275")
-    self.resizable(False, False)
+    self.geometry("420x475")
+    self.resizable(False, True)
     
     frame = Frame(self)
     frame.pack(pady=10)
@@ -507,10 +501,42 @@ class gui2(Toplevel):
     button3.grid(row=2, column=1, padx=10, pady=10)
 
     #MC
-    label4 = Label(frame, text="Comparator")
-    label4.grid(row=3, column=0, padx=10, pady=10)
-    button4 = ttk.Button(frame, text="Run", command=run_script_comparator)
-    button4.grid(row=3, column=1, padx=10, pady=10, sticky=SE)
+    # label4 = Label(frame, text="Comparator")
+    # label4.grid(row=3, column=0, padx=10, pady=10)
+    # button4 = ttk.Button(frame, text="Run", command=run_script_comparator)
+    # button4.grid(row=3, column=1, padx=10, pady=10, sticky=SE)
+
+    cmp_frame = ttk.Labelframe(self, text="Comparator", padding=10)
+    cmp_frame.pack(pady=10)
+
+    row_idx = 0
+    ttk.Label(cmp_frame, text="Vthrp [mV]: ").grid(column=0, row=row_idx, sticky='e')
+    self.entry_vthp = ttk.Entry(cmp_frame, width=6)
+    self.entry_vthp.grid(column=1, row=row_idx, padx=5, pady=2)
+    row_idx += 1
+
+    ttk.Label(cmp_frame, text="Vthrn [mV]: ").grid(column=0, row=row_idx, sticky='e')
+    self.entry_vthn = ttk.Entry(cmp_frame, width=6)
+    self.entry_vthn.grid(column=1, row=row_idx, padx=5, pady=2)
+    row_idx += 1
+
+    ttk.Label(cmp_frame, text="Thrgen Ref [mV]:").grid(column=0, row=row_idx, sticky='e')
+    self.entry_thr = ttk.Entry(cmp_frame, width=6)
+    self.entry_thr.grid(column=1, row=row_idx, padx=5, pady=2)
+    row_idx += 1
+    
+    ttk.Label(cmp_frame, text="Current Step [µA]:").grid(column=0, row=row_idx, sticky='e')
+    self.entry_step = ttk.Entry(cmp_frame, width=6)
+    self.entry_step.grid(column=1, row=row_idx, padx=5, pady=2)
+    row_idx += 1
+    
+    ttk.Label(cmp_frame, text="Time Sleep [sec]:").grid(column=0, row=row_idx, sticky='e')
+    self.entry_sleep = ttk.Entry(cmp_frame, width=6)
+    self.entry_sleep.grid(column=1, row=row_idx, padx=5, pady=2)
+    row_idx += 1
+
+    button4 = ttk.Button(cmp_frame, text="Run", command=lambda: run_script_comparator(self.entry_vthp, self.entry_vthn, self.entry_thr, self.entry_step, self.entry_sleep))
+    button4.grid(row=row_idx, column=1, padx=10, pady=10, sticky=SE)
     #/MC
 
     self.mainloop()

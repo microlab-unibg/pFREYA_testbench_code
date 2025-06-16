@@ -166,11 +166,13 @@ set_output_delay -clock [get_clocks VIRTUAL_daq_ck_clk_wiz_clocks] -max -add_del
 
 
 
-set_property OFFCHIP_TERM FP_VTT_50 [get_ports csa_reset_n]
 set_property PULLTYPE PULLDOWN [get_ports csa_reset_n_out]
 set_property SLEW FAST [get_ports csa_reset_n_out]
 set_property IOSTANDARD LVCMOS12 [get_ports csa_reset_n_out]
 set_property PACKAGE_PIN J23 [get_ports csa_reset_n_out]
+
+set_property OFFCHIP_TERM FP_VTT_50 [get_ports csa_reset_n]
+set_property OFFCHIP_TERM NONE [get_ports csa_reset_n_out]
 set_property C_CLK_INPUT_FREQ_HZ 300000000 [get_debug_cores dbg_hub]
 set_property C_ENABLE_CLK_DIVIDER false [get_debug_cores dbg_hub]
 set_property C_USER_SCAN_CHAIN 1 [get_debug_cores dbg_hub]
