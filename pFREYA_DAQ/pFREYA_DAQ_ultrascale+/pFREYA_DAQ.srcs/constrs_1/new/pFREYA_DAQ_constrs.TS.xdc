@@ -19,8 +19,8 @@ set_property PACKAGE_PIN AB24 [get_ports adc_start]
 #  on TS boards
 # AC24 is not driven as it is DRIVER_SOT_P2
 # sh_phi1d_sup goes where inf should be to make use of the additional pin
-set_property PACKAGE_PIN AB19 [get_ports sh_phi1d_inf]
-set_property PACKAGE_PIN AC26 [get_ports sh_phi1d_sup]
+set_property PACKAGE_PIN AC24 [get_ports sh_phi1d_sup]
+set_property PACKAGE_PIN AC26 [get_ports sh_phi1d_inf]
 # sh_phi1d_inf = slow_ctrl_in due to short
 set_property PACKAGE_PIN AD26 [get_ports slow_ctrl_in]
 #======================================================================================
