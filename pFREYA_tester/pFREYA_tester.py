@@ -461,7 +461,7 @@ def run_script_comparator(entry_vthp, entry_vthn, entry_thr, entry_step, entry_s
     
     #os.path.join ecc sempre per il problema che non trova la cartella  
     # config_path = os.path.join(os.path.dirname(__file__), 'prova_comparator11.py')
-    config_path = os.path.join(os.path.dirname(__file__), 'prova_comparator12.py') 
+    config_path = os.path.join(os.path.dirname(__file__), 'auto_comparator.py') 
 
     vthrp = entry_vthp.get()
     vthrn = entry_vthn.get()
