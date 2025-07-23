@@ -53,12 +53,12 @@ module pFREYA_IF(
     (* syn_encoding = "one-hot" *) enum logic [9:0] {
         CMD_ERR,
         CMD_EVAL,
-        CMD_READ_DATA,
         CMD_SEL_PIX,
         CMD_SEND_DAC,
         CMD_SEND_SLOW,
         CMD_SET_LONG,
         CMD_SET,
+        CMD_READ_DATA,
         CMD_SYNC_TIME_BASE,
         RESET
     } state, next;
@@ -81,11 +81,15 @@ module pFREYA_IF(
     logic sel_ck = 1'b0; // internal clock temporisation
     logic [PIXEL_COL_N-1:0] sel_ckcol_cnt= '0;
     logic [PIXEL_ROW_N-1:0] sel_ckrow_cnt= '0;
+    logic sel_reset_request = 1'b0;
+    logic sel_ck_mask = 1'b0;
     // for injection
     logic inj_start = 1'b0;
     // for slow ctrl
     logic slow_ctrl_mask = 1'b0;
     logic slow_ctrl_reset_request = 1'b0;
+    // for serialiser
+    logic ser_ck_mask = 1'b0;
     // for sh inf (TS)
     logic sh_phi1d_inf_mask = 1'b0;
     logic slow_ctrl_in_mask = 1'b0;
@@ -116,14 +120,6 @@ module pFREYA_IF(
     logic [FAST_CTRL_N-1:0] adc_start_delay_div= '0;
     logic [FAST_CTRL_N-1:0] adc_start_HIGH_div= '0;
     logic [FAST_CTRL_N-1:0] adc_start_LOW_div= '0;
-    logic [FAST_CTRL_N-1:0] ser_reset_n_cnt = -1;
-    logic [FAST_CTRL_N-1:0] ser_reset_n_delay_div= '0;
-    logic [FAST_CTRL_N-1:0] ser_reset_n_HIGH_div= '0;
-    logic [FAST_CTRL_N-1:0] ser_reset_n_LOW_div= '0;
-    logic [FAST_CTRL_N-1:0] ser_read_cnt = -1;
-    logic [FAST_CTRL_N-1:0] ser_read_delay_div= '0;
-    logic [FAST_CTRL_N-1:0] ser_read_HIGH_div= '0;
-    logic [FAST_CTRL_N-1:0] ser_read_LOW_div= '0;
 
     // control logic
     logic data_packet_available = 1'b0;
@@ -133,6 +129,8 @@ module pFREYA_IF(
     logic dac_packet_sent = 1'b0;
     logic sel_ckcol_sent = 1'b0;
     logic sel_ckrow_sent = 1'b0;
+    logic ser_shift_done = 1'b0;
+    logic ser_data_rcv = 1'b0;
     logic sync_time_base_flag = 1'b0;
     // data
     logic [PACKET_INDEX_N-1:0] data_packet_index_send= '0;
@@ -145,13 +143,17 @@ module pFREYA_IF(
 
     reg [SLOW_CTRL_REG_LENGTH-1:0] slow_ctrl_packet= '0;
 
+    logic [PACKET_INDEX_N-1:0] ser_data_idx = '0;
+
+    reg [SER_DATA_REG_LENGTH-1:0] ser_data = '0;
+
     logic [PACKET_INDEX_N-1:0] dac_packet_index_send= '0;
     logic [PACKET_INDEX_N-1:0] dac_packet_index_receive= '0;
 
     reg [DAC_PACKET_REG_LENGTH-1:0] dac_packet= '0;
 
-    logic [DATA_SIZE-1:0] pixel_row= '0;
-    logic [DATA_SIZE-1:0] pixel_col= '0;
+    logic [FAST_CTRL_N-1:0] pixel_row= '0;
+    logic [FAST_CTRL_N-1:0] pixel_col= '0;
     logic [DATA_SIZE-1:0] signal= '0;
     logic [CMD_CODE_SIZE-1:0] cmd= '0;
     // check UART rising edge
@@ -195,7 +197,7 @@ module pFREYA_IF(
             sel_ck <= 1'b0;
             sel_cnt <= -1;
         end
-        else if (sel_init_n || sel_div == '0 || sync_time_base_flag) begin
+        else if (!sel_ck_mask || sel_init_n || sel_div == '0 || sync_time_base_flag) begin
             sel_ck <= 1'b0;
             sel_cnt <= -1;
         end
@@ -255,7 +257,7 @@ module pFREYA_IF(
             ser_ck <= 1'b0;
             ser_cnt <= -1;
         end
-        else if (!ser_reset_n || ser_div == '0 || sync_time_base_flag) begin
+        else if (!ser_ck_mask || !ser_reset_n || ser_div == '0 || sync_time_base_flag) begin
             ser_ck <= 1'b0;
             ser_cnt <= -1;
         end
@@ -459,79 +461,6 @@ module pFREYA_IF(
         end
     end
 
-    always_ff @(posedge ck, posedge reset) begin: ser_reset_n_generation
-        if (reset) begin
-            ser_reset_n <= 1'b0;
-            ser_reset_n_cnt <= -1;
-            ser_reset_n_flag <= FAST_CTRL_DELAY;
-        end
-        else if (sync_time_base_flag ||
-            (ser_reset_n_flag == FAST_CTRL_DELAY && ser_reset_n_delay_div == '0) ||
-            (ser_reset_n_HIGH_div == '0 || ser_reset_n_LOW_div == '0)) begin
-            ser_reset_n <= 1'b0;
-            ser_reset_n_cnt <= -1;
-            ser_reset_n_flag <= FAST_CTRL_DELAY;
-        end
-        else if (ser_reset_n_flag == FAST_CTRL_DELAY &&
-                 ser_reset_n_cnt == ser_reset_n_delay_div-1) begin
-            ser_reset_n <= ~ser_reset_n;
-            ser_reset_n_cnt <= '0;
-            ser_reset_n_flag <= FAST_CTRL_HIGH;
-        end
-        else if (ser_reset_n_flag == FAST_CTRL_HIGH &&
-                 ser_reset_n_cnt == ser_reset_n_HIGH_div-1) begin
-            ser_reset_n <= ~ser_reset_n;
-            ser_reset_n_cnt <= '0;
-            ser_reset_n_flag <= FAST_CTRL_LOW;
-        end
-        else if (ser_reset_n_flag == FAST_CTRL_LOW &&
-                 ser_reset_n_cnt == ser_reset_n_LOW_div-1) begin
-            ser_reset_n <= ~ser_reset_n;
-            ser_reset_n_cnt <= '0;
-            ser_reset_n_flag <= FAST_CTRL_HIGH;
-        end
-        else begin
-            ser_reset_n <= ser_reset_n;
-            ser_reset_n_cnt <= ser_reset_n_cnt + 1'b1;
-        end
-    end
-
-    always_ff @(posedge ck, posedge reset) begin: ser_read_generation
-        if (reset) begin
-            ser_read <= 1'b0;
-            ser_read_cnt <= -1;
-            ser_read_flag <= FAST_CTRL_DELAY;
-        end
-        else if (sync_time_base_flag || 
-            (ser_read_flag == FAST_CTRL_DELAY && ser_read_delay_div == '0) ||
-            (ser_read_HIGH_div == '0 || ser_read_LOW_div == '0)) begin
-            ser_read <= 1'b0;
-            ser_read_cnt <= -1;
-            ser_read_flag <= FAST_CTRL_DELAY;
-        end
-        else if (ser_read_flag == FAST_CTRL_DELAY &&
-                 ser_read_cnt == ser_read_delay_div-1) begin
-            ser_read <= ~ser_read;
-            ser_read_cnt <= '0;
-            ser_read_flag <= FAST_CTRL_HIGH;
-        end
-        else if (ser_read_flag == FAST_CTRL_HIGH &&
-                 ser_read_cnt == ser_read_HIGH_div-1) begin
-            ser_read <= ~ser_read;
-            ser_read_cnt <= '0;
-            ser_read_flag <= FAST_CTRL_LOW;
-        end
-        else if (ser_read_flag == FAST_CTRL_LOW &&
-                 ser_read_cnt == ser_read_LOW_div-1) begin
-            ser_read <= ~ser_read;
-            ser_read_cnt <= '0;
-            ser_read_flag <= FAST_CTRL_HIGH;
-        end
-        else begin
-            ser_read <= ser_read;
-            ser_read_cnt <= ser_read_cnt + 1'b1;
-        end
-    end
 //===================== END FAST CONTROL =============================
 
     // state machine control
@@ -571,6 +500,10 @@ module pFREYA_IF(
                         // next send sel pixel
                         `SEND_PIXEL_SEL_CMD:
                             next <= CMD_SEL_PIX;
+                        // next ask for data out of asic
+                        `READ_DATA_CMD:
+                            // two step here, shift data and then read data
+                            next <= CMD_READ_DATA;
                         // next sync time base
                         `SYNC_TIME_BASE_CMD:
                             next <= CMD_SYNC_TIME_BASE;
@@ -625,6 +558,13 @@ module pFREYA_IF(
                     next <= CMD_EVAL;
                 else
                     next <= CMD_SEL_PIX;
+            CMD_READ_DATA:
+                if (ser_shift_done && ser_data_rcv)
+                    next <= CMD_EVAL;
+                else if (!ser_shift_done && ser_data_rcv)
+                    next <= CMD_ERR;
+                else
+                    next <= CMD_READ_DATA;
             CMD_SYNC_TIME_BASE:
                 next <= CMD_EVAL;
             default:
@@ -687,22 +627,16 @@ module pFREYA_IF(
             sh_phi1d_inf_delay_div <= '0;
             sh_phi1d_sup_delay_div <= '0;
             adc_start_delay_div <= '0;
-            ser_reset_n_delay_div <= '0;
-            ser_read_delay_div <= '0;
             
             csa_reset_n_HIGH_div <= '0;
             sh_phi1d_inf_HIGH_div <= '0;
             sh_phi1d_sup_HIGH_div <= '0;
             adc_start_HIGH_div <= '0;
-            ser_reset_n_HIGH_div <= '0;
-            ser_read_HIGH_div <= '0;
 
             csa_reset_n_LOW_div <= '0;
             sh_phi1d_inf_LOW_div <= '0;
             sh_phi1d_sup_LOW_div <= '0;
             adc_start_LOW_div <= '0;
-            ser_reset_n_LOW_div <= '0;
-            ser_read_LOW_div <= '0;
             
             // reset all resets
             slow_ctrl_mask <= 1'b0;
@@ -754,22 +688,16 @@ module pFREYA_IF(
                     sh_phi1d_inf_delay_div <= '0;
                     sh_phi1d_sup_delay_div <= '0;
                     adc_start_delay_div <= '0;
-                    ser_reset_n_delay_div <= '0;
-                    ser_read_delay_div <= '0;
                     
                     csa_reset_n_HIGH_div <= '0;
                     sh_phi1d_inf_HIGH_div <= '0;
                     sh_phi1d_sup_HIGH_div <= '0;
                     adc_start_HIGH_div <= '0;
-                    ser_reset_n_HIGH_div <= '0;
-                    ser_read_HIGH_div <= '0;
 
                     csa_reset_n_LOW_div <= '0;
                     sh_phi1d_inf_LOW_div <= '0;
                     sh_phi1d_sup_LOW_div <= '0;
                     adc_start_LOW_div <= '0;
-                    ser_reset_n_LOW_div <= '0;
-                    ser_read_LOW_div <= '0;
                     
                     // reset all resets
                     slow_ctrl_mask <= 1'b0;
@@ -816,9 +744,14 @@ module pFREYA_IF(
                             `SET_CK_CMD,
                             `SET_DELAY_CMD,
                             `SET_HIGH_CMD,
-                            `SET_LOW_CMD,
-                            `SET_PIXEL_CMD:
+                            `SET_LOW_CMD:
                                 data_packet_available = 1'b0;
+                            `SET_PIXEL_CMD: begin
+                                sel_init_n = 1'b1;
+                                sel_reset_request = 1'b1;
+
+                                data_packet_available = 1'b0;
+                            end
                             `SET_SLOW_CTRL_CMD: begin
                                 //slow_ctrl_packet_available <= 1'b0;
                                 slow_ctrl_packet_index_receive = '0;
@@ -887,10 +820,6 @@ module pFREYA_IF(
                                             sh_phi1d_sup_delay_div[data_packet_index_receive +: DATA_UART_DATA_POS+1] <= uart_data[DATA_START_POS:DATA_END_POS];
                                         `ADC_START_CODE:
                                             adc_start_delay_div[data_packet_index_receive +: DATA_UART_DATA_POS+1] <= uart_data[DATA_START_POS:DATA_END_POS];
-                                        `SER_RESET_N_CODE:
-                                            ser_reset_n_delay_div[data_packet_index_receive +: DATA_UART_DATA_POS+1] <= uart_data[DATA_START_POS:DATA_END_POS];
-                                        `SER_READ_CODE:
-                                            ser_read_delay_div[data_packet_index_receive +: DATA_UART_DATA_POS+1] <= uart_data[DATA_START_POS:DATA_END_POS];
                                     endcase
                                     if (uart_data[DATA_UART_DATA_POS+1] == LAST_UART_PACKET) begin
                                         data_packet_index_receive <= '0;
@@ -914,10 +843,6 @@ module pFREYA_IF(
                                             sh_phi1d_sup_HIGH_div[data_packet_index_receive +: DATA_UART_DATA_POS+1] <= uart_data[DATA_START_POS:DATA_END_POS];
                                         `ADC_START_CODE:
                                             adc_start_HIGH_div[data_packet_index_receive +: DATA_UART_DATA_POS+1] <= uart_data[DATA_START_POS:DATA_END_POS];
-                                        `SER_RESET_N_CODE:
-                                            ser_reset_n_HIGH_div[data_packet_index_receive +: DATA_UART_DATA_POS+1] <= uart_data[DATA_START_POS:DATA_END_POS];
-                                        `SER_READ_CODE:
-                                            ser_read_HIGH_div[data_packet_index_receive +: DATA_UART_DATA_POS+1] <= uart_data[DATA_START_POS:DATA_END_POS];
                                     endcase
                                     if (uart_data[DATA_UART_DATA_POS+1] == LAST_UART_PACKET) begin
                                         data_packet_index_receive <= '0;
@@ -941,10 +866,6 @@ module pFREYA_IF(
                                             sh_phi1d_sup_LOW_div[data_packet_index_receive +: DATA_UART_DATA_POS+1] <= uart_data[DATA_START_POS:DATA_END_POS];
                                         `ADC_START_CODE:
                                             adc_start_LOW_div[data_packet_index_receive +: DATA_UART_DATA_POS+1] <= uart_data[DATA_START_POS:DATA_END_POS];
-                                        `SER_RESET_N_CODE:
-                                            ser_reset_n_LOW_div[data_packet_index_receive +: DATA_UART_DATA_POS+1] <= uart_data[DATA_START_POS:DATA_END_POS];
-                                        `SER_READ_CODE:
-                                            ser_read_LOW_div[data_packet_index_receive +: DATA_UART_DATA_POS+1] <= uart_data[DATA_START_POS:DATA_END_POS];
                                     endcase
                                     if (uart_data[DATA_UART_DATA_POS+1] == LAST_UART_PACKET) begin
                                         data_packet_index_receive <= '0;
@@ -993,17 +914,26 @@ module pFREYA_IF(
                                 end
                             end
                             `SET_PIXEL_CMD: begin
+                                sel_reset_request <= 1'b0;
                                 // set row/col number
                                 case (signal)
                                     `PIXEL_ROW_CODE:
-                                        pixel_row <= uart_data[DATA_START_POS:DATA_END_POS];
+                                        pixel_row[data_packet_index_receive +: DATA_UART_DATA_POS+1] <= uart_data[DATA_START_POS:DATA_END_POS];
                                     `PIXEL_COL_CODE:
-                                        pixel_col <= uart_data[DATA_START_POS:DATA_END_POS];
+                                        pixel_col[data_packet_index_receive +: DATA_UART_DATA_POS+1] <= uart_data[DATA_START_POS:DATA_END_POS];
                                     default: begin
                                         pixel_row <= pixel_row;
                                         pixel_col <= pixel_col;
                                     end
                                 endcase
+                                if (uart_data[DATA_UART_DATA_POS+1] == LAST_UART_PACKET) begin
+                                    data_packet_index_receive <= '0;
+                                    data_packet_available <= 1'b1;
+                                end else begin
+                                    data_packet[data_packet_index_receive +: DATA_UART_DATA_POS+1] <= uart_data[DATA_UART_DATA_POS:DATA_END_POS];
+                                    data_packet_index_receive <= data_packet_index_receive + DATA_UART_DATA_POS + 1; // 6 bit per time
+                                    data_packet_available <= 1'b0;
+                                end
                             end
                         endcase
                     end
@@ -1032,10 +962,34 @@ module pFREYA_IF(
                 end
                 CMD_SEL_PIX: begin
                     // this way we are checking on the falling edge and no ck is sent after the signal is off
-                    if (sel_ckrow_sent && sel_ckcol_sent)
-                        sel_init_n <= 1'b1;
-                    else
+                    if (sel_ckcol_sent && sel_ckrow_sent) begin
+                        sel_ck_mask <= 1'b0;
                         sel_init_n <= 1'b0;
+                    end
+                    else begin
+                        sel_ck_mask <= 1'b1;
+                        sel_init_n <= 1'b0;
+                    end
+
+                end
+                CMD_READ_DATA: begin
+                    if (!ser_shift_done && !ser_data_rcv) begin
+                        // read is low, one ser ck hit
+                        ser_read <= 1'b0;
+                        ser_ck_mask <= 1'b1;
+                        ser_reset_n <= 1'b1;
+                    end
+                    else if (ser_shift_done && !ser_data_rcv) begin
+                        // read is high, send data
+                        ser_read <= 1'b1;
+                        ser_ck_mask <= 1'b1;
+                        ser_reset_n <= 1'b1;
+                    end
+                    else begin
+                        ser_read <= 1'b0;
+                        ser_ck_mask <= 1'b0;
+                        ser_reset_n <= 1'b0;
+                    end
                 end
                 CMD_SYNC_TIME_BASE:
                     sync_time_base_flag <= 1'b1;
@@ -1139,7 +1093,7 @@ module pFREYA_IF(
 
     // if sel_ck is posedge then col or row ck might need to commute
     always_ff @(posedge ck, posedge reset) begin: pixel_sel_send_posedge
-        if (reset) begin
+        if (reset || sel_reset_request) begin
             sel_ckrow <= 1'b0;
             sel_ckcol <= 1'b0;
             sel_ckrow_cnt <= 0;
@@ -1148,7 +1102,7 @@ module pFREYA_IF(
             sel_ckcol_sent <= 1'b0;
         end
         // here one triggers if sel_init_n is low
-        else if (!sel_init_n) begin
+        else if (sel_ck_mask) begin
             // if posedge sel_ck
             if (sel_ck == 1'b0 && sel_cnt == sel_div-1) begin
                 // row
@@ -1210,6 +1164,66 @@ module pFREYA_IF(
                     sel_ckcol <= ~sel_ck;
                 else
                     sel_ckcol <= sel_ckcol;
+            end
+        end
+    end
+
+        // if sel_ck is posedge then col or row ck might need to commute
+    always_ff @(posedge ck, posedge reset) begin: pixel_ser_read_data
+        if (reset) begin
+            ser_read <= 1'b0;
+            ser_reset_n <= 1'b0;
+            ser_data <= 0;
+            ser_data_idx <= 0;
+            ser_shift_done <= 1'b0;
+            ser_data_rcv <= 1'b0;
+        end
+        else if (ser_ck_mask) begin
+            // if posedge sel_ck
+            if (ser_ck == 1'b0 && ser_cnt == ser_div-1) begin
+                // if nothing sent or done
+                if (!ser_data_rcv && !ser_shift_done) begin
+                    // let one ck hit
+                    ser_data <= 0;
+                    ser_data_idx <= 0;
+                end
+                else if (!ser_data_rcv && ser_shift_done) begin    
+                    // saving data from shift registers on negative edge so as to ensure data is ready
+                    ser_data_idx <= ser_data_idx;
+                end
+                else begin
+                    // finished reciving data
+                    ser_data_idx <= ser_data_idx;
+                end
+            end
+            // if negedge sel_ck
+            else if (ser_ck == 1'b1 && ser_cnt == ser_div-1) begin
+                // if nothing sent or done
+                if (!ser_data_rcv && !ser_shift_done) begin
+                    ser_shift_done <= 1'b1;
+                    ser_data_rcv <= 1'b0;
+                end
+                else if (!ser_data_rcv && ser_shift_done) begin
+                    if (ser_data_idx == SER_DATA_REG_LENGTH-1) begin
+                        // if everything was transmitted, set ser_data_rcv
+                        ser_data[ser_data_idx] <= ser_out;
+                        ser_shift_done <= 1'b1;
+                        ser_data_rcv <= 1'b1;
+                    end
+                    else if (!ser_data_rcv && ser_shift_done) begin    
+                        // saving data from shift registers on negative edge so as to ensure data is ready
+                        ser_data[ser_data_idx] <= ser_out;
+                        ser_data_idx <= ser_data_idx + 1;
+                    end
+                    else begin
+                        ser_shift_done <= 1'b1;
+                        ser_data_rcv <= 1'b0;
+                    end
+                end
+                else begin
+                    ser_shift_done <= ser_shift_done;
+                    ser_data_rcv <= ser_data_rcv;
+                end
             end
         end
     end

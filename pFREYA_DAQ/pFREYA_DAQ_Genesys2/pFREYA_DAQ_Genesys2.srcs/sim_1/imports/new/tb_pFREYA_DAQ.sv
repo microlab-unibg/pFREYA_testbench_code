@@ -18,7 +18,7 @@
 // Additional Comments:
 // 
 //////////////////////////////////////////////////////////////////////////////////
-`include "../../sources_1/new/pFREYA_defs.sv"
+`include "../../../sources_1/imports/new/pFREYA_defs.sv"
 
 module tb_pFREYA_DAQ;
     // ASIC params
@@ -54,6 +54,8 @@ module tb_pFREYA_DAQ;
     reg  btn_reset;
     reg  cmd_available;
     reg  data_available;
+    reg  [10:0] ser_out_arr;
+    integer ser_idx;
     // for UART
     reg  [UART_PACKET_SIZE-1:0] uart_data;
     reg  uart_valid;
@@ -234,6 +236,10 @@ module tb_pFREYA_DAQ;
         // sys clk
         sys_clk_p <= 1'b0;
         sys_clk_n <= 1'b1;
+
+        ser_out <= 1'b0;
+        ser_out_arr <= 11'b10110001100; // example data to serialise
+        ser_idx <= 0;
     end
 
     // sys ck
@@ -243,6 +249,17 @@ module tb_pFREYA_DAQ;
 
     always begin
         forever #(SYS_CK_PERIOD/2) sys_clk_n = ~sys_clk_n;
+    end
+
+    always @(posedge ser_ck) begin
+        if (ser_read) begin
+            #1;
+            if (ser_idx >= 11)
+                ser_out <= 0; // reset ser_out if it goes out of bounds
+            ser_out <= ser_out_arr[ser_idx];
+            $display("SER OUT: %b", ser_out);
+            ser_idx <= ser_idx + 1;
+        end
     end
 
     // ASIC ck
@@ -313,33 +330,50 @@ module tb_pFREYA_DAQ;
 //============ END CLOCK SET UP ===============================================
 
 //============ PIXEL SELECTION ================================================
-        // // send a command to set selection divider
-        // // CMD packet is |0(1)|CMD_CODE(4)|SIGNAL_CODE(3)|
-        // #200000 uart_to_send <= {CMD_PACKET,`SET_CK_CMD,`SEL_CK_CODE};
-        // #10000 uart_write_byte(uart_to_send);
-        // // set selection divider
-        // // DATA packet is |1(1)|DATA(7)|
-        // #200000 uart_to_send <= {DATA_PACKET,7'd5};
-        // #10000 uart_write_byte(uart_to_send);
+        // send a command to set selection divider
+        // CMD packet is |0(1)|CMD_CODE(4)|SIGNAL_CODE(3)|
+        #200000 uart_to_send <= {CMD_PACKET,`SET_CK_CMD,`SEL_CK_CODE};
+        #10000 uart_write_byte(uart_to_send);
+        // set selection divider
+        #200000 uart_to_send <= {DATA_PACKET,LAST_UART_PACKET,6'd7};
+        #10000 uart_write_byte(uart_to_send);
 
-        // // send a command to set sel_init_n delay divider
-        // #200000 uart_to_send <= {CMD_PACKET,`SET_PIXEL_CMD,`PIXEL_ROW_CODE};
-        // #10000 uart_write_byte(uart_to_send);
-        // // set sel_init_n delay divider
-        // #200000 uart_to_send <= {DATA_PACKET,7'd7};
-        // #10000 uart_write_byte(uart_to_send);
-        // // send a command to set sel_init_n delay divider
-        // #200000 uart_to_send <= {CMD_PACKET,`SET_PIXEL_CMD,`PIXEL_COL_CODE};
-        // #10000 uart_write_byte(uart_to_send);
-        // // set sel_init_n delay divider
-        // #200000 uart_to_send <= {DATA_PACKET,7'd7};
-        // #10000 uart_write_byte(uart_to_send);
+
+        #200000 uart_to_send <= {CMD_PACKET,`SET_PIXEL_CMD,`PIXEL_ROW_CODE};
+        #10000 uart_write_byte(uart_to_send);
         
-        // // sel pixel
-        // // signal is not used
-        // #200000 uart_to_send <= {CMD_PACKET,`SEND_PIXEL_SEL_CMD,`UNUSED_CODE};
-        // #10000 uart_write_byte(uart_to_send);
+        #200000 uart_to_send <= {DATA_PACKET,LAST_UART_PACKET,6'd7};
+        #10000 uart_write_byte(uart_to_send);
+        
+        #200000 uart_to_send <= {CMD_PACKET,`SET_PIXEL_CMD,`PIXEL_COL_CODE};
+        #10000 uart_write_byte(uart_to_send);
+
+        #200000 uart_to_send <= {DATA_PACKET,LAST_UART_PACKET,6'd7};
+        #10000 uart_write_byte(uart_to_send);
+        
+        // sel pixel
+        // signal is not used
+        #200000 uart_to_send <= {CMD_PACKET,`SEND_PIXEL_SEL_CMD,`UNUSED_CODE};
+        #10000 uart_write_byte(uart_to_send);
 //============ END PIXEL SELECTION ============================================
+
+//============ SERIALISER ============================================
+// make sure you sel pixel before
+        #200000 uart_to_send <= {CMD_PACKET,`SET_CK_CMD,`SER_CK_CODE};
+        #10000 uart_write_byte(uart_to_send);
+        // set inj_stb delay divider
+        #500000 uart_to_send <= {DATA_PACKET,NOTLAST_UART_PACKET,6'd10};
+        #10000 uart_write_byte(uart_to_send);
+        #500000 uart_to_send <= {DATA_PACKET,NOTLAST_UART_PACKET,6'd0};
+        #10000 uart_write_byte(uart_to_send);
+        #500000 uart_to_send <= {DATA_PACKET,LAST_UART_PACKET,6'd0};
+        #10000 uart_write_byte(uart_to_send);
+        // signal is not used
+        #200000 uart_to_send <= {CMD_PACKET,`READ_DATA_CMD,`UNUSED_CODE};
+        #10000 uart_write_byte(uart_to_send);
+        // serialise data on ser_out
+        // done above sync with ser_ck
+//============ END SERIALISER ============================================
 
 //============ SLOW CTRL ======================================================
         // // send a command to set slow ctrl word
@@ -470,26 +504,26 @@ module tb_pFREYA_DAQ;
         // #500000 uart_to_send <= {DATA_PACKET,LAST_UART_PACKET,6'd0};
         // #10000 uart_write_byte(uart_to_send);
 
-        // send a command to set slow ctrl word
-        // signal is not used
-        #200000 uart_to_send <= {CMD_PACKET,`SET_SLOW_CTRL_CMD,`UNUSED_CODE};
-        #10000 uart_write_byte(uart_to_send);
-        // set slow ctrl word
-        #200000 slow_pkt_rnd <= $urandom(42069); // 42 is the seed and the packet is repeated for each pixel;
-        #10000 uart_slow_ctrl_send(slow_pkt_rnd);
+        // // send a command to set slow ctrl word
+        // // signal is not used
+        // #200000 uart_to_send <= {CMD_PACKET,`SET_SLOW_CTRL_CMD,`UNUSED_CODE};
+        // #10000 uart_write_byte(uart_to_send);
+        // // set slow ctrl word
+        // #200000 slow_pkt_rnd <= $urandom(42069); // 42 is the seed and the packet is repeated for each pixel;
+        // #10000 uart_slow_ctrl_send(slow_pkt_rnd);
         
-        // send a command to set slow ctrl div
-        #200000 uart_to_send <= {CMD_PACKET,`SET_CK_CMD,`SLOW_CTRL_CK_CODE};
-        #10000 uart_write_byte(uart_to_send);
-        // set slow ctrl div
-        #200000 uart_to_send <= {DATA_PACKET,NOTLAST_UART_PACKET,6'd5};
-        #10000 uart_write_byte(uart_to_send);
-        #200000 uart_to_send <= {DATA_PACKET,LAST_UART_PACKET,6'd0};
-        #10000 uart_write_byte(uart_to_send);
+        // // send a command to set slow ctrl div
+        // #200000 uart_to_send <= {CMD_PACKET,`SET_CK_CMD,`SLOW_CTRL_CK_CODE};
+        // #10000 uart_write_byte(uart_to_send);
+        // // set slow ctrl div
+        // #200000 uart_to_send <= {DATA_PACKET,NOTLAST_UART_PACKET,6'd5};
+        // #10000 uart_write_byte(uart_to_send);
+        // #200000 uart_to_send <= {DATA_PACKET,LAST_UART_PACKET,6'd0};
+        // #10000 uart_write_byte(uart_to_send);
         
-        // send a command to send slow ctrl
-        #200000 uart_to_send <= {CMD_PACKET,`SEND_SLOW_CTRL_CMD,`UNUSED_CODE};
-        #10000 uart_write_byte(uart_to_send);
+        // // send a command to send slow ctrl
+        // #200000 uart_to_send <= {CMD_PACKET,`SEND_SLOW_CTRL_CMD,`UNUSED_CODE};
+        // #10000 uart_write_byte(uart_to_send);
 //============ END SLOW CTRL ==================================================
 
 //============ DAC SETUP ======================================================

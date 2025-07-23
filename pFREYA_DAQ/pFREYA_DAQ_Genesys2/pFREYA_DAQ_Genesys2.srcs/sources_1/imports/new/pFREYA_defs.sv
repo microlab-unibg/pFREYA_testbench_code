@@ -53,6 +53,10 @@
     parameter SLOW_CTRL_UART_DATA_POS = 5;
     parameter SLOW_CTRL_UART_DATA_LAST_POS = 3;
 
+    // Serialiser default values
+    // expecting a packet of 11 bit for each channel. The additional clock hit is there to shift data in
+    parameter SER_DATA_REG_LENGTH = 11;
+
     // DAC config default values
     // 24 is the length of the word. It can be sent by 3 8-bit packets but 2 bits
     //   are needed to identify the cmd and last packet. So 4 6-bit packets will be used (no last).
@@ -71,8 +75,8 @@
     parameter FAST_CTRL_FLAG_N = 2;
 
     // pixel selection sizes
-    parameter PIXEL_ROW_N = 3;
-    parameter PIXEL_COL_N = 3;
+    parameter PIXEL_ROW_N = 18;
+    parameter PIXEL_COL_N = 18;
 
     // UART command properties
     parameter UART_PACKET_SIZE = 8;
@@ -104,18 +108,20 @@
     } slow_ctrl_pack;
 
     // UART commands
-    `define SET_CK_CMD          4'b0000   // for general CK (calls for clock map)
-    `define SET_DELAY_CMD       4'b0001   // for fast ctrl (call for fast control map)
-    `define SET_HIGH_CMD        4'b0010   // for fast ctrl
-    `define SET_LOW_CMD         4'b0011   // for fast ctrl
-    `define SET_SLOW_CTRL_CMD   4'b0100   // for slow ctrl
-    `define SET_DAC_CMD         4'b0101   // for DAC config
-    `define SET_PIXEL_CMD       4'b0110   // for pixel selection
-    `define SEND_SLOW_CTRL_CMD  4'b0111   // for sending the slow ctrl to the asic
-    `define SEND_DAC_CMD        4'b1000   // for sending the DAC config
-    `define SEND_PIXEL_SEL_CMD  4'b1001   // for sending the pixel selection to the asic
-    `define SYNC_TIME_BASE_CMD  4'b1110   // for synchronising the signal generated to a same baseline
-    `define RESET_FPGA_CMD      4'b1111   // for resetting the FPGA just as with the button
+    `define SET_CK_CMD              4'b0000   // for general CK (calls for clock map)
+    `define SET_DELAY_CMD           4'b0001   // for fast ctrl (call for fast control map)
+    `define SET_HIGH_CMD            4'b0010   // for fast ctrl
+    `define SET_LOW_CMD             4'b0011   // for fast ctrl
+    `define SET_SLOW_CTRL_CMD       4'b0100   // for slow ctrl
+    `define SET_DAC_CMD             4'b0101   // for DAC config
+    `define SET_PIXEL_CMD           4'b0110   // for pixel selection
+    `define SEND_SLOW_CTRL_CMD      4'b0111   // for sending the slow ctrl to the asic
+    `define SEND_DAC_CMD            4'b1000   // for sending the DAC config
+    `define SEND_PIXEL_SEL_CMD      4'b1001   // for sending the pixel selection to the asic
+    `define READ_DATA_CMD           4'b1010   // for reading the data out of the asic
+    
+    `define SYNC_TIME_BASE_CMD      4'b1110   // for synchronising the signal generated to a same baseline
+    `define RESET_FPGA_CMD          4'b1111   // for resetting the FPGA just as with the button
 
     // Slow control default values
     `define CSA_MODE_N_DEF 2'b10
