@@ -11,8 +11,8 @@
 #seleziona intervallo configurando PtP e PtN (prendere V esatta(?) a quel tempo) + diff
 #plot del differenziale 
 #funzione per muovere intervallo
-#grafico degli intervalli mossi?
-from TeledyneLeCroyPy import TeledyneLeCroyPy
+#grafico degli intervalli mossi?lsù
+import TeledyneLeCroyPy
 import numpy as np
 import matplotlib.pyplot as plt
 import pandas as pd
