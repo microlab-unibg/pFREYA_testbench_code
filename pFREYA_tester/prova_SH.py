@@ -191,9 +191,9 @@ for item in config_bits_list:
             plt.savefig(f'G:Shared drives/FALCON/measures/new/transient/SH/{subfolder}/{channel_name}_{config.config_bits_str}_nominal_{lemo_name}_shapconfig_{shap_bits}_{datetime_str}.pdf', dpi=300)            
             plt.close()
 
-path_low = f'G:Shared drives/FALCON/measures/new/transient/SH/Low/{channel_name}_{config.config_bits_str}_nominal_{lemo_name}_shapconfig_{shap_bits}_{datetime_str}.tsv'
-path_high = f'G:Shared drives/FALCON/measures/new/transient/SH/High/{channel_name}_{config.config_bits_str}_nominal_{lemo_name}_shapconfig_{shap_bits}_{datetime_str}.tsv'
-print_differential(path_low, path_high, shap_bits, datetime_str, config.config_bits_str, lemo_name, channel_name)
+#path_low = f'G:Shared drives/FALCON/measures/new/transient/SH/Low/{channel_name}_{config.config_bits_str}_nominal_{lemo_name}_shapconfig_{shap_bits}_{datetime_str}.tsv'
+#path_high = f'G:Shared drives/FALCON/measures/new/transient/SH/High/{channel_name}_{config.config_bits_str}_nominal_{lemo_name}_shapconfig_{shap_bits}_{datetime_str}.tsv'
+#print_differential(path_low, path_high, shap_bits, datetime_str, config.config_bits_str, lemo_name, channel_name)
 
 
 
