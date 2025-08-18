@@ -149,7 +149,7 @@ max_lecroy = []
 min_lecroy = []
 
 
-k = -0.20
+k = -0.2
 cont = 0
 tempMean = 0
 tempSdev = 0
@@ -180,8 +180,8 @@ while True:
         k = k - 0.01
     else:
         # k = k - 0.001m
-        if tempMean < 713:
-            k = k - 0.0005
+        if tempMean < 400:
+            k = k - 0.01
         else:
             k = k - 0.01
             cont = cont + 1
@@ -202,7 +202,7 @@ FC = 256 / (1.64-0.13) * 2500 / 1000 # 423.84105960264907
 charge = FC*current
 
 avg = np.array(avg_lecroy, dtype=float)
-percScatti = np.array(avg / 1000, dtype=float)
+percScatti = np.array(avg / 500, dtype=float)
 
 sdev = np.array(sdev_lecroy, dtype=float)
 max = np.array(max_lecroy, dtype=float)
