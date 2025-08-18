@@ -94,92 +94,102 @@ for item in config_bits_list:
     shap_bits = get_shap_bits(item)
     dfs = {}
     file_paths = {}
-   
-    for channel in ['csa', 'shap']:
-        #setup configuration for channel 1
-        config.config(
-            channel=channel,
-            lemo='none',
-            n_steps=8,
-            cfg_bits=item,
-            cfg_inst=True,
-            active_probes=False,
-        )
-        if channel == 'csa':
-            config.lecroy.set_vdiv(channel=1, vdiv='230e-3')
-            config.lecroy.set_voffset(channel=1, voffset='690e-3')
-            subfolder = 'Low'
-        else:
-            config.lecroy.set_vdiv(channel=2, vdiv='230e-3')
-            config.lecroy.set_voffset(channel=2, voffset='690e-3')
-            subfolder = 'High'
-        config.lecroy.set_tdiv(tdiv='100NS')
-        config.lecroy.set_toffset(toffset='-240e-9')
-        pYtp.send_slow_ctrl_auto(item, 0 if channel == 'csa' else 1)
-        config.ps.write(f':SOUR:CURR:LEV {config.current_lev[0]}')
-        config.ps.write(':OUTP:STAT ON')
-        time.sleep(5)
+    df_csa = pd.DataFrame()
+    df_shap = pd.DataFrame()
+    config.config(
+        channel = 'csa', lemo = 'none', n_steps = 8, cfg_bits = item , cfg_inst = True , active_probes= False, 
+    ) #nec?
 
-        channel_name = config.channel_name
-        lemo_name = config.lemo_name
-        gain = config.lemo_gain
-        attenuation = config.attenuation
-        gain_lane = 1 / attenuation if config.active_prbs else gain
-
-        df = pd.DataFrame()
+    channel_name = config.channel_name
+    lemo_name = config.lemo_name
+    gain = config.lemo_gain
+    attenuation = config.attenuation
+    #gain lane
     
-        #current levels iteration
-        for i, cl in enumerate(config.current_lev):
-            #set current level
-            config.ps.write(f':SOUR:CURR:LEV {cl}')
-            print(f'{i}: {cl}')
-            time.sleep(5)
-            
-            data = pd.DataFrame.from_dict(
-                config.lecroy.get_channel(channel_name='X', n_channel=config.channel_num)['waveform'][0]
-            )
+    config.lecroy.set_vdiv(channel=1, vdiv='230e-3')
+    config.lecroy.set_voffset(channel=1, voffset='690e-3')
+    
+    config.lecroy.set_vdiv(channel=2, vdiv='230e-3')
+    config.lecroy.set_voffset(channel=2, voffset='690e-3')
 
-            data['amplitude'] = (data['amplitude(V)'] - data['amplitude(V)'][0]) / gain_lane
-            data.insert(0,'Current level step', i )
-            data.insert(1,'Current level (A)', cl)
-            df = pd.concat((df, data))
+    config.lecroy.set_tdiv(tdiv='100NS')
+    config.lecroy.set_toffset(toffset='-240e-9')
+    pYtp.send_slow_ctrl_auto(item, 0)
+    # 2 invece che 0
+    #sleep
+    #synt time base
+    config.ps.write(f':SOUR:CURR:LEV {config.current_lev[0]}')
+    config.ps.write(':OUTP:STAT ON')
+    time.sleep(5)
+
+      
+    #current levels iteration
+    for i, cl in enumerate(config.current_lev):
+        #set current level
+        config.ps.write(f':SOUR:CURR:LEV {cl}')
+        print(f'{i}: {cl}')
+        time.sleep(5)
+        
+
+        data_csa  = pd.DataFrame.from_dict(
+            config.lecroy.get_channel(channel_name='C1', n_channel = 1 )['waveform'][0] #f e channel 2
+        )
+        data_shap = pd.DataFrame.from_dict(
+            config.lecroy.get_channel(channel_name='C2', n_channel = 2 )['waveform'][0] #f e channel 4
+        )
+        
+        gain_lane = 1 / config.attenuation if config.active_prbs else config.lemo_gain # perché è qui e non sopra
+
+        data_csa['Amplitude (V)']  = (data_csa['Amplitude (V)'] - data_csa['Amplitude (V)'][0]) / gain_lane
+        data_shap['Amplitude (V)']  = (data_shap['Amplitude (V)'] - data_shap['Amplitude (V)'][0]) / gain_lane
+
+        data_csa.insert(0, 'Current level step', i)
+        data_csa.insert(1, 'Current level (A)', cl)
+        data_shap.insert(0, 'Current level step', i) #4 e sempre su csa
+        data_shap.insert(1, 'Current level (A)', cl) #5
+
+        df_csa = pd.concat((df_csa, data_csa))
+        df_shap = pd.concat((df_shap, data_shap))
+        # inserisci tutto in data csa per esempio e poi fai concat
 
         #save data
         datetime_str = datetime.strftime(datetime.now(), '%Y-%m-%d_%H-%M-%S')
-        if config.active_prbs:
-            str_type = 'active_prbs'
-        else:
-            str_type = ''
-        
-        df_path = f'G:Shared drives/FALCON/measures/new/transient/SH/{subfolder}/{channel_name}_{config.config_bits_str}_nominal_{lemo_name}_shapconfig_{shap_bits}_{datetime_str}.tsv' 
-        df.to_csv(df_path, sep='\t')
+
+        path_low = f'G:Shared drives/FALCON/measures/new/transient/SH/Low/csa_{config.config_bits_str}_nominal_{lemo_name}_shapconfig_{shap_bits}_{datetime_str}.tsv'
+        path_high = f'G:Shared drives/FALCON/measures/new/transient/SH/High/shap_{config.config_bits_str}_nominal_{lemo_name}_shapconfig_{shap_bits}_{datetime_str}.tsv' 
+        df_csa.to_csv(path_low, sep = '\t')
+        df_shap.to_csv(path_high, sep = '\t')
 
         print(f"Measurment for cfg_bits {item} with energy level {energy_level:}A.")
 
         #plot for each channel
-        t_s = -324e-9
-        colours = list(mcolors.TABLEAU_COLORS.keys())
-        fig, ax = plt.subplots(figsize=(5, 4))
-        for i, cl in enumerate(config.current_lev):
-            ax.plot(
-                df[df['Current level step'] == i]['Time (s)']*10**6 - t_s*10**6,
-                df[df['Current level step'] == i]['Amplitude (V)'],
-                '-', linewidth=1, color=colours[i]
+        for df,channel_name, subfolder in [
+            (df_csa, 'csa', 'Low'),
+            (df_shap, 'shap', 'High')
+        ]:
+            t_s = -324e-9
+            colours = list(mcolors.TABLEAU_COLORS.keys())
+            fig, ax = plt.subplots(figsize=(5, 4))
+            for i, cl in enumerate(config.current_lev):
+                ax.plot(
+                    df[df['Current level step'] == i]['Time (s)']*10**6 - t_s*10**6,
+                    df[df['Current level step'] == i]['Amplitude (V)'],
+                    '-', linewidth=1, color=colours[i]
+                )
+            ax.set_xlabel('Time [$\\mu$s]')
+            ax.set_ylabel(f'{channel_name.upper() if channel_name == "csa" else "Shaper"} output voltage [V]')
+            ax.tick_params(right=True, top=True, direction='in')
+            ax.autoscale(enable=True, axis='x', tight=True)
+            ax.legend(
+                np.linspace(0, 256, 8).astype(int),
+                title=f"$\\gamma$ @ {config.photon_energy} keV",
+                frameon=False
             )
-        ax.set_xlabel('Time [$\\mu$s]')
-        ax.set_ylabel(f'{channel_name.upper() if channel_name == "csa" else "Shaper"} output voltage [V]')
-        ax.tick_params(right=True, top=True, direction='in')
-        ax.autoscale(enable=True, axis='x', tight=True)
-        ax.legend(
-            np.linspace(0, 256, 8).astype(int),
-            title=f"$\\gamma$ @ {config.photon_energy} keV",
-            frameon=False
-        )
-        if channel_name == 'shap':
-            ax.text(.01, .01, f'$t_p$ = {config.peaking_time} ns', ha='left', va='bottom', transform=ax.transAxes)
-            plt.tight_layout
-        plt.savefig(f'G:Shared drives/FALCON/measures/new/transient/SH/{subfolder}/{channel_name}_{config.config_bits_str}_nominal_{lemo_name}_shapconfig_{shap_bits}_{datetime_str}.pdf', dpi=300)            
-        plt.close()
+            if channel_name == 'shap':
+                ax.text(.01, .01, f'$t_p$ = {config.peaking_time} ns', ha='left', va='bottom', transform=ax.transAxes)
+                plt.tight_layout
+            plt.savefig(f'G:Shared drives/FALCON/measures/new/transient/SH/{subfolder}/{channel_name}_{config.config_bits_str}_nominal_{lemo_name}_shapconfig_{shap_bits}_{datetime_str}.pdf', dpi=300)            
+            plt.close()
 
 path_low = f'G:Shared drives/FALCON/measures/new/transient/SH/Low/{channel_name}_{config.config_bits_str}_nominal_{lemo_name}_shapconfig_{shap_bits}_{datetime_str}.tsv'
 path_high = f'G:Shared drives/FALCON/measures/new/transient/SH/High/{channel_name}_{config.config_bits_str}_nominal_{lemo_name}_shapconfig_{shap_bits}_{datetime_str}.tsv'
