@@ -829,6 +829,8 @@ current_entry.grid(column=col_idx+1, row=row_idx, padx=5)
 ttk.Label(asic_lframe, text="FP").grid(column=col_idx+2, row=row_idx, padx=[0,20])
 col_idx += 3
 ttk.Button(asic_lframe, text="Send ADC_START", command=lambda: pYtp.send_ADC_START(gui)).grid(column=col_idx, columnspan=3, row=row_idx, pady=[0,0], sticky=EW)
+col_idx += 3
+ttk.Button(asic_lframe, text="Send READ_DATA", command=lambda: pYtp.send_READ_DATA(gui)).grid(column=col_idx, columnspan=3, row=row_idx, pady=[0,0], sticky=EW)
 
 row_idx += 1
 ttk.Button(asic_lframe, text="Send ASIC control", command=lambda: pYtp.send_asic_ctrl(gui)).grid(column=4, columnspan=5, row=row_idx, pady=[10,0], sticky=SE)

@@ -281,6 +281,46 @@ def send_ADC_START(gui):
     
     return 0
 
+def send_READ_DATA(gui):
+    """Function to fetch data from ASIC
+
+    Parameters
+    ----------
+    gui : pFREYA_GUI
+        The structure containing all the data related to the tester.
+    
+    Returns
+    ----------
+    int
+        0 if everything was ok, 1 otherwise.
+    """
+    try:
+        cmd = create_cmd(UARTdef.SET_DELAY_CMD, UARTdef.ADC_START_CODE)
+        send_UART(cmd,'')
+        print('CMD sent: ',cmd)
+        for data in create_data(convert_strvar_bin(gui.adc_start['delay'],UARTdef.DATA_PACKET_LENGTH)):
+            send_UART('', data)
+            print('Data sent: ',data)
+
+        cmd = create_cmd(UARTdef.SET_HIGH_CMD, UARTdef.ADC_START_CODE)
+        send_UART(cmd,'')
+        print('CMD sent: ',cmd)
+        for data in create_data(convert_strvar_bin(gui.adc_start['high'],UARTdef.DATA_PACKET_LENGTH)):
+            send_UART('', data)
+            print('Data sent: ',data)
+
+        cmd = create_cmd(UARTdef.SET_LOW_CMD, UARTdef.ADC_START_CODE)
+        send_UART(cmd,'')
+        print('CMD sent: ',cmd)
+        for data in create_data(convert_strvar_bin(gui.adc_start['low'],UARTdef.DATA_PACKET_LENGTH)):
+            send_UART('', data)
+            print('Data sent: ',data)
+    except Exception:
+        print(traceback.format_exc())
+        return 1
+    
+    return 0
+
 def send_clock_single(gui, clock):
     """Function to set a clock in the FPGA
 

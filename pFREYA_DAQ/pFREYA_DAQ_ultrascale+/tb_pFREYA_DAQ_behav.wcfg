@@ -12,12 +12,12 @@
       </db_ref>
    </db_ref_list>
    <zoom_setting>
-      <ZoomStartTime time="1,382,031.586 ns"></ZoomStartTime>
-      <ZoomEndTime time="1,386,186.587 ns"></ZoomEndTime>
-      <Cursor1Time time="1,383,206.586 ns"></Cursor1Time>
+      <ZoomStartTime time="135.140598 us"></ZoomStartTime>
+      <ZoomEndTime time="2,645.140599 us"></ZoomEndTime>
+      <Cursor1Time time="753.140598 us"></Cursor1Time>
    </zoom_setting>
    <column_width_setting>
-      <NameColumnWidth column_width="142"></NameColumnWidth>
+      <NameColumnWidth column_width="138"></NameColumnWidth>
       <ValueColumnWidth column_width="58"></ValueColumnWidth>
    </column_width_setting>
    <WVObjectSize size="36" />
@@ -32,6 +32,10 @@
    <wvobject fp_name="/tb_pFREYA_DAQ/pFREYA_DAQ_inst/sel_ckrow" type="logic">
       <obj_property name="ElementShortName">sel_ckrow</obj_property>
       <obj_property name="ObjectShortName">sel_ckrow</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_pFREYA_DAQ/pFREYA_DAQ_inst/pFREYA_IF_inst/sel_cnt" type="array">
+      <obj_property name="ElementShortName">sel_cnt[17:0]</obj_property>
+      <obj_property name="ObjectShortName">sel_cnt[17:0]</obj_property>
    </wvobject>
    <wvobject fp_name="/tb_pFREYA_DAQ/pFREYA_DAQ_inst/uart_data" type="array">
       <obj_property name="ElementShortName">uart_data[7:0]</obj_property>
@@ -76,10 +80,6 @@
    <wvobject fp_name="/tb_pFREYA_DAQ/pFREYA_DAQ_inst/pFREYA_IF_inst/pixel_col" type="array">
       <obj_property name="ElementShortName">pixel_col[17:0]</obj_property>
       <obj_property name="ObjectShortName">pixel_col[17:0]</obj_property>
-   </wvobject>
-   <wvobject fp_name="/tb_pFREYA_DAQ/pFREYA_DAQ_inst/pFREYA_IF_inst/sel_cnt" type="array">
-      <obj_property name="ElementShortName">sel_cnt[17:0]</obj_property>
-      <obj_property name="ObjectShortName">sel_cnt[17:0]</obj_property>
    </wvobject>
    <wvobject fp_name="/tb_pFREYA_DAQ/pFREYA_DAQ_inst/pFREYA_IF_inst/sel_div" type="array">
       <obj_property name="ElementShortName">sel_div[17:0]</obj_property>
