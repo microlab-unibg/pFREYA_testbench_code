@@ -232,6 +232,25 @@ module pFREYA_IF(
     end
 
     // INJ strobe generation
+    // always_ff @(posedge ck, posedge reset) begin: inj_stb_generation
+    //     if (reset) begin
+    //         inj_stb <= 1'b0;
+    //         inj_cnt <= -1;
+    //     end
+    //     else if (inj_div == '0 || sync_time_base_flag) begin
+    //         inj_stb <= 1'b0;
+    //         inj_cnt <= -1;
+    //     end
+    //     else if (inj_cnt == inj_div-1) begin
+    //         inj_stb <= ~inj_stb;
+    //         inj_cnt <= '0;
+    //     end
+    //     else begin
+    //         inj_stb <= inj_stb;
+    //         inj_cnt <= inj_cnt + 1'b1;
+    //     end
+    // end
+    // modified to frame it to csa_reset_n
     always_ff @(posedge ck, posedge reset) begin: inj_stb_generation
         if (reset) begin
             inj_stb <= 1'b0;
@@ -241,13 +260,24 @@ module pFREYA_IF(
             inj_stb <= 1'b0;
             inj_cnt <= -1;
         end
-        else if (inj_cnt == inj_div-1) begin
-            inj_stb <= ~inj_stb;
-            inj_cnt <= '0;
+        else if (csa_reset_n && inj_cnt == inj_div-1) begin
+            // take care of last pulse (if its trimmed out by csa_reset_n)
+            if (inj_stb == 1'b0 && (csa_reset_n_HIGH_div - csa_reset_n_cnt > 2*inj_div)) begin
+                inj_stb <= 1'b1;
+                inj_cnt <= '0;
+            end
+            else begin
+                inj_stb <= 1'b0 & csa_reset_n;
+                inj_cnt <= '0;
+            end
+        end
+        else if (csa_reset_n) begin
+            inj_stb <= inj_stb;
+            inj_cnt <= inj_cnt + 1'b1;
         end
         else begin
             inj_stb <= inj_stb;
-            inj_cnt <= inj_cnt + 1'b1;
+            inj_cnt <= '0;
         end
     end
 

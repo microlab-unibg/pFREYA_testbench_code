@@ -12,15 +12,15 @@
       </db_ref>
    </db_ref_list>
    <zoom_setting>
-      <ZoomStartTime time="135.140598 us"></ZoomStartTime>
-      <ZoomEndTime time="2,645.140599 us"></ZoomEndTime>
-      <Cursor1Time time="753.140598 us"></Cursor1Time>
+      <ZoomStartTime time="1,680,906.128 ns"></ZoomStartTime>
+      <ZoomEndTime time="1,680,990.429 ns"></ZoomEndTime>
+      <Cursor1Time time="1,680,976.128 ns"></Cursor1Time>
    </zoom_setting>
    <column_width_setting>
-      <NameColumnWidth column_width="138"></NameColumnWidth>
+      <NameColumnWidth column_width="130"></NameColumnWidth>
       <ValueColumnWidth column_width="58"></ValueColumnWidth>
    </column_width_setting>
-   <WVObjectSize size="36" />
+   <WVObjectSize size="42" />
    <wvobject fp_name="/tb_pFREYA_DAQ/pFREYA_DAQ_inst/sel_init_n" type="logic">
       <obj_property name="ElementShortName">sel_init_n</obj_property>
       <obj_property name="ObjectShortName">sel_init_n</obj_property>
@@ -164,5 +164,29 @@
    <wvobject fp_name="/tb_pFREYA_DAQ/ser_out_arr" type="array">
       <obj_property name="ElementShortName">ser_out_arr[10:0]</obj_property>
       <obj_property name="ObjectShortName">ser_out_arr[10:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_pFREYA_DAQ/csa_reset_n" type="logic">
+      <obj_property name="ElementShortName">csa_reset_n</obj_property>
+      <obj_property name="ObjectShortName">csa_reset_n</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_pFREYA_DAQ/inj_stb" type="logic">
+      <obj_property name="ElementShortName">inj_stb</obj_property>
+      <obj_property name="ObjectShortName">inj_stb</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_pFREYA_DAQ/pFREYA_DAQ_inst/pFREYA_IF_inst/inj_div" type="array">
+      <obj_property name="ElementShortName">inj_div[17:0]</obj_property>
+      <obj_property name="ObjectShortName">inj_div[17:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_pFREYA_DAQ/pFREYA_DAQ_inst/pFREYA_IF_inst/inj_cnt" type="array">
+      <obj_property name="ElementShortName">inj_cnt[17:0]</obj_property>
+      <obj_property name="ObjectShortName">inj_cnt[17:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_pFREYA_DAQ/pFREYA_DAQ_inst/pFREYA_IF_inst/csa_reset_n_HIGH_div" type="array">
+      <obj_property name="ElementShortName">csa_reset_n_HIGH_div[17:0]</obj_property>
+      <obj_property name="ObjectShortName">csa_reset_n_HIGH_div[17:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_pFREYA_DAQ/pFREYA_DAQ_inst/pFREYA_IF_inst/csa_reset_n_cnt" type="array">
+      <obj_property name="ElementShortName">csa_reset_n_cnt[17:0]</obj_property>
+      <obj_property name="ObjectShortName">csa_reset_n_cnt[17:0]</obj_property>
    </wvobject>
 </wave_config>
