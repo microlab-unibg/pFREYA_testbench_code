@@ -29,6 +29,25 @@ def send_UART(cmd='', data=''):
         ser.write(bitstring_to_bytes(data))
     ser.close()
 
+def read_UART():
+    """Function to read UART commands and data from FPGA
+
+    Parameters
+    ----------
+    None
+
+    Returns
+    ----------
+    int
+        bitstream if everything was ok, 1 otherwise.
+    """
+    ser = serial.Serial(UARTdef.COM_PORT,UARTdef.BAUD_RATE)
+    bitstream = ser.read(2)  # hardcoded for 2 packets (2 bytes)!!!!
+    ser.close()
+    if bitstream:
+        return bitstream
+    return 1
+
 def create_cmd(cmd_name, signal_name):
     """Function to create a command byte starting from the command name and the signal name in string format
 
@@ -292,26 +311,24 @@ def send_READ_DATA(gui):
     Returns
     ----------
     int
-        0 if everything was ok, 1 otherwise.
+        adc_data, SOT if everything was ok, 1 otherwise.
     """
     try:
         cmd = create_cmd(UARTdef.SEND_READ_DATA_CMD, UARTdef.UNUSED_CODE)
         send_UART(cmd,'')
         print('CMD sent: ',cmd)
 
-        cmd = create_cmd(UARTdef.SET_HIGH_CMD, UARTdef.ADC_START_CODE)
-        send_UART(cmd,'')
-        print('CMD sent: ',cmd)
-        for data in create_data(convert_strvar_bin(gui.adc_start['high'],UARTdef.DATA_PACKET_LENGTH)):
-            send_UART('', data)
-            print('Data sent: ',data)
+        # its |1(1)|0(3)|UART(4)||0(1)|UART(7)|
+        bitstream = read_UART()
 
-        cmd = create_cmd(UARTdef.SET_LOW_CMD, UARTdef.ADC_START_CODE)
-        send_UART(cmd,'')
-        print('CMD sent: ',cmd)
-        for data in create_data(convert_strvar_bin(gui.adc_start['low'],UARTdef.DATA_PACKET_LENGTH)):
-            send_UART('', data)
-            print('Data sent: ',data)
+        adc_raw = bytes(2)
+        adc_raw[0] = bitstream & b'\x7F'  # mask first 7 bits
+        adc_raw[1] = (bitstream >> 8) & b'\x0F'
+        adc_data = int.from_bytes(adc_raw, byteorder='little', signed=False)
+
+        sot = (bitstream >> 12) & b'\x01'
+
+        return adc_data, sot
     except Exception:
         print(traceback.format_exc())
         return 1
