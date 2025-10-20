@@ -119,6 +119,7 @@
     `define SEND_DAC_CMD            4'b1000   // for sending the DAC config
     `define SEND_PIXEL_SEL_CMD      4'b1001   // for sending the pixel selection to the asic
     `define READ_DATA_CMD           4'b1010   // for reading the data out of the asic
+    `define SEND_DATA_CMD           4'b1011   // for sending the data to pc
     
     `define SYNC_TIME_BASE_CMD      4'b1110   // for synchronising the signal generated to a same baseline
     `define RESET_FPGA_CMD          4'b1111   // for resetting the FPGA just as with the button

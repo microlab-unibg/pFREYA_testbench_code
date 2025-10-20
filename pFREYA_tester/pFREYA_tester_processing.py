@@ -295,12 +295,9 @@ def send_READ_DATA(gui):
         0 if everything was ok, 1 otherwise.
     """
     try:
-        cmd = create_cmd(UARTdef.SET_DELAY_CMD, UARTdef.ADC_START_CODE)
+        cmd = create_cmd(UARTdef.SEND_READ_DATA_CMD, UARTdef.UNUSED_CODE)
         send_UART(cmd,'')
         print('CMD sent: ',cmd)
-        for data in create_data(convert_strvar_bin(gui.adc_start['delay'],UARTdef.DATA_PACKET_LENGTH)):
-            send_UART('', data)
-            print('Data sent: ',data)
 
         cmd = create_cmd(UARTdef.SET_HIGH_CMD, UARTdef.ADC_START_CODE)
         send_UART(cmd,'')

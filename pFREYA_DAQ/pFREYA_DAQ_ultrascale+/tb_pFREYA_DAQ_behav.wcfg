@@ -12,15 +12,15 @@
       </db_ref>
    </db_ref_list>
    <zoom_setting>
-      <ZoomStartTime time="1,680,906.128 ns"></ZoomStartTime>
-      <ZoomEndTime time="1,680,990.429 ns"></ZoomEndTime>
-      <Cursor1Time time="1,680,976.128 ns"></Cursor1Time>
+      <ZoomStartTime time="1,392.890615 us"></ZoomStartTime>
+      <ZoomEndTime time="1,815.390616 us"></ZoomEndTime>
+      <Cursor1Time time="1,578.390615 us"></Cursor1Time>
    </zoom_setting>
    <column_width_setting>
-      <NameColumnWidth column_width="130"></NameColumnWidth>
+      <NameColumnWidth column_width="128"></NameColumnWidth>
       <ValueColumnWidth column_width="58"></ValueColumnWidth>
    </column_width_setting>
-   <WVObjectSize size="42" />
+   <WVObjectSize size="57" />
    <wvobject fp_name="/tb_pFREYA_DAQ/pFREYA_DAQ_inst/sel_init_n" type="logic">
       <obj_property name="ElementShortName">sel_init_n</obj_property>
       <obj_property name="ObjectShortName">sel_init_n</obj_property>
@@ -188,5 +188,66 @@
    <wvobject fp_name="/tb_pFREYA_DAQ/pFREYA_DAQ_inst/pFREYA_IF_inst/csa_reset_n_cnt" type="array">
       <obj_property name="ElementShortName">csa_reset_n_cnt[17:0]</obj_property>
       <obj_property name="ObjectShortName">csa_reset_n_cnt[17:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_pFREYA_DAQ/pFREYA_DAQ_inst/pFREYA_IF_inst/ser_data" type="array">
+      <obj_property name="ElementShortName">ser_data[10:0]</obj_property>
+      <obj_property name="ObjectShortName">ser_data[10:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_pFREYA_DAQ/pFREYA_DAQ_inst/pFREYA_IF_inst/ser_data_idx" type="array">
+      <obj_property name="ElementShortName">ser_data_idx[7:0]</obj_property>
+      <obj_property name="ObjectShortName">ser_data_idx[7:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_pFREYA_DAQ/pFREYA_DAQ_inst/pFREYA_IF_inst/ser_data_sent" type="logic">
+      <obj_property name="ElementShortName">ser_data_sent</obj_property>
+      <obj_property name="ObjectShortName">ser_data_sent</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_pFREYA_DAQ/pFREYA_DAQ_inst/pFREYA_IF_inst/ser_data_rcv" type="logic">
+      <obj_property name="ElementShortName">ser_data_rcv</obj_property>
+      <obj_property name="ObjectShortName">ser_data_rcv</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_pFREYA_DAQ/pFREYA_DAQ_inst/pFREYA_IF_inst/pc_uart_data" type="array">
+      <obj_property name="ElementShortName">pc_uart_data[7:0]</obj_property>
+      <obj_property name="ObjectShortName">pc_uart_data[7:0]</obj_property>
+      <obj_property name="isExpanded"></obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_pFREYA_DAQ/pFREYA_DAQ_inst/pFREYA_IF_inst/pc_uart_valid" type="logic">
+      <obj_property name="ElementShortName">pc_uart_valid</obj_property>
+      <obj_property name="ObjectShortName">pc_uart_valid</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_pFREYA_DAQ/pFREYA_DAQ_inst/pFREYA_IF_inst/pc_uart_done" type="logic">
+      <obj_property name="ElementShortName">pc_uart_done</obj_property>
+      <obj_property name="ObjectShortName">pc_uart_done</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_pFREYA_DAQ/pFREYA_DAQ_inst/pc_uart_active" type="logic">
+      <obj_property name="ElementShortName">pc_uart_active</obj_property>
+      <obj_property name="ObjectShortName">pc_uart_active</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_pFREYA_DAQ/pFREYA_DAQ_inst/pFREYA_IF_inst/send_mask" type="logic">
+      <obj_property name="ElementShortName">send_mask</obj_property>
+      <obj_property name="ObjectShortName">send_mask</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_pFREYA_DAQ/pFREYA_DAQ_inst/daq_ck" type="logic">
+      <obj_property name="ElementShortName">daq_ck</obj_property>
+      <obj_property name="ObjectShortName">daq_ck</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_pFREYA_DAQ/tx_ser" type="logic">
+      <obj_property name="ElementShortName">tx_ser</obj_property>
+      <obj_property name="ObjectShortName">tx_ser</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_pFREYA_DAQ/rx_ser" type="logic">
+      <obj_property name="ElementShortName">rx_ser</obj_property>
+      <obj_property name="ObjectShortName">rx_ser</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_pFREYA_DAQ/pFREYA_DAQ_inst/pFREYA_IF_inst/setting_uart" type="logic">
+      <obj_property name="ElementShortName">setting_uart</obj_property>
+      <obj_property name="ObjectShortName">setting_uart</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_pFREYA_DAQ/pFREYA_DAQ_inst/pFREYA_IF_inst/sending_uart" type="logic">
+      <obj_property name="ElementShortName">sending_uart</obj_property>
+      <obj_property name="ObjectShortName">sending_uart</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_pFREYA_DAQ/pFREYA_DAQ_inst/pFREYA_IF_inst/last_sent" type="logic">
+      <obj_property name="ElementShortName">last_sent</obj_property>
+      <obj_property name="ObjectShortName">last_sent</obj_property>
    </wvobject>
 </wave_config>

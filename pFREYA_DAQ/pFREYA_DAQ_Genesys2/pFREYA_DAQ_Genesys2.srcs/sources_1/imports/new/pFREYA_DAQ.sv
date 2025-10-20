@@ -63,11 +63,9 @@ module pFREYA_DAQ
     // Base clock 200 MHz, UART 10 MHz. It's 10 not 20 cause its counting just on the rising edge, therefore counting to 1 is the same as dividing by 2.
     //parameter uart_div = 10;
 
-    logic [UART_PACKET_SIZE-1:0] uart_data;
-    logic uart_valid;
-    logic tx_done, tx_active;
-    logic tx_dv;
-    logic [UART_PACKET_SIZE-1:0] tx_byte;
+    logic [UART_PACKET_SIZE-1:0] uart_data, pc_uart_data;
+    logic uart_valid, pc_uart_valid;
+    logic pc_uart_done, pc_uart_active;
 
     // clock wizard
     wire locked;
@@ -82,11 +80,11 @@ module pFREYA_DAQ
         .rx_ser     (rx_ser),
         .rx_dv      (uart_valid),
         .rx_byte    (uart_data),
-        .tx_dv      (tx_dv),
-        .tx_byte    (tx_byte),
-        .tx_active  (tx_active),
+        .tx_dv      (pc_uart_valid),
+        .tx_byte    (pc_uart_data),
+        .tx_active  (pc_uart_active),
         .tx_ser     (tx_ser),
-        .tx_done    (tx_done)
+        .tx_done    (pc_uart_done)
     );
 
     // pFREYA_ASIC interface
@@ -113,7 +111,11 @@ module pFREYA_DAQ
         .ck                 (daq_ck),
         .reset              (btn_reset),
         .uart_data          (uart_data),
-        .uart_valid         (uart_valid)
+        .uart_valid         (uart_valid),
+        .pc_uart_data       (pc_uart_data),
+        .pc_uart_valid      (pc_uart_valid),
+        .pc_uart_active     (pc_uart_active),
+        .pc_uart_done       (pc_uart_done)
     );
 
     clk_wiz_clocks clk_wiz_clocks_inst (
@@ -152,14 +154,14 @@ module pFREYA_DAQ
         .probe18(uart_valid) // input wire [0:0]  probe18 
     );
 
-    always_ff @(posedge daq_ck, posedge btn_reset) begin: reset_daq
-        if (btn_reset) begin
-            // reset all registers
-            tx_dv <= 1'b0;
-            tx_byte <= 1'b0;
-            //tx_ser <= 1'b1;
-        end
-    end
+    // always_ff @(posedge daq_ck, posedge btn_reset) begin: reset_daq
+    //     if (btn_reset) begin
+    //         // reset all registers
+    //         // pc_uart_data <= '0;
+    //         // pc_uart_valid <= 1'b0;
+    //         //tx_ser <= 1'b1;
+    //     end
+    // end
 
     always_ff @(posedge daq_ck, posedge btn_reset) begin: csa_reset_n_out_creation
         if (btn_reset)

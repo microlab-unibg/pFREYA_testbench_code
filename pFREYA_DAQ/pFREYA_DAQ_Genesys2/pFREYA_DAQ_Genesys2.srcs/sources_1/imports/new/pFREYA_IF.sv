@@ -46,7 +46,11 @@ module pFREYA_IF(
         input  logic reset,
         // for UART
         input  logic [UART_PACKET_SIZE-1:0] uart_data,
-        input  logic uart_valid
+        input  logic uart_valid,
+        output logic [UART_PACKET_SIZE-1:0] pc_uart_data,
+        output logic pc_uart_valid,
+        input  logic pc_uart_active,
+        input  logic pc_uart_done
     );
 
     // state machine code
@@ -59,6 +63,7 @@ module pFREYA_IF(
         CMD_SET_LONG,
         CMD_SET,
         CMD_READ_DATA,
+        CMD_SEND_DATA,
         CMD_SYNC_TIME_BASE,
         RESET
     } state, next;
@@ -90,11 +95,10 @@ module pFREYA_IF(
     logic slow_ctrl_reset_request = 1'b0;
     // for serialiser
     logic ser_ck_mask = 1'b0;
+    logic send_mask = 1'b0;
     // for sh inf (TS)
     logic sh_phi1d_inf_mask = 1'b0;
     logic slow_ctrl_in_mask = 1'b0;
-    logic sh_phi1d_sup = 1'b0;
-    logic sh_phi1d_inf = 1'b0;
     // fast control timing
     // generated with counter that reach a divisor, where the divisor changes based on flag
     // flag value is 0 for delay, 1 for HIGH, 2 for LOW (the actual polarity is in the name of the signal)
@@ -131,6 +135,7 @@ module pFREYA_IF(
     logic sel_ckrow_sent = 1'b0;
     logic ser_shift_done = 1'b0;
     logic ser_data_rcv = 1'b0;
+    logic ser_data_sent = 1'b0;
     logic sync_time_base_flag = 1'b0;
     // data
     logic [PACKET_INDEX_N-1:0] data_packet_index_send= '0;
@@ -158,6 +163,10 @@ module pFREYA_IF(
     logic [CMD_CODE_SIZE-1:0] cmd= '0;
     // check UART rising edge
     logic uart_valid_last;
+    // flag for sending uart
+    logic setting_uart;
+    logic sending_uart;
+    logic last_sent;
     // check cmd or data
     logic cmd_available;
     logic data_available;
@@ -534,6 +543,9 @@ module pFREYA_IF(
                         `READ_DATA_CMD:
                             // two step here, shift data and then read data
                             next <= CMD_READ_DATA;
+                        // next send data to pc
+                        `SEND_DATA_CMD:
+                            next <= CMD_SEND_DATA;
                         // next sync time base
                         `SYNC_TIME_BASE_CMD:
                             next <= CMD_SYNC_TIME_BASE;
@@ -595,6 +607,11 @@ module pFREYA_IF(
                     next <= CMD_ERR;
                 else
                     next <= CMD_READ_DATA;
+            CMD_SEND_DATA:
+                if (ser_data_sent)
+                    next <= CMD_EVAL;
+                else
+                    next <= CMD_SEND_DATA;
             CMD_SYNC_TIME_BASE:
                 next <= CMD_EVAL;
             default:
@@ -1000,7 +1017,6 @@ module pFREYA_IF(
                         sel_ck_mask <= 1'b1;
                         sel_init_n <= 1'b0;
                     end
-
                 end
                 CMD_READ_DATA: begin
                     if (!ser_shift_done && !ser_data_rcv) begin
@@ -1019,6 +1035,14 @@ module pFREYA_IF(
                         ser_read <= 1'b0;
                         ser_ck_mask <= 1'b0;
                         ser_reset_n <= 1'b0;
+                    end
+                end
+                CMD_SEND_DATA: begin
+                    if (!ser_data_sent) begin
+                        send_mask <= 1'b1;
+                    end
+                    else begin
+                        send_mask <= 1'b0;
                     end
                 end
                 CMD_SYNC_TIME_BASE:
@@ -1203,8 +1227,8 @@ module pFREYA_IF(
         if (reset) begin
             ser_read <= 1'b0;
             ser_reset_n <= 1'b0;
-            ser_data <= 0;
-            ser_data_idx <= 0;
+            ser_data <= '0;
+            ser_data_idx <= '0;
             ser_shift_done <= 1'b0;
             ser_data_rcv <= 1'b0;
         end
@@ -1214,8 +1238,8 @@ module pFREYA_IF(
                 // if nothing sent or done
                 if (!ser_data_rcv && !ser_shift_done) begin
                     // let one ck hit
-                    ser_data <= 0;
-                    ser_data_idx <= 0;
+                    ser_data <= '0;
+                    ser_data_idx <= '0;
                 end
                 else if (!ser_data_rcv && ser_shift_done) begin    
                     // saving data from shift registers on negative edge so as to ensure data is ready
@@ -1254,6 +1278,87 @@ module pFREYA_IF(
                     ser_shift_done <= ser_shift_done;
                     ser_data_rcv <= ser_data_rcv;
                 end
+            end
+        end
+    end
+
+    always_ff @(posedge ck, posedge reset) begin: pc_ser_send_data
+        if (reset) begin
+            ser_data_sent <= 1'b0;
+            ser_data_idx <= '0;
+            pc_uart_data <= '0;
+            pc_uart_valid <= 1'b0;
+            setting_uart <= 1'b0;
+            sending_uart <= 1'b0;
+            last_sent <= 1'b0;
+        end
+        else if (send_mask) begin
+            if (!ser_data_sent && !sending_uart && !setting_uart) begin
+                pc_uart_valid <= 1'b0;
+                setting_uart <= 1'b1;
+                sending_uart <= 1'b0;
+                ser_data_idx <= '0;
+                last_sent <= 1'b0;
+            end
+            else if (!ser_data_sent && !sending_uart && setting_uart) begin
+                // for next step
+                setting_uart <= 1'b0;
+                sending_uart <= 1'b1;
+                // for enabling tx
+                pc_uart_valid <= 1'b1;
+                if (ser_data_idx + UART_PACKET_SIZE - 2 >= SER_DATA_REG_LENGTH) begin
+                    // last packet
+                    pc_uart_data <= 8'b0000_0000 | {ser_data[ser_data_idx +: SER_DATA_REG_LENGTH - UART_PACKET_SIZE+1], LAST_UART_PACKET};
+                    ser_data_idx <= '0;
+                    last_sent <= 1'b1;
+                end
+                else begin
+                    // not last packet
+                    pc_uart_data <= {ser_data[ser_data_idx +: UART_PACKET_SIZE-1], NOTLAST_UART_PACKET};
+                    ser_data_idx <= ser_data_idx + UART_PACKET_SIZE - 1;
+                    last_sent <= 1'b0;
+                end
+            end
+            else if (!ser_data_sent && sending_uart && !setting_uart) begin
+                if (pc_uart_active) begin
+                    pc_uart_valid <= 1'b0;
+                end
+                else if (pc_uart_done) begin
+                    // for next step
+                    setting_uart <= 1'b1;
+                    sending_uart <= 1'b1;
+                end
+                else begin
+                    setting_uart <= setting_uart;
+                    sending_uart <= sending_uart;
+                end
+            end
+            else if (!ser_data_sent && sending_uart && setting_uart) begin
+                if (!pc_uart_done) begin
+                    if (last_sent) begin
+                        ser_data_sent <= 1'b1;
+                        setting_uart <= 1'b0;
+                        sending_uart <= 1'b0;
+                    end
+                    else begin
+                        ser_data_sent <= 1'b0;
+                        setting_uart <= 1'b1;
+                        sending_uart <= 1'b0;
+                    end
+                end else begin
+                    ser_data_sent <= ser_data_sent;
+                    setting_uart <= setting_uart;
+                    sending_uart <= sending_uart;
+                end
+            end
+            else if (ser_data_sent) begin
+                pc_uart_valid <= 1'b0;
+                pc_uart_data <= '0;
+                ser_data_idx <= '0;
+                setting_uart <= 1'b0;
+                sending_uart <= 1'b0;
+                last_sent <= 1'b0;
+                ser_data_sent <= 1'b1;
             end
         end
     end
