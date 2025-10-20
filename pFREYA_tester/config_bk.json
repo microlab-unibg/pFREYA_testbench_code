@@ -15,7 +15,7 @@
         "level": "420"
     },
     "INJ": {
-        "current_level": "-.4"
+        "current_level": "-.8"
     },
     "slow_ctrl": {
         "csa_mode_n": "01",
@@ -32,7 +32,7 @@
         "csa_reset_n": {
             "delay": "444",
             "high": "60",
-            "low": "9940"
+            "low": "1940"
         },
         "sh_phi1d_inf": {
             "delay": "1500",
@@ -41,13 +41,13 @@
         },
         "sh_phi1d_sup": {
             "delay": "1500",
-            "high": "1090",
-            "low": "910"
+            "high": "1058",
+            "low": "942"
         },
         "adc_start": {
-            "delay": "504",
-            "high": "2",
-            "low": "9998"
+            "delay": "262140",
+            "high": "262140",
+            "low": "262140"
         },
         "ser_reset_n": {
             "delay": "262140",
