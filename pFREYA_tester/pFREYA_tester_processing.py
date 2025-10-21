@@ -318,6 +318,10 @@ def send_READ_DATA(gui):
         send_UART(cmd,'')
         print('CMD sent: ',cmd)
 
+        cmd = create_cmd(UARTdef.SEND_SEND_DATA_CMD, UARTdef.UNUSED_CODE)
+        send_UART(cmd,'')
+        print('CMD sent: ',cmd)
+        
         # its |1(1)|0(3)|UART(4)||0(1)|UART(7)|
         bitstream = read_UART()
 
