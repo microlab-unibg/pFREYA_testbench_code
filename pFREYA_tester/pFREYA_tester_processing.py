@@ -42,7 +42,9 @@ def read_UART():
         bitstream if everything was ok, 1 otherwise.
     """
     ser = serial.Serial(UARTdef.COM_PORT,UARTdef.BAUD_RATE)
-    bitstream = ser.read(2)  # hardcoded for 2 packets (2 bytes)!!!!
+    bitstream = bytes(2)
+    bitstream[0] = ser.read(1)  # hardcoded for 1 packet (1 byte)!!!!
+    bitstream[1] = ser.read(1)  # hardcoded for 1 packet (1 byte)!!!!
     ser.close()
     if bitstream:
         return bitstream
@@ -326,11 +328,11 @@ def send_READ_DATA(gui):
         bitstream = read_UART()
 
         adc_raw = bytes(2)
-        adc_raw[0] = bitstream & b'\x7F'  # mask first 7 bits
-        adc_raw[1] = (bitstream >> 8) & b'\x0F'
+        adc_raw[0] = bitstream[0] & b'\x7F'  # mask first 7 bits
+        adc_raw[1] = bitstream[1] & b'\x07'# mask first 3 bits
         adc_data = int.from_bytes(adc_raw, byteorder='little', signed=False)
 
-        sot = (bitstream >> 12) & b'\x01'
+        sot = (bitstream[1] >> 3) & b'\x01'
 
         return adc_data, sot
     except Exception:
