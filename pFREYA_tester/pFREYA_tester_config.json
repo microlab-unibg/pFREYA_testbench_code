@@ -2,10 +2,10 @@
     "__pFREYA_GUI__": true,
     "clocks": {
         "slow_ck": "4000",
-        "sel_ck": "262140",
-        "adc_ck": "262140",
+        "sel_ck": "4000",
+        "adc_ck": "4",
         "inj_stb": "1",
-        "ser_ck": "262140",
+        "ser_ck": "4000",
         "dac_sck": "262140"
     },
     "DAC": {
@@ -15,7 +15,7 @@
         "level": "420"
     },
     "INJ": {
-        "current_level": "-.4"
+        "current_level": "-2"
     },
     "slow_ctrl": {
         "csa_mode_n": "01",
@@ -30,19 +30,19 @@
     },
     "asic_ctrl": {
         "csa_reset_n": {
-            "delay": "444",
+            "delay": "104",
             "high": "60",
             "low": "9940"
         },
         "sh_phi1d_inf": {
-            "delay": "1500",
-            "high": "1000",
-            "low": "1000"
+            "delay": "1204",
+            "high": "8956",
+            "low": "1044"
         },
         "sh_phi1d_sup": {
-            "delay": "1500",
-            "high": "1090",
-            "low": "910"
+            "delay": "1204",
+            "high": "9040",
+            "low": "960"
         },
         "adc_start": {
             "delay": "504",
