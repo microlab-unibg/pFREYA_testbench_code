@@ -135,7 +135,7 @@ def config(channel: str, lemo: str, n_steps: int, cfg_bits: list, cfg_inst: bool
             offset_charge = 8.5e-15 # C *tentative
             #min_current = 0.03e-6 # A for active probes
             min_current = .13e-6 # A
-            max_current = 1.64e-6 #1.6e-6 # A
+            max_current = 1.5e-6# for S/H#1.64e-6 #1.6e-6 # A
             #max_current = .75e-6 # active probes
             corr_fact = 1 #105.8/103.2
         case [0,0]:
