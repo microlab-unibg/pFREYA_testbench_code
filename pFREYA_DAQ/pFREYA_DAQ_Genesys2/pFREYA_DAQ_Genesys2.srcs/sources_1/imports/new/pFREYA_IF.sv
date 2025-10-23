@@ -220,13 +220,13 @@ module pFREYA_IF(
         end
     end
 
-    // ADC clock generation
+    // ADC clock generation (only 11 clocks per acquisition, not implemented but continuous)
     always_ff @(posedge ck, posedge reset) begin: adc_ck_generation
         if (reset) begin
             adc_ck <= 1'b0;
             adc_cnt <= -1;
         end
-        else if (!adc_start || adc_div == '0 || sync_time_base_flag) begin
+        else if (adc_div == '0 || sync_time_base_flag) begin
             adc_ck <= 1'b0;
             adc_cnt <= -1;
         end
