@@ -119,8 +119,8 @@ SER_RESET_N_CODE       = '100'
 SER_READ_CODE          = '101'
 
 # Pixel selection
-PIXEL_ROW_CODE         = '000'
-PIXEL_COL_CODE         = '001'
+PIXEL_ROW_CODE         = '110'
+PIXEL_COL_CODE         = '111'
 
 # cmd padding
 CMD_PADDING            = '0'
