@@ -12,15 +12,15 @@
       </db_ref>
    </db_ref_list>
    <zoom_setting>
-      <ZoomStartTime time="752,913.594 ns"></ZoomStartTime>
-      <ZoomEndTime time="753,762.595 ns"></ZoomEndTime>
-      <Cursor1Time time="753,120.594 ns"></Cursor1Time>
+      <ZoomStartTime time="0.003727653 ms"></ZoomStartTime>
+      <ZoomEndTime time="6.103727654 ms"></ZoomEndTime>
+      <Cursor1Time time="2.313727653 ms"></Cursor1Time>
    </zoom_setting>
    <column_width_setting>
-      <NameColumnWidth column_width="124"></NameColumnWidth>
-      <ValueColumnWidth column_width="58"></ValueColumnWidth>
+      <NameColumnWidth column_width="138"></NameColumnWidth>
+      <ValueColumnWidth column_width="68"></ValueColumnWidth>
    </column_width_setting>
-   <WVObjectSize size="64" />
+   <WVObjectSize size="66" />
    <wvobject fp_name="/tb_pFREYA_DAQ/pFREYA_DAQ_inst/sel_init_n" type="logic">
       <obj_property name="ElementShortName">sel_init_n</obj_property>
       <obj_property name="ObjectShortName">sel_init_n</obj_property>
@@ -276,5 +276,13 @@
    <wvobject fp_name="/tb_pFREYA_DAQ/pFREYA_DAQ_inst/pFREYA_IF_inst/sel_ckrow" type="logic">
       <obj_property name="ElementShortName">sel_ckrow</obj_property>
       <obj_property name="ObjectShortName">sel_ckrow</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_pFREYA_DAQ/adc_ck" type="logic">
+      <obj_property name="ElementShortName">adc_ck</obj_property>
+      <obj_property name="ObjectShortName">adc_ck</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_pFREYA_DAQ/adc_start" type="logic">
+      <obj_property name="ElementShortName">adc_start</obj_property>
+      <obj_property name="ObjectShortName">adc_start</obj_property>
    </wvobject>
 </wave_config>
