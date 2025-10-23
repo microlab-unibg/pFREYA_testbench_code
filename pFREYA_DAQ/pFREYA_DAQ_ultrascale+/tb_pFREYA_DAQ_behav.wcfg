@@ -12,15 +12,15 @@
       </db_ref>
    </db_ref_list>
    <zoom_setting>
-      <ZoomStartTime time="1,392.890615 us"></ZoomStartTime>
-      <ZoomEndTime time="1,815.390616 us"></ZoomEndTime>
-      <Cursor1Time time="1,578.390615 us"></Cursor1Time>
+      <ZoomStartTime time="752,913.594 ns"></ZoomStartTime>
+      <ZoomEndTime time="753,762.595 ns"></ZoomEndTime>
+      <Cursor1Time time="753,120.594 ns"></Cursor1Time>
    </zoom_setting>
    <column_width_setting>
-      <NameColumnWidth column_width="128"></NameColumnWidth>
+      <NameColumnWidth column_width="124"></NameColumnWidth>
       <ValueColumnWidth column_width="58"></ValueColumnWidth>
    </column_width_setting>
-   <WVObjectSize size="57" />
+   <WVObjectSize size="64" />
    <wvobject fp_name="/tb_pFREYA_DAQ/pFREYA_DAQ_inst/sel_init_n" type="logic">
       <obj_property name="ElementShortName">sel_init_n</obj_property>
       <obj_property name="ObjectShortName">sel_init_n</obj_property>
@@ -208,7 +208,6 @@
    <wvobject fp_name="/tb_pFREYA_DAQ/pFREYA_DAQ_inst/pFREYA_IF_inst/pc_uart_data" type="array">
       <obj_property name="ElementShortName">pc_uart_data[7:0]</obj_property>
       <obj_property name="ObjectShortName">pc_uart_data[7:0]</obj_property>
-      <obj_property name="isExpanded"></obj_property>
    </wvobject>
    <wvobject fp_name="/tb_pFREYA_DAQ/pFREYA_DAQ_inst/pFREYA_IF_inst/pc_uart_valid" type="logic">
       <obj_property name="ElementShortName">pc_uart_valid</obj_property>
@@ -249,5 +248,33 @@
    <wvobject fp_name="/tb_pFREYA_DAQ/pFREYA_DAQ_inst/pFREYA_IF_inst/last_sent" type="logic">
       <obj_property name="ElementShortName">last_sent</obj_property>
       <obj_property name="ObjectShortName">last_sent</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_pFREYA_DAQ/pFREYA_DAQ_inst/pFREYA_IF_inst/sel_ckcol_sent" type="logic">
+      <obj_property name="ElementShortName">sel_ckcol_sent</obj_property>
+      <obj_property name="ObjectShortName">sel_ckcol_sent</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_pFREYA_DAQ/pFREYA_DAQ_inst/pFREYA_IF_inst/sel_ckrow_sent" type="logic">
+      <obj_property name="ElementShortName">sel_ckrow_sent</obj_property>
+      <obj_property name="ObjectShortName">sel_ckrow_sent</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_pFREYA_DAQ/pFREYA_DAQ_inst/pFREYA_IF_inst/sel_reset_request" type="logic">
+      <obj_property name="ElementShortName">sel_reset_request</obj_property>
+      <obj_property name="ObjectShortName">sel_reset_request</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_pFREYA_DAQ/pFREYA_DAQ_inst/pFREYA_IF_inst/sel_ck_mask" type="logic">
+      <obj_property name="ElementShortName">sel_ck_mask</obj_property>
+      <obj_property name="ObjectShortName">sel_ck_mask</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_pFREYA_DAQ/pFREYA_DAQ_inst/pFREYA_IF_inst/sel_ck" type="logic">
+      <obj_property name="ElementShortName">sel_ck</obj_property>
+      <obj_property name="ObjectShortName">sel_ck</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_pFREYA_DAQ/pFREYA_DAQ_inst/pFREYA_IF_inst/sel_ckcol" type="logic">
+      <obj_property name="ElementShortName">sel_ckcol</obj_property>
+      <obj_property name="ObjectShortName">sel_ckcol</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_pFREYA_DAQ/pFREYA_DAQ_inst/pFREYA_IF_inst/sel_ckrow" type="logic">
+      <obj_property name="ElementShortName">sel_ckrow</obj_property>
+      <obj_property name="ObjectShortName">sel_ckrow</obj_property>
    </wvobject>
 </wave_config>

@@ -151,8 +151,8 @@
     `define SER_READ_CODE          3'b101
 
     // Pixel selection
-    `define PIXEL_ROW_CODE         3'b000
-    `define PIXEL_COL_CODE         3'b001
+    `define PIXEL_ROW_CODE         3'b110
+    `define PIXEL_COL_CODE         3'b111
 
     // cmd padding
     `define CMD_PADDING            1'b0

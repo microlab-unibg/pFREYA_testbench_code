@@ -963,23 +963,21 @@ module pFREYA_IF(
                             `SET_PIXEL_CMD: begin
                                 sel_reset_request <= 1'b0;
                                 // set row/col number
-                                case (signal)
-                                    `PIXEL_ROW_CODE:
-                                        pixel_row[data_packet_index_receive +: DATA_UART_DATA_POS+1] <= uart_data[DATA_START_POS:DATA_END_POS];
-                                    `PIXEL_COL_CODE:
-                                        pixel_col[data_packet_index_receive +: DATA_UART_DATA_POS+1] <= uart_data[DATA_START_POS:DATA_END_POS];
-                                    default: begin
-                                        pixel_row <= pixel_row;
-                                        pixel_col <= pixel_col;
+                                if (!uart_valid & uart_valid_last) begin
+                                    case (signal)
+                                        `PIXEL_ROW_CODE:
+                                            pixel_row[data_packet_index_receive +: DATA_UART_DATA_POS+1] <= uart_data[DATA_START_POS:DATA_END_POS];
+                                        `PIXEL_COL_CODE:
+                                            pixel_col[data_packet_index_receive +: DATA_UART_DATA_POS+1] <= uart_data[DATA_START_POS:DATA_END_POS];
+                                    endcase
+                                    if (uart_data[DATA_UART_DATA_POS+1] == LAST_UART_PACKET) begin
+                                        data_packet_index_receive <= '0;
+                                        data_packet_available <= 1'b1;
+                                    end else begin
+                                        data_packet[data_packet_index_receive +: DATA_UART_DATA_POS+1] <= uart_data[DATA_UART_DATA_POS:DATA_END_POS];
+                                        data_packet_index_receive <= data_packet_index_receive + DATA_UART_DATA_POS + 1; // 6 bit per time
+                                        data_packet_available <= 1'b0;
                                     end
-                                endcase
-                                if (uart_data[DATA_UART_DATA_POS+1] == LAST_UART_PACKET) begin
-                                    data_packet_index_receive <= '0;
-                                    data_packet_available <= 1'b1;
-                                end else begin
-                                    data_packet[data_packet_index_receive +: DATA_UART_DATA_POS+1] <= uart_data[DATA_UART_DATA_POS:DATA_END_POS];
-                                    data_packet_index_receive <= data_packet_index_receive + DATA_UART_DATA_POS + 1; // 6 bit per time
-                                    data_packet_available <= 1'b0;
                                 end
                             end
                         endcase
