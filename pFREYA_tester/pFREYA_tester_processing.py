@@ -464,6 +464,7 @@ def send_pixel(gui):
         # send pixel sel
         cmd = create_cmd(UARTdef.SEND_PIXEL_SEL_CMD, UARTdef.UNUSED_CODE)
         send_UART(cmd)
+        print('CMD sent: ',cmd)
         time.sleep(1)
     except Exception:
         print(traceback.format_exc())
