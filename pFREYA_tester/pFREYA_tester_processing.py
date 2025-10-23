@@ -446,16 +446,20 @@ def send_pixel(gui):
         pass
         # set row and col
         cmd = create_cmd(UARTdef.SET_PIXEL_CMD, UARTdef.PIXEL_ROW_CODE)
-        data = create_data(convert_strvar_bin(gui.pixel_row,UARTdef.DATA_PACKET_LENGTH))
-        send_UART(cmd, data)
-        print('CMD sent: ',cmd,'Data sent: ',data)
-        time.sleep(1)
+        send_UART(cmd)
+        print('CMD sent: ',cmd)
+        for data in create_data(convert_strvar_bin(gui.pixel_row,UARTdef.DATA_PACKET_LENGTH)):
+            send_UART('', data)
+            print('Data sent: ',data)
+            time.sleep(0.5)
 
         cmd = create_cmd(UARTdef.SET_PIXEL_CMD, UARTdef.PIXEL_COL_CODE)
-        data = create_data(convert_strvar_bin(gui.pixel_col,UARTdef.DATA_PACKET_LENGTH))
-        send_UART(cmd, data)
-        print('CMD sent: ',cmd,'Data sent: ',data)
-        time.sleep(1)
+        send_UART(cmd)
+        print('CMD sent: ',cmd)
+        for data in create_data(convert_strvar_bin(gui.pixel_col,UARTdef.DATA_PACKET_LENGTH)):
+            send_UART('', data)
+            print('Data sent: ',data)
+            time.sleep(0.5)
 
         # send pixel sel
         cmd = create_cmd(UARTdef.SEND_PIXEL_SEL_CMD, UARTdef.UNUSED_CODE)

@@ -104,8 +104,8 @@ for item in config_bits_list:
     #config.lecroy.write(f'C2:CRS HREL')
     # reset inj
     tdiv = 1e-6
-    div_s = .3052e-6/tdiv + 10/2 - 1.46e-6/tdiv
-    div_e = 1.5246e-6/tdiv + 10/2 - 1.46e-6/tdiv
+    div_s = .1e-6/tdiv + 10/2 - 1.46e-6/tdiv
+    div_e = 2.5e-6/tdiv + 10/2 - 1.46e-6/tdiv
     config.lecroy.write(f'C1:CRST HDIF,{div_s},HREF,{div_e}')
     channel_name = config.channel_name
     lemo_name = config.lemo_name

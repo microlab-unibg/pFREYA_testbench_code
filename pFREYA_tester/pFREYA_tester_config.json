@@ -15,7 +15,7 @@
         "level": "420"
     },
     "INJ": {
-        "current_level": "-2"
+        "current_level": "-1"
     },
     "slow_ctrl": {
         "csa_mode_n": "01",
@@ -25,7 +25,7 @@
         "inj_mode_n": "1"
     },
     "pixel_sel": {
-        "pixel_row": "3",
+        "pixel_row": "4",
         "pixel_col": "1"
     },
     "asic_ctrl": {
