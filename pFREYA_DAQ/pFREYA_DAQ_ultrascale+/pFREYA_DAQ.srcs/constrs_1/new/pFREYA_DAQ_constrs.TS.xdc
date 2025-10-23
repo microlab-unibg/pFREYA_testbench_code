@@ -2,7 +2,7 @@
 # In TS boards, due to DRIVER_SOT_P2 pinoout is different
 set_property PACKAGE_PIN Y17 [get_ports dac_sdin]
 set_property PACKAGE_PIN AA17 [get_ports dac_sync_n]
-set_property PACKAGE_PIN AB17 [get_ports dac_sck]
+set_property PACKAGE_PIN AA18 [get_ports dac_sck]
 set_property PACKAGE_PIN AC17 [get_ports sel_ckcol]
 set_property PACKAGE_PIN AA20 [get_ports sel_init_n]
 set_property PACKAGE_PIN AB20 [get_ports sel_ckrow]
@@ -12,7 +12,8 @@ set_property PACKAGE_PIN AA19 [get_ports ser_read]
 set_property PACKAGE_PIN AE16 [get_ports ser_ck]
 set_property PACKAGE_PIN AC22 [get_ports inj_stb]
 set_property PACKAGE_PIN Y18 [get_ports csa_reset_n]
-set_property PACKAGE_PIN AA18 [get_ports adc_ck]
+# PIN AA18 (original) seems not to work. Switched with DAC_SCK pin AB17
+set_property PACKAGE_PIN AB17 [get_ports adc_ck]
 set_property PACKAGE_PIN AB24 [get_ports adc_start]
 #======================================================================================
 # Due to unproper layout AD26 (slow_ctrl_in) and AC26 (sh_phi1d_inf) are shorted on PCB
