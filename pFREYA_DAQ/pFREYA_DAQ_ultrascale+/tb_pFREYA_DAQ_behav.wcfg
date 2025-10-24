@@ -12,15 +12,15 @@
       </db_ref>
    </db_ref_list>
    <zoom_setting>
-      <ZoomStartTime time="0.003727653 ms"></ZoomStartTime>
-      <ZoomEndTime time="6.103727654 ms"></ZoomEndTime>
-      <Cursor1Time time="2.313727653 ms"></Cursor1Time>
+      <ZoomStartTime time="4,443,799.162 ns"></ZoomStartTime>
+      <ZoomEndTime time="4,444,120.163 ns"></ZoomEndTime>
+      <Cursor1Time time="4,444,099.162 ns"></Cursor1Time>
    </zoom_setting>
    <column_width_setting>
-      <NameColumnWidth column_width="138"></NameColumnWidth>
-      <ValueColumnWidth column_width="68"></ValueColumnWidth>
+      <NameColumnWidth column_width="116"></NameColumnWidth>
+      <ValueColumnWidth column_width="58"></ValueColumnWidth>
    </column_width_setting>
-   <WVObjectSize size="66" />
+   <WVObjectSize size="65" />
    <wvobject fp_name="/tb_pFREYA_DAQ/pFREYA_DAQ_inst/sel_init_n" type="logic">
       <obj_property name="ElementShortName">sel_init_n</obj_property>
       <obj_property name="ObjectShortName">sel_init_n</obj_property>
@@ -40,6 +40,7 @@
    <wvobject fp_name="/tb_pFREYA_DAQ/pFREYA_DAQ_inst/uart_data" type="array">
       <obj_property name="ElementShortName">uart_data[7:0]</obj_property>
       <obj_property name="ObjectShortName">uart_data[7:0]</obj_property>
+      <obj_property name="isExpanded"></obj_property>
    </wvobject>
    <wvobject fp_name="/tb_pFREYA_DAQ/pFREYA_DAQ_inst/uart_valid" type="logic">
       <obj_property name="ElementShortName">uart_valid</obj_property>
@@ -72,38 +73,6 @@
    <wvobject fp_name="/tb_pFREYA_DAQ/pFREYA_DAQ_inst/pFREYA_IF_inst/state" type="array">
       <obj_property name="ElementShortName">state[9:0]</obj_property>
       <obj_property name="ObjectShortName">state[9:0]</obj_property>
-   </wvobject>
-   <wvobject fp_name="/tb_pFREYA_DAQ/pFREYA_DAQ_inst/pFREYA_IF_inst/pixel_row" type="array">
-      <obj_property name="ElementShortName">pixel_row[17:0]</obj_property>
-      <obj_property name="ObjectShortName">pixel_row[17:0]</obj_property>
-   </wvobject>
-   <wvobject fp_name="/tb_pFREYA_DAQ/pFREYA_DAQ_inst/pFREYA_IF_inst/pixel_col" type="array">
-      <obj_property name="ElementShortName">pixel_col[17:0]</obj_property>
-      <obj_property name="ObjectShortName">pixel_col[17:0]</obj_property>
-   </wvobject>
-   <wvobject fp_name="/tb_pFREYA_DAQ/pFREYA_DAQ_inst/pFREYA_IF_inst/sel_div" type="array">
-      <obj_property name="ElementShortName">sel_div[17:0]</obj_property>
-      <obj_property name="ObjectShortName">sel_div[17:0]</obj_property>
-   </wvobject>
-   <wvobject fp_name="/tb_pFREYA_DAQ/pFREYA_DAQ_inst/pFREYA_IF_inst/sel_ckcol_sent" type="logic">
-      <obj_property name="ElementShortName">sel_ckcol_sent</obj_property>
-      <obj_property name="ObjectShortName">sel_ckcol_sent</obj_property>
-   </wvobject>
-   <wvobject fp_name="/tb_pFREYA_DAQ/pFREYA_DAQ_inst/pFREYA_IF_inst/sel_ckrow_sent" type="logic">
-      <obj_property name="ElementShortName">sel_ckrow_sent</obj_property>
-      <obj_property name="ObjectShortName">sel_ckrow_sent</obj_property>
-   </wvobject>
-   <wvobject fp_name="/tb_pFREYA_DAQ/pFREYA_DAQ_inst/pFREYA_IF_inst/sel_ck" type="logic">
-      <obj_property name="ElementShortName">sel_ck</obj_property>
-      <obj_property name="ObjectShortName">sel_ck</obj_property>
-   </wvobject>
-   <wvobject fp_name="/tb_pFREYA_DAQ/pFREYA_DAQ_inst/pFREYA_IF_inst/sel_ckcol_cnt" type="array">
-      <obj_property name="ElementShortName">sel_ckcol_cnt[17:0]</obj_property>
-      <obj_property name="ObjectShortName">sel_ckcol_cnt[17:0]</obj_property>
-   </wvobject>
-   <wvobject fp_name="/tb_pFREYA_DAQ/pFREYA_DAQ_inst/pFREYA_IF_inst/sel_ckrow_cnt" type="array">
-      <obj_property name="ElementShortName">sel_ckrow_cnt[17:0]</obj_property>
-      <obj_property name="ObjectShortName">sel_ckrow_cnt[17:0]</obj_property>
    </wvobject>
    <wvobject fp_name="/tb_pFREYA_DAQ/pFREYA_DAQ_inst/pFREYA_IF_inst/pixel_row" type="array">
       <obj_property name="ElementShortName">pixel_row[17:0]</obj_property>
@@ -153,14 +122,6 @@
       <obj_property name="ElementShortName">ser_data[10:0]</obj_property>
       <obj_property name="ObjectShortName">ser_data[10:0]</obj_property>
    </wvobject>
-   <wvobject fp_name="/tb_pFREYA_DAQ/ser_out" type="logic">
-      <obj_property name="ElementShortName">ser_out</obj_property>
-      <obj_property name="ObjectShortName">ser_out</obj_property>
-   </wvobject>
-   <wvobject fp_name="/tb_pFREYA_DAQ/ser_ck" type="logic">
-      <obj_property name="ElementShortName">ser_ck</obj_property>
-      <obj_property name="ObjectShortName">ser_ck</obj_property>
-   </wvobject>
    <wvobject fp_name="/tb_pFREYA_DAQ/ser_out_arr" type="array">
       <obj_property name="ElementShortName">ser_out_arr[10:0]</obj_property>
       <obj_property name="ObjectShortName">ser_out_arr[10:0]</obj_property>
@@ -204,6 +165,22 @@
    <wvobject fp_name="/tb_pFREYA_DAQ/pFREYA_DAQ_inst/pFREYA_IF_inst/ser_data_rcv" type="logic">
       <obj_property name="ElementShortName">ser_data_rcv</obj_property>
       <obj_property name="ObjectShortName">ser_data_rcv</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_pFREYA_DAQ/ser_out" type="logic">
+      <obj_property name="ElementShortName">ser_out</obj_property>
+      <obj_property name="ObjectShortName">ser_out</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_pFREYA_DAQ/ser_ck" type="logic">
+      <obj_property name="ElementShortName">ser_ck</obj_property>
+      <obj_property name="ObjectShortName">ser_ck</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_pFREYA_DAQ/ser_reset_n" type="logic">
+      <obj_property name="ElementShortName">ser_reset_n</obj_property>
+      <obj_property name="ObjectShortName">ser_reset_n</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_pFREYA_DAQ/ser_read" type="logic">
+      <obj_property name="ElementShortName">ser_read</obj_property>
+      <obj_property name="ObjectShortName">ser_read</obj_property>
    </wvobject>
    <wvobject fp_name="/tb_pFREYA_DAQ/pFREYA_DAQ_inst/pFREYA_IF_inst/pc_uart_data" type="array">
       <obj_property name="ElementShortName">pc_uart_data[7:0]</obj_property>
@@ -284,5 +261,25 @@
    <wvobject fp_name="/tb_pFREYA_DAQ/adc_start" type="logic">
       <obj_property name="ElementShortName">adc_start</obj_property>
       <obj_property name="ObjectShortName">adc_start</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_pFREYA_DAQ/pFREYA_DAQ_inst/led_error" type="logic">
+      <obj_property name="ElementShortName">led_error</obj_property>
+      <obj_property name="ObjectShortName">led_error</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_pFREYA_DAQ/pFREYA_DAQ_inst/pFREYA_IF_inst/status_error" type="logic">
+      <obj_property name="ElementShortName">status_error</obj_property>
+      <obj_property name="ObjectShortName">status_error</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_pFREYA_DAQ/pFREYA_DAQ_inst/pFREYA_IF_inst/error_cnt" type="array">
+      <obj_property name="ElementShortName">error_cnt[17:0]</obj_property>
+      <obj_property name="ObjectShortName">error_cnt[17:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_pFREYA_DAQ/pFREYA_DAQ_inst/pFREYA_IF_inst/error_timeout_cnt" type="array">
+      <obj_property name="ElementShortName">error_timeout_cnt[17:0]</obj_property>
+      <obj_property name="ObjectShortName">error_timeout_cnt[17:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_pFREYA_DAQ/pFREYA_DAQ_inst/pFREYA_IF_inst/error_timeout" type="array">
+      <obj_property name="ElementShortName">error_timeout[17:0]</obj_property>
+      <obj_property name="ObjectShortName">error_timeout[17:0]</obj_property>
    </wvobject>
 </wave_config>

@@ -47,6 +47,7 @@ module pFREYA_DAQ
     output logic csa_reset_n_out,
     // Internal signals
     input  logic btn_reset,
+    output logic led_error,
 
     // UART signals
     input  logic rx_ser,
@@ -110,6 +111,7 @@ module pFREYA_DAQ
         .slow_ctrl_ck       (slow_ctrl_ck),
         .ck                 (daq_ck),
         .reset              (btn_reset),
+        .led_error          (led_error),
         .uart_data          (uart_data),
         .uart_valid         (uart_valid),
         .pc_uart_data       (pc_uart_data),

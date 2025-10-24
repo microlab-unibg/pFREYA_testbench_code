@@ -44,6 +44,7 @@ module pFREYA_IF(
         // internal
         input  logic ck,
         input  logic reset,
+        output logic led_error,
         // for UART
         input  logic [UART_PACKET_SIZE-1:0] uart_data,
         input  logic uart_valid,
@@ -125,6 +126,11 @@ module pFREYA_IF(
     logic [FAST_CTRL_N-1:0] adc_start_HIGH_div= '0;
     logic [FAST_CTRL_N-1:0] adc_start_LOW_div= '0;
 
+    logic [FAST_CTRL_N-1:0] error_cnt = -1;
+    logic [FAST_CTRL_N-1:0] error_timeout_cnt = -1; // toggle every 0.125s
+    logic [FAST_CTRL_N-1:0] error_timeout = 18'd10;//18'd50; // toggle every 0.125s
+    logic [FAST_CTRL_N-1:0] error_div = 18'h0000F;//18'h0FFFF; // about 0.125s at 200MHz
+
     // control logic
     logic data_packet_available = 1'b0;
     logic slow_ctrl_packet_available = 1'b0;
@@ -163,6 +169,8 @@ module pFREYA_IF(
     logic [CMD_CODE_SIZE-1:0] cmd= '0;
     // check UART rising edge
     logic uart_valid_last;
+    // logic for led error
+    logic status_error;
     // flag for sending uart
     logic setting_uart;
     logic sending_uart;
@@ -237,6 +245,30 @@ module pFREYA_IF(
         else begin
             adc_ck <= adc_ck;
             adc_cnt <= adc_cnt + 1'b1;
+        end
+    end
+
+    // error generation
+    always_ff @(posedge ck, posedge reset) begin: error_generation
+        if (reset) begin
+            error_cnt <= -1;
+            error_timeout_cnt <= -1;
+            led_error <= 1'b0;
+        end
+        else if (status_error && error_cnt == error_div-1) begin
+            error_cnt <= '0;
+            led_error <= ~led_error;
+            error_timeout_cnt <= error_timeout_cnt + 1'b1;
+        end
+        else if (status_error) begin
+            error_cnt <= error_cnt + 1'b1;
+            led_error <= led_error;
+            error_timeout_cnt <= error_timeout_cnt;
+        end
+        else begin
+            error_cnt <= -1;
+            error_timeout_cnt <= -1;
+            led_error <= 1'b0;
         end
     end
 
@@ -561,9 +593,10 @@ module pFREYA_IF(
                     // if no comms or command is available recheck
                     next <= CMD_EVAL;
             CMD_ERR:
-                // it just stays here
-                // TODO change
-                next <= CMD_ERR;
+                if (error_timeout_cnt == error_timeout-1)
+                    next <= CMD_EVAL;
+                else
+                    next <= CMD_ERR;
             CMD_SET:
                 // for slow ctl and dac need to wait for more packets
                 if (cmd == `SET_SLOW_CTRL_CMD)
@@ -614,8 +647,6 @@ module pFREYA_IF(
                     next <= CMD_SEND_DATA;
             CMD_SYNC_TIME_BASE:
                 next <= CMD_EVAL;
-            default:
-                next <= CMD_ERR;
         endcase
     end
 
@@ -716,6 +747,7 @@ module pFREYA_IF(
 
             //slow_ctrl_in <= '0;
             //dac_sdin <= '0;
+            status_error <= 1'b0;
 
             slow_ctrl_packet = 0;
             dac_packet = 0;
@@ -777,6 +809,7 @@ module pFREYA_IF(
 
                     //slow_ctrl_in <= '0;
                     //dac_sdin <= '0;
+                    status_error <= 1'b0;
 
                     slow_ctrl_packet = 0;
                     dac_packet = 0;
@@ -1045,6 +1078,11 @@ module pFREYA_IF(
                 end
                 CMD_SYNC_TIME_BASE:
                     sync_time_base_flag <= 1'b1;
+                CMD_ERR:
+                    if (error_timeout_cnt == error_timeout-1)
+                        status_error <= 1'b0;
+                    else
+                        status_error <= 1'b1;
             endcase
         end
     end
