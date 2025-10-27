@@ -239,7 +239,7 @@ module tb_pFREYA_DAQ;
         sys_clk_n <= 1'b1;
 
         ser_out <= 1'b0;
-        ser_out_arr <= 11'bZZZZZZZZZZZ; // example data to serialise
+        ser_out_arr <= 11'b00110101110; // example data to serialise
         ser_idx <= 0;
     end
 

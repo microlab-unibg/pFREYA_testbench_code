@@ -155,6 +155,7 @@ module pFREYA_IF(
     reg [SLOW_CTRL_REG_LENGTH-1:0] slow_ctrl_packet= '0;
 
     logic [PACKET_INDEX_N-1:0] ser_data_idx = '0;
+    logic [PACKET_INDEX_N-1:0] ser_data_send_idx = '0;
 
     reg [SER_DATA_REG_LENGTH-1:0] ser_data = '0;
 
@@ -732,6 +733,8 @@ module pFREYA_IF(
             //dac_packet_sent <= 1'b0;
             //sel_ckcol_sent <= 1'b0;
             //sel_ckrow_sent <= 1'b0;
+            ser_ck_mask = 1'b0;
+            send_mask = 1'b0;
 
             //slow_ctrl_packet_index_send <= '0;
             slow_ctrl_packet_index_receive <= '0;
@@ -794,6 +797,8 @@ module pFREYA_IF(
                     //dac_packet_sent <= 1'b0;
                     //sel_ckcol_sent <= 1'b0;
                     //sel_ckrow_sent <= 1'b0;
+                    ser_ck_mask = 1'b0;
+                    send_mask = 1'b0;
 
                     //slow_ctrl_packet_index_send <= '0;
                     slow_ctrl_packet_index_receive <= '0;
@@ -1261,8 +1266,6 @@ module pFREYA_IF(
         // if sel_ck is posedge then col or row ck might need to commute
     always_ff @(posedge ck, posedge reset) begin: pixel_ser_read_data
         if (reset) begin
-            ser_read <= 1'b0;
-            ser_reset_n <= 1'b0;
             ser_data <= '0;
             ser_data_idx <= '0;
             ser_shift_done <= 1'b0;
@@ -1321,7 +1324,7 @@ module pFREYA_IF(
     always_ff @(posedge ck, posedge reset) begin: pc_ser_send_data
         if (reset) begin
             ser_data_sent <= 1'b0;
-            ser_data_idx <= '0;
+            ser_data_send_idx <= '0;
             pc_uart_data <= '0;
             pc_uart_valid <= 1'b0;
             setting_uart <= 1'b0;
@@ -1333,7 +1336,7 @@ module pFREYA_IF(
                 pc_uart_valid <= 1'b0;
                 setting_uart <= 1'b1;
                 sending_uart <= 1'b0;
-                ser_data_idx <= '0;
+                ser_data_send_idx <= '0;
                 last_sent <= 1'b0;
             end
             else if (!ser_data_sent && !sending_uart && setting_uart) begin
@@ -1342,16 +1345,16 @@ module pFREYA_IF(
                 sending_uart <= 1'b1;
                 // for enabling tx
                 pc_uart_valid <= 1'b1;
-                if (ser_data_idx + UART_PACKET_SIZE - 2 >= SER_DATA_REG_LENGTH) begin
+                if (ser_data_send_idx + UART_PACKET_SIZE - 2 >= SER_DATA_REG_LENGTH) begin
                     // last packet
-                    pc_uart_data <= 8'b0000_0000 | {ser_data[ser_data_idx +: SER_DATA_REG_LENGTH - UART_PACKET_SIZE+1], LAST_UART_PACKET};
-                    ser_data_idx <= '0;
+                    pc_uart_data <= 8'b0000_0000 | {ser_data[ser_data_send_idx +: SER_DATA_REG_LENGTH - UART_PACKET_SIZE+1], LAST_UART_PACKET};
+                    ser_data_send_idx <= '0;
                     last_sent <= 1'b1;
                 end
                 else begin
                     // not last packet
-                    pc_uart_data <= {ser_data[ser_data_idx +: UART_PACKET_SIZE-1], NOTLAST_UART_PACKET};
-                    ser_data_idx <= ser_data_idx + UART_PACKET_SIZE - 1;
+                    pc_uart_data <= {ser_data[ser_data_send_idx +: UART_PACKET_SIZE-1], NOTLAST_UART_PACKET};
+                    ser_data_send_idx <= ser_data_send_idx + UART_PACKET_SIZE - 1;
                     last_sent <= 1'b0;
                 end
             end
@@ -1390,7 +1393,7 @@ module pFREYA_IF(
             else if (ser_data_sent) begin
                 pc_uart_valid <= 1'b0;
                 pc_uart_data <= '0;
-                ser_data_idx <= '0;
+                ser_data_send_idx <= '0;
                 setting_uart <= 1'b0;
                 sending_uart <= 1'b0;
                 last_sent <= 1'b0;
