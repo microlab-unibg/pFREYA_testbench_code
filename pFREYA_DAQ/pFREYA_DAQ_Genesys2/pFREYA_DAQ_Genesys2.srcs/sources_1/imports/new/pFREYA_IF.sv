@@ -860,9 +860,9 @@ module pFREYA_IF(
                                 data_packet_available = 1'b0;
                             end
                             `READ_DATA_CMD:
-                                ser_reset_request = 1'b0;
+                                ser_reset_request = 1'b1;
                             `SEND_DATA_CMD:
-                                send_data_reset_request = 1'b0;
+                                send_data_reset_request = 1'b1;
                             `SET_DAC_CMD:
                                 dac_packet_available = 1'b0;
                         endcase
