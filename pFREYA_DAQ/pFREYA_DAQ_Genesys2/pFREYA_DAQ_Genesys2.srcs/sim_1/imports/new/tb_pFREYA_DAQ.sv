@@ -261,6 +261,10 @@ module tb_pFREYA_DAQ;
             $display("SER OUT: %b", ser_out);
             ser_idx <= ser_idx + 1;
         end
+        else begin
+            ser_idx <= 0;
+            ser_out <= 0;
+        end
     end
 
     // ASIC ck
@@ -413,6 +417,23 @@ module tb_pFREYA_DAQ;
         // #500000 uart_to_send <= {DATA_PACKET,LAST_UART_PACKET,6'd0};
         // #10000 uart_write_byte(uart_to_send);
 
+        #200000 uart_to_send <= {CMD_PACKET,`SET_CK_CMD,`SER_CK_CODE};
+        #10000 uart_write_byte(uart_to_send);
+        // set inj_stb delay divider
+        #500000 uart_to_send <= {DATA_PACKET,NOTLAST_UART_PACKET,6'd10};
+        #10000 uart_write_byte(uart_to_send);
+        #500000 uart_to_send <= {DATA_PACKET,NOTLAST_UART_PACKET,6'd0};
+        #10000 uart_write_byte(uart_to_send);
+        #500000 uart_to_send <= {DATA_PACKET,LAST_UART_PACKET,6'd0};
+        #10000 uart_write_byte(uart_to_send);
+        //signal is not used
+        #200000 uart_to_send <= {CMD_PACKET,`READ_DATA_CMD,`UNUSED_CODE};
+        #10000 uart_write_byte(uart_to_send);
+        // serialise data on ser_out
+        // done above sync with ser_ck
+
+        // try a second time
+        #100000;
         #200000 uart_to_send <= {CMD_PACKET,`SET_CK_CMD,`SER_CK_CODE};
         #10000 uart_write_byte(uart_to_send);
         // set inj_stb delay divider
@@ -611,14 +632,21 @@ module tb_pFREYA_DAQ;
 // // ============ END DAC SETUP ==================================================
 
 // //============ SEND DATA TO PC ======================================================
-//         // set packet // done in begin
-//         // send data to PC
-//         #200000 uart_to_send <= {CMD_PACKET,`SEND_DATA_CMD,`UNUSED_CODE};
-//         #10000 cmd_available <= 1'b1;
-//               data_available <= 1'b0;
-//               uart_write_byte(uart_to_send);
+        // set packet // done in begin
+        // send data to PC
+        #200000 uart_to_send <= {CMD_PACKET,`SEND_DATA_CMD,`UNUSED_CODE};
+        #10000 cmd_available <= 1'b1;
+              data_available <= 1'b0;
+              uart_write_byte(uart_to_send);
 
-//         #2000000;
+        #2000000;
+        // send data to PC a second time just to check
+        #200000 uart_to_send <= {CMD_PACKET,`SEND_DATA_CMD,`UNUSED_CODE};
+        #10000 cmd_available <= 1'b1;
+              data_available <= 1'b0;
+              uart_write_byte(uart_to_send);
+
+        #2000000;
         // wrong code
         #200000 uart_to_send <= {CMD_PACKET,4'b1100,`UNUSED_CODE};
         #10000 cmd_available <= 1'b1;

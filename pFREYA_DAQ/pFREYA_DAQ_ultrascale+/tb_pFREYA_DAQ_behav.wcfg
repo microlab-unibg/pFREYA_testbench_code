@@ -12,15 +12,15 @@
       </db_ref>
    </db_ref_list>
    <zoom_setting>
-      <ZoomStartTime time="4,443,799.162 ns"></ZoomStartTime>
-      <ZoomEndTime time="4,444,120.163 ns"></ZoomEndTime>
-      <Cursor1Time time="4,444,099.162 ns"></Cursor1Time>
+      <ZoomStartTime time="1,267,005.704 ns"></ZoomStartTime>
+      <ZoomEndTime time="1,267,038.005 ns"></ZoomEndTime>
+      <Cursor1Time time="1,267,023.354 ns"></Cursor1Time>
    </zoom_setting>
    <column_width_setting>
-      <NameColumnWidth column_width="116"></NameColumnWidth>
+      <NameColumnWidth column_width="112"></NameColumnWidth>
       <ValueColumnWidth column_width="58"></ValueColumnWidth>
    </column_width_setting>
-   <WVObjectSize size="65" />
+   <WVObjectSize size="66" />
    <wvobject fp_name="/tb_pFREYA_DAQ/pFREYA_DAQ_inst/sel_init_n" type="logic">
       <obj_property name="ElementShortName">sel_init_n</obj_property>
       <obj_property name="ObjectShortName">sel_init_n</obj_property>
@@ -181,6 +181,10 @@
    <wvobject fp_name="/tb_pFREYA_DAQ/ser_read" type="logic">
       <obj_property name="ElementShortName">ser_read</obj_property>
       <obj_property name="ObjectShortName">ser_read</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_pFREYA_DAQ/pFREYA_DAQ_inst/pFREYA_IF_inst/ser_reset_request" type="logic">
+      <obj_property name="ElementShortName">ser_reset_request</obj_property>
+      <obj_property name="ObjectShortName">ser_reset_request</obj_property>
    </wvobject>
    <wvobject fp_name="/tb_pFREYA_DAQ/pFREYA_DAQ_inst/pFREYA_IF_inst/pc_uart_data" type="array">
       <obj_property name="ElementShortName">pc_uart_data[7:0]</obj_property>
