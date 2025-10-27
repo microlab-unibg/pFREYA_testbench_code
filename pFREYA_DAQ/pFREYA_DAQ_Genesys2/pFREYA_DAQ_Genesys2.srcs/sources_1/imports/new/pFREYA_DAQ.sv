@@ -153,7 +153,9 @@ module pFREYA_DAQ
         .probe15(slow_ctrl_in), // input wire [0:0]  probe15 
         .probe16(slow_ctrl_reset_n), // input wire [0:0]  probe16 
         .probe17(slow_ctrl_ck), // input wire [0:0]  probe17
-        .probe18(uart_valid) // input wire [0:0]  probe18 
+        .probe18(uart_valid), // input wire [0:0]  probe18 
+        .probe19(pc_uart_valid),
+        .probe20(ser_out)
     );
 
     // always_ff @(posedge daq_ck, posedge btn_reset) begin: reset_daq
