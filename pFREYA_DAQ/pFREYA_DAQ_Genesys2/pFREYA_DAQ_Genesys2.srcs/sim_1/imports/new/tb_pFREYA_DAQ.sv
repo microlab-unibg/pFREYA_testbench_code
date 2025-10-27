@@ -371,62 +371,62 @@ module tb_pFREYA_DAQ;
 // //============ SERIALISER ============================================
 // // make sure you sel pixel 
 
-//         // testing adc
-//         #200000 uart_to_send <= {CMD_PACKET,`SET_CK_CMD,`ADC_CK_CODE};
-//         #10000 uart_write_byte(uart_to_send);
-//         // set adc divider
-//         #200000 uart_to_send <= {DATA_PACKET,NOTLAST_UART_PACKET,6'd7};
-//         #10000 uart_write_byte(uart_to_send);
-//         #200000 uart_to_send <= {DATA_PACKET,NOTLAST_UART_PACKET,6'd0};
-//         #10000 uart_write_byte(uart_to_send);
-//         #200000 uart_to_send <= {DATA_PACKET,LAST_UART_PACKET,6'd0};
-//         #10000 uart_write_byte(uart_to_send);
+        // // testing adc
+        // #200000 uart_to_send <= {CMD_PACKET,`SET_CK_CMD,`ADC_CK_CODE};
+        // #10000 uart_write_byte(uart_to_send);
+        // // set adc divider
+        // #200000 uart_to_send <= {DATA_PACKET,NOTLAST_UART_PACKET,6'd7};
+        // #10000 uart_write_byte(uart_to_send);
+        // #200000 uart_to_send <= {DATA_PACKET,NOTLAST_UART_PACKET,6'd0};
+        // #10000 uart_write_byte(uart_to_send);
+        // #200000 uart_to_send <= {DATA_PACKET,LAST_UART_PACKET,6'd0};
+        // #10000 uart_write_byte(uart_to_send);
         
-//         // testing adc_start
-//         #180000 uart_to_send <= {CMD_PACKET,`SET_DELAY_CMD,`ADC_START_CODE};
-//         #10000 uart_write_byte(uart_to_send);
-//         // set adc_start delay divider
-//         #500000 uart_to_send <= {DATA_PACKET,NOTLAST_UART_PACKET,6'd7};
-//         #10000 uart_write_byte(uart_to_send);
-//         #500000 uart_to_send <= {DATA_PACKET,NOTLAST_UART_PACKET,6'd0};
-//         #10000 uart_write_byte(uart_to_send);
-//         #500000 uart_to_send <= {DATA_PACKET,LAST_UART_PACKET,6'd0};
-//         #10000 uart_write_byte(uart_to_send);
-//         // send a command to set adc_start HIGH divider
-//         #200000 uart_to_send <= {CMD_PACKET,`SET_HIGH_CMD,`ADC_START_CODE};
-//         #10000 uart_write_byte(uart_to_send);
-//         // set adc_start HIGH divider
-//         #500000 uart_to_send <= {DATA_PACKET,NOTLAST_UART_PACKET,6'd4};
-//         #10000 uart_write_byte(uart_to_send);
-//         #500000 uart_to_send <= {DATA_PACKET,NOTLAST_UART_PACKET,6'd0};
-//         #10000 uart_write_byte(uart_to_send);
-//         #500000 uart_to_send <= {DATA_PACKET,LAST_UART_PACKET,6'd0};
-//         #10000 uart_write_byte(uart_to_send);
-//         // send a command to set adc_start LOW divider
-//         #200000 uart_to_send <= {CMD_PACKET,`SET_LOW_CMD,`ADC_START_CODE};
-//         #10000 uart_write_byte(uart_to_send);
-//         // set adc_start LOW divider
-//         #500000 uart_to_send <= {DATA_PACKET,NOTLAST_UART_PACKET,6'd63};
-//         #10000 uart_write_byte(uart_to_send);
-//         #500000 uart_to_send <= {DATA_PACKET,NOTLAST_UART_PACKET,6'd0};
-//         #10000 uart_write_byte(uart_to_send);
-//         #500000 uart_to_send <= {DATA_PACKET,LAST_UART_PACKET,6'd0};
-//         #10000 uart_write_byte(uart_to_send);
+        // // testing adc_start
+        // #180000 uart_to_send <= {CMD_PACKET,`SET_DELAY_CMD,`ADC_START_CODE};
+        // #10000 uart_write_byte(uart_to_send);
+        // // set adc_start delay divider
+        // #500000 uart_to_send <= {DATA_PACKET,NOTLAST_UART_PACKET,6'd7};
+        // #10000 uart_write_byte(uart_to_send);
+        // #500000 uart_to_send <= {DATA_PACKET,NOTLAST_UART_PACKET,6'd0};
+        // #10000 uart_write_byte(uart_to_send);
+        // #500000 uart_to_send <= {DATA_PACKET,LAST_UART_PACKET,6'd0};
+        // #10000 uart_write_byte(uart_to_send);
+        // // send a command to set adc_start HIGH divider
+        // #200000 uart_to_send <= {CMD_PACKET,`SET_HIGH_CMD,`ADC_START_CODE};
+        // #10000 uart_write_byte(uart_to_send);
+        // // set adc_start HIGH divider
+        // #500000 uart_to_send <= {DATA_PACKET,NOTLAST_UART_PACKET,6'd4};
+        // #10000 uart_write_byte(uart_to_send);
+        // #500000 uart_to_send <= {DATA_PACKET,NOTLAST_UART_PACKET,6'd0};
+        // #10000 uart_write_byte(uart_to_send);
+        // #500000 uart_to_send <= {DATA_PACKET,LAST_UART_PACKET,6'd0};
+        // #10000 uart_write_byte(uart_to_send);
+        // // send a command to set adc_start LOW divider
+        // #200000 uart_to_send <= {CMD_PACKET,`SET_LOW_CMD,`ADC_START_CODE};
+        // #10000 uart_write_byte(uart_to_send);
+        // // set adc_start LOW divider
+        // #500000 uart_to_send <= {DATA_PACKET,NOTLAST_UART_PACKET,6'd63};
+        // #10000 uart_write_byte(uart_to_send);
+        // #500000 uart_to_send <= {DATA_PACKET,NOTLAST_UART_PACKET,6'd0};
+        // #10000 uart_write_byte(uart_to_send);
+        // #500000 uart_to_send <= {DATA_PACKET,LAST_UART_PACKET,6'd0};
+        // #10000 uart_write_byte(uart_to_send);
 
-//         #200000 uart_to_send <= {CMD_PACKET,`SET_CK_CMD,`SER_CK_CODE};
-//         #10000 uart_write_byte(uart_to_send);
-//         // set inj_stb delay divider
-//         #500000 uart_to_send <= {DATA_PACKET,NOTLAST_UART_PACKET,6'd10};
-//         #10000 uart_write_byte(uart_to_send);
-//         #500000 uart_to_send <= {DATA_PACKET,NOTLAST_UART_PACKET,6'd0};
-//         #10000 uart_write_byte(uart_to_send);
-//         #500000 uart_to_send <= {DATA_PACKET,LAST_UART_PACKET,6'd0};
-//         #10000 uart_write_byte(uart_to_send);
-//         // signal is not used
-//         #200000 uart_to_send <= {CMD_PACKET,`READ_DATA_CMD,`UNUSED_CODE};
-//         #10000 uart_write_byte(uart_to_send);
-//         // serialise data on ser_out
-//         // done above sync with ser_ck
+        #200000 uart_to_send <= {CMD_PACKET,`SET_CK_CMD,`SER_CK_CODE};
+        #10000 uart_write_byte(uart_to_send);
+        // set inj_stb delay divider
+        #500000 uart_to_send <= {DATA_PACKET,NOTLAST_UART_PACKET,6'd10};
+        #10000 uart_write_byte(uart_to_send);
+        #500000 uart_to_send <= {DATA_PACKET,NOTLAST_UART_PACKET,6'd0};
+        #10000 uart_write_byte(uart_to_send);
+        #500000 uart_to_send <= {DATA_PACKET,LAST_UART_PACKET,6'd0};
+        #10000 uart_write_byte(uart_to_send);
+        //signal is not used
+        #200000 uart_to_send <= {CMD_PACKET,`READ_DATA_CMD,`UNUSED_CODE};
+        #10000 uart_write_byte(uart_to_send);
+        // serialise data on ser_out
+        // done above sync with ser_ck
 // //============ END SERIALISER ============================================
 
 // //============ SLOW CTRL ======================================================

@@ -8,7 +8,7 @@ set_property PACKAGE_PIN AA20 [get_ports sel_init_n]
 set_property PACKAGE_PIN AB20 [get_ports sel_ckrow]
 set_property PACKAGE_PIN AE17 [get_ports ser_out]
 set_property PACKAGE_PIN AF17 [get_ports ser_reset_n]
-set_property PACKAGE_PIN AA19 [get_ports ser_read]
+set_property PACKAGE_PIN AD16 [get_ports ser_read]
 set_property PACKAGE_PIN AE16 [get_ports ser_ck]
 set_property PACKAGE_PIN AC22 [get_ports inj_stb]
 set_property PACKAGE_PIN Y18 [get_ports csa_reset_n]
@@ -28,7 +28,7 @@ set_property PACKAGE_PIN AD26 [get_ports slow_ctrl_in]
 set_property PACKAGE_PIN AB25 [get_ports slow_ctrl_reset_n]
 set_property PACKAGE_PIN AB26 [get_ports slow_ctrl_ck]
 
-set_property PACKAGE_PIN B9  [get_ports btn_reset]
+set_property PACKAGE_PIN B9 [get_ports btn_reset]
 set_property PACKAGE_PIN G10 [get_ports led_error]
 set_property PACKAGE_PIN W12 [get_ports rx_ser]
 set_property PACKAGE_PIN W13 [get_ports tx_ser]
@@ -168,6 +168,7 @@ set_output_delay -clock [get_clocks VIRTUAL_daq_ck_clk_wiz_clocks] -min -add_del
 set_output_delay -clock [get_clocks VIRTUAL_daq_ck_clk_wiz_clocks] -max -add_delay 1.000 [get_ports slow_ctrl_in]
 set_output_delay -clock [get_clocks VIRTUAL_daq_ck_clk_wiz_clocks] -min -add_delay 0.000 [get_ports slow_ctrl_reset_n]
 set_output_delay -clock [get_clocks VIRTUAL_daq_ck_clk_wiz_clocks] -max -add_delay 1.000 [get_ports slow_ctrl_reset_n]
+
 
 
 set_property OFFCHIP_TERM FP_VTT_50 [get_ports csa_reset_n_out]
