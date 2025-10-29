@@ -139,8 +139,8 @@ def check_pixel(strvar,type):
         if (int(value) < 0 or int(value) > 7):
             messagebox.showerror('FPGA Pixel Error', f'Pixel row must be a number (0-7).')
     else:
-        if (int(value) < 0 or int(value) > 1):
-            messagebox.showerror('FPGA Pixel Error', f'Pixel col must be a number (0-1).')
+        if (int(value) < 0 or int(value) > 7):
+            messagebox.showerror('FPGA Pixel Error', f'Pixel col must be a number (0-7).')
 
 def check_pixel_to_inj(strvar):
     value = strvar.get()

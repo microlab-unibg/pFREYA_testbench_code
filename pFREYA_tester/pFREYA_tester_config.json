@@ -46,7 +46,7 @@
         },
         "adc_start": {
             "delay": "604",
-            "high": "20",
+            "high": "2",
             "low": "9980"
         },
         "ser_reset_n": {
