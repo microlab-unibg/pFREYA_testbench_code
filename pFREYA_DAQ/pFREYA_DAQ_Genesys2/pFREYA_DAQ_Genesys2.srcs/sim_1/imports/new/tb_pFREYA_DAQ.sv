@@ -337,39 +337,39 @@ module tb_pFREYA_DAQ;
 // //============ PIXEL SELECTION ================================================
 //         // send a command to set selection divider
 //         // CMD packet is |0(1)|CMD_CODE(4)|SIGNAL_CODE(3)|
-//         #200000 uart_to_send <= {CMD_PACKET,`SET_CK_CMD,`SEL_CK_CODE};
-//         #10000 uart_write_byte(uart_to_send);
-//         // set selection divider
-//         #200000 uart_to_send <= {DATA_PACKET,NOTLAST_UART_PACKET,6'd7};
-//         #10000 uart_write_byte(uart_to_send);
-//         #200000 uart_to_send <= {DATA_PACKET,NOTLAST_UART_PACKET,6'd0};
-//         #10000 uart_write_byte(uart_to_send);
-//         #200000 uart_to_send <= {DATA_PACKET,LAST_UART_PACKET,6'd0};
-//         #10000 uart_write_byte(uart_to_send);
+        #200000 uart_to_send <= {CMD_PACKET,`SET_CK_CMD,`SEL_CK_CODE};
+        #10000 uart_write_byte(uart_to_send);
+        // set selection divider
+        #200000 uart_to_send <= {DATA_PACKET,NOTLAST_UART_PACKET,6'd7};
+        #10000 uart_write_byte(uart_to_send);
+        #200000 uart_to_send <= {DATA_PACKET,NOTLAST_UART_PACKET,6'd0};
+        #10000 uart_write_byte(uart_to_send);
+        #200000 uart_to_send <= {DATA_PACKET,LAST_UART_PACKET,6'd0};
+        #10000 uart_write_byte(uart_to_send);
 
 
-//         #200000 uart_to_send <= {CMD_PACKET,`SET_PIXEL_CMD,`PIXEL_ROW_CODE};
-//         #10000 uart_write_byte(uart_to_send);
-//         #200000 uart_to_send <= {DATA_PACKET,NOTLAST_UART_PACKET,6'd1};
-//         #10000 uart_write_byte(uart_to_send);
-//         #200000 uart_to_send <= {DATA_PACKET,NOTLAST_UART_PACKET,6'd0};
-//         #10000 uart_write_byte(uart_to_send);
-//         #200000 uart_to_send <= {DATA_PACKET,LAST_UART_PACKET,6'd0};
-//         #10000 uart_write_byte(uart_to_send);
+        #200000 uart_to_send <= {CMD_PACKET,`SET_PIXEL_CMD,`PIXEL_ROW_CODE};
+        #10000 uart_write_byte(uart_to_send);
+        #200000 uart_to_send <= {DATA_PACKET,NOTLAST_UART_PACKET,6'd1};
+        #10000 uart_write_byte(uart_to_send);
+        #200000 uart_to_send <= {DATA_PACKET,NOTLAST_UART_PACKET,6'd0};
+        #10000 uart_write_byte(uart_to_send);
+        #200000 uart_to_send <= {DATA_PACKET,LAST_UART_PACKET,6'd0};
+        #10000 uart_write_byte(uart_to_send);
         
-//         #200000 uart_to_send <= {CMD_PACKET,`SET_PIXEL_CMD,`PIXEL_COL_CODE};
-//         #10000 uart_write_byte(uart_to_send);
-//         #200000 uart_to_send <= {DATA_PACKET,NOTLAST_UART_PACKET,6'd4};
-//         #10000 uart_write_byte(uart_to_send);
-//         #200000 uart_to_send <= {DATA_PACKET,NOTLAST_UART_PACKET,6'd0};
-//         #10000 uart_write_byte(uart_to_send);
-//         #200000 uart_to_send <= {DATA_PACKET,LAST_UART_PACKET,6'd0};
-//         #10000 uart_write_byte(uart_to_send);
+        #200000 uart_to_send <= {CMD_PACKET,`SET_PIXEL_CMD,`PIXEL_COL_CODE};
+        #10000 uart_write_byte(uart_to_send);
+        #200000 uart_to_send <= {DATA_PACKET,NOTLAST_UART_PACKET,6'd4};
+        #10000 uart_write_byte(uart_to_send);
+        #200000 uart_to_send <= {DATA_PACKET,NOTLAST_UART_PACKET,6'd0};
+        #10000 uart_write_byte(uart_to_send);
+        #200000 uart_to_send <= {DATA_PACKET,LAST_UART_PACKET,6'd0};
+        #10000 uart_write_byte(uart_to_send);
         
-//         // sel pixel
-//         // signal is not used
-//         #200000 uart_to_send <= {CMD_PACKET,`SEND_PIXEL_SEL_CMD,`UNUSED_CODE};
-//         #10000 uart_write_byte(uart_to_send);
+        // sel pixel
+        // signal is not used
+        #200000 uart_to_send <= {CMD_PACKET,`SEND_PIXEL_SEL_CMD,`UNUSED_CODE};
+        #10000 uart_write_byte(uart_to_send);
 // //============ END PIXEL SELECTION ============================================
 
 // //============ SERIALISER ============================================
