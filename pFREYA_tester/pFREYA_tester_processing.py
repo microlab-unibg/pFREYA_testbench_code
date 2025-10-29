@@ -320,22 +320,22 @@ def send_READ_DATA(gui):
         send_UART(cmd,'')
         print('CMD sent: ',cmd)
 
-        cmd = create_cmd(UARTdef.SEND_SEND_DATA_CMD, UARTdef.UNUSED_CODE)
-        send_UART(cmd,'')
-        print('CMD sent: ',cmd)
-        
+        # cmd = create_cmd(UARTdef.SEND_SEND_DATA_CMD, UARTdef.UNUSED_CODE)
+        # send_UART(cmd,'')
+        # print('CMD sent: ',cmd)
+        return 0
         # its |1(1)|0(3)|UART(4)||0(1)|UART(7)|
-        bitstream = read_UART()
+        # bitstream = read_UART()
 
-        adc_raw = bytes(2)
-        adc_raw[0] = bitstream[0] & b'\x7F'  # mask first 7 bits
-        adc_raw[1] = bitstream[1] & b'\x07'# mask first 3 bits
-        adc_data = int.from_bytes(adc_raw, byteorder='little', signed=False)
+        # adc_raw = bytes(2)
+        # adc_raw[0] = bitstream[0] & b'\x7F'  # mask first 7 bits
+        # adc_raw[1] = bitstream[1] & b'\x07'# mask first 3 bits
+        # adc_data = int.from_bytes(adc_raw, byteorder='little', signed=False)
 
-        sot = (bitstream[1] >> 3) & b'\x01'
+        # sot = (bitstream[1] >> 3) & b'\x01'
 
-        print(adc_data, sot)
-        return adc_data, sot
+        # print(adc_data, sot)
+        # return adc_data, sot
     except Exception:
         print(traceback.format_exc())
         return 1
