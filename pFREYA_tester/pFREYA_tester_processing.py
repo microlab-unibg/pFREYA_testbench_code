@@ -29,6 +29,28 @@ def send_UART(cmd='', data=''):
         ser.write(bitstring_to_bytes(data))
     ser.close()
 
+def sendread_UART(cmd='', num_bytes=1):
+    """Function to send UART commands and data to FPGA
+
+    Parameters
+    ----------
+    cmd : str
+        Command to be sent on UART
+    num_bytes : int
+        Bytes to be read
+    
+    Returns
+    ----------
+    int
+        res if everything was ok, 1 otherwise.
+    """
+    ser = serial.Serial(UARTdef.COM_PORT,UARTdef.BAUD_RATE,timeout=10)
+    ser.write(bitstring_to_bytes(cmd))
+
+    res = ser.read(num_bytes)
+    ser.close()
+    return res
+
 def read_UART():
     """Function to read UART commands and data from FPGA
 
@@ -320,22 +342,22 @@ def send_READ_DATA(gui):
         send_UART(cmd,'')
         print('CMD sent: ',cmd)
 
-        # cmd = create_cmd(UARTdef.SEND_SEND_DATA_CMD, UARTdef.UNUSED_CODE)
-        # send_UART(cmd,'')
-        # print('CMD sent: ',cmd)
-        return 0
-        # its |1(1)|0(3)|UART(4)||0(1)|UART(7)|
-        # bitstream = read_UART()
+        cmd = create_cmd(UARTdef.SEND_SEND_DATA_CMD, UARTdef.UNUSED_CODE)
+        res = sendread_UART(cmd,2)
+        print('CMD sent: ',cmd)
 
-        # adc_raw = bytes(2)
-        # adc_raw[0] = bitstream[0] & b'\x7F'  # mask first 7 bits
-        # adc_raw[1] = bitstream[1] & b'\x07'# mask first 3 bits
-        # adc_data = int.from_bytes(adc_raw, byteorder='little', signed=False)
+        s = format(int.from_bytes(res), '016b')
+        print(s[0:8],s[8:16])
+        # its |UART(7)|0(1)||0(3)|UART(4)|1(1)|
 
-        # sot = (bitstream[1] >> 3) & b'\x01'
+        adc_lsb = s[12:15]
+        adc_msb = s[0:7]
+        adc_data = adc_msb[::-1] + adc_lsb[::-1]
 
-        # print(adc_data, sot)
-        # return adc_data, sot
+        sot = s[11]
+
+        print(adc_data, sot)
+        return adc_data, sot
     except Exception:
         print(traceback.format_exc())
         return 1
