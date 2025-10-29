@@ -217,7 +217,7 @@ module pFREYA_IF(
             sel_ck <= 1'b0;
             sel_cnt <= -1;
         end
-        else if (!sel_ck_mask || sel_init_n || sel_div == '0 || sync_time_base_flag) begin
+        else if (!sel_ck_mask || !sel_init_n || sel_div == '0 || sync_time_base_flag) begin
             sel_ck <= 1'b0;
             sel_cnt <= -1;
         end
@@ -725,7 +725,7 @@ module pFREYA_IF(
             slow_ctrl_in_mask <= 1'b1; // (TS)
             //sh_phi1d_inf_mask <= 1'b0; // (TS)
             dac_sync_n <= 1'b1;
-            sel_init_n <= 1'b1;
+            sel_init_n <= 1'b0;
             inj_start <= 1'b0;
 
             // reset all vars
@@ -792,7 +792,7 @@ module pFREYA_IF(
                     slow_ctrl_in_mask <= 1'b1; // (TS)
                     //sh_phi1d_inf_mask <= 1'b0; // (TS)
                     dac_sync_n <= 1'b1;
-                    sel_init_n <= 1'b1;
+                    sel_init_n <= 1'b0;
                     inj_start <= 1'b0;
 
                     // reset all vars
@@ -840,7 +840,7 @@ module pFREYA_IF(
                             `SET_LOW_CMD:
                                 data_packet_available = 1'b0;
                             `SET_PIXEL_CMD: begin
-                                sel_init_n = 1'b1;
+                                sel_init_n = 1'b0;
                                 sel_reset_request = 1'b1;
 
                                 data_packet_available = 1'b0;
@@ -1059,11 +1059,11 @@ module pFREYA_IF(
                     // this way we are checking on the falling edge and no ck is sent after the signal is off
                     if (sel_ckcol_sent && sel_ckrow_sent) begin
                         sel_ck_mask <= 1'b0;
-                        sel_init_n <= 1'b0;
+                        sel_init_n <= 1'b1;
                     end
                     else begin
                         sel_ck_mask <= 1'b1;
-                        sel_init_n <= 1'b0;
+                        sel_init_n <= 1'b1;
                     end
                 end
                 CMD_READ_DATA: begin
