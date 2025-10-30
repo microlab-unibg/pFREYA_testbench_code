@@ -493,44 +493,37 @@ def run_script_comparator(entry_vthp, entry_vthn, entry_thr, entry_step, entry_s
 def run_adc_sweep():
     print("\n--- RUNNING ADC SWEEP---")  
     
-    print("\n--TO BE IMPLEMENTED--")
-    return 0
-    reset_iniziale()
+    print("\n--RESET--")
+    pYtp.send_reset_FPGA()
     time.sleep(2)
+    print("\n--END RESET--")
 
-    print("\n--start clk--")
-    auto_clock()
+    print("\n--SEND ALL CK--")
+    pYtp.send_clocks(gui)
     time.sleep(2)
-    print("--end clk\n")
+    print("--END ALL CK\n")
 
-    print("--start csa_reset_n--")
-    auto_csa_reset()
-    print("--end csa_reset_n\n")
-    time.sleep(3)
-
-    print("--TRANSIENT CSA START\n")
-    subprocess.run(["python", "transient_auto_csa.py"]) #metodo transient csa
-    print("--TRANSIENT CSA END--")
-    time.sleep(0.5)
-    
-    print("\n--Reset FPGA--")
-    reset_iniziale()
+    print("\n--SEND ADC START--")
+    pYtp.send_ADC_START(gui)
     time.sleep(2)
+    print("--END ADC START\n")
 
-    print("\n--start clk--")
-    auto_clock()
+    print("\n--SEND SEL--")
+    pYtp.send_pixel(gui)
     time.sleep(2)
-    print("--end clk--")
+    print("--END SEL\n")
 
-    print("--start csa_reset_n--")
-    auto_csa_reset()
-    print("--end csa_reset_n\n")
-    time.sleep(3)
+    print("\n--SEND SYNC--")
+    pYtp.send_sync_time_bases()
+    time.sleep(2)
+    print("--END SYNC\n")
 
-    print("--TRANCHARACTERISTICS CSA START--")
-    subprocess.run(["python", "transcharacteristics_auto_csa.py"]) #metodo transcharacteristics csa
-    print("--TRANCHARACTERISTICS CSA END--")
-    print("\n---SCRIPT CSA ENDED---\n")  
+    for i in np.linspace()
+
+    # print("--TRANCHARACTERISTICS CSA START--")
+    # subprocess.run(["python", "transcharacteristics_auto_csa.py"]) #metodo transcharacteristics csa
+    # print("--TRANCHARACTERISTICS CSA END--")
+    # print("\n---SCRIPT CSA ENDED---\n")  
 
 class gui2(Toplevel):
   def __init__(self,parent):
