@@ -1,6 +1,8 @@
+import datetime
 from tkinter import *
 from tkinter import ttk
 from tkinter import messagebox
+from turtle import pd
 from serial import *
 import subprocess
 import json
@@ -518,12 +520,34 @@ def run_adc_sweep():
     time.sleep(2)
     print("--END SYNC\n")
 
-    for i in np.linspace()
+    step = 100e-3
+    data = {
+        'Voltage step': [],
+        'Differential step': [],
+        'ADC': []
+    }
+    for i in range(UARTdef.VOLTAGE_LEVEL_MIN, UARTdef.VOLTAGE_LEVEL_MAX + step, step):
+        print(f"\n--SET DIFFERENTIAL LEVEL TO {2*i}--")
+        gui.adc_p.set(f"{UARTdef.VOLTAGE_LEVEL_MAX-i:.3f}")
+        gui.adc_p.set(f"{i:.3f}")
+        
+        print(f"\n--SENDING LEVELS--")
+        pYtp.send_voltage_levels(gui)
+        time.sleep(2)
 
-    # print("--TRANCHARACTERISTICS CSA START--")
-    # subprocess.run(["python", "transcharacteristics_auto_csa.py"]) #metodo transcharacteristics csa
-    # print("--TRANCHARACTERISTICS CSA END--")
-    # print("\n---SCRIPT CSA ENDED---\n")  
+        print(f"\n--READING SOME SAMPLES--")
+        for j in range(5):
+            adc, _ = pYtp.send_READ_DATA(gui)
+            data["Voltage step"].append(i)
+            data["Differential step"].append(2*i)
+            data["ADC"].append(adc)
+            time.sleep(.1)
+        
+    df = pd.DataFrame(data)
+
+    datetime_str = datetime.strftime(datetime.now(), '%d%m%y_%H%M')
+    df.to_csv(f'G:/Shared drives/FALCON/measures/new/transcharacteristics/monitor/adc_sweep_{step}_{datetime_str}.tsv', sep='\t', index=False)
+    print("File tsv salvato con successo.")
 
 class gui2(Toplevel):
   def __init__(self,parent):
