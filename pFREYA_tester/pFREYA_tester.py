@@ -1,4 +1,4 @@
-import datetime
+from datetime import datetime
 from tkinter import *
 from tkinter import ttk
 from tkinter import messagebox
@@ -14,6 +14,8 @@ import sys
 
 import pyvisa
 import time
+import numpy as np
+import pandas as pd
 
 # === CONSTANTS ===
 # The other constants have been moved to the config file
@@ -526,10 +528,10 @@ def run_adc_sweep():
         'Differential step': [],
         'ADC': []
     }
-    for i in range(UARTdef.VOLTAGE_LEVEL_MIN, UARTdef.VOLTAGE_LEVEL_MAX + step, step):
+    for i in np.arange(UARTdef.VOLTAGE_LEVEL_MIN, UARTdef.VOLTAGE_LEVEL_MAX + step, step):
         print(f"\n--SET DIFFERENTIAL LEVEL TO {2*i}--")
         gui.adc_p.set(f"{UARTdef.VOLTAGE_LEVEL_MAX-i:.3f}")
-        gui.adc_p.set(f"{i:.3f}")
+        gui.adc_n.set(f"{i:.3f}")
         
         print(f"\n--SENDING LEVELS--")
         pYtp.send_voltage_levels(gui)
