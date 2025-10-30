@@ -610,6 +610,38 @@ def send_current_level(gui):
 	''')
 
     return gui.current_level
+
+def send_voltage_levels(gui):
+    """Function to create the slow control packet needed in the FPGA
+
+    Parameters
+    ----------
+    gui : pFREYA_GUI
+        The structure containing all the data related to the tester.
+
+    Returns
+    ----------
+    str
+        Current level as a string representing a binary.
+    """
+    ps_p = gui.rm.open_resource('GPIB1::4::INSTR')
+    ps_n = gui.rm.open_resource('USB0::0x2A8D::0x1202::MY61001387::INSTR')
+    print(ps_p.query('*IDN?'))
+    print(ps_n.query('*IDN?'))
+    print(gui.adc_p.get(), gui.adc_n.get())
+
+    ps_p.write(f':INST:SEL P6V')
+    ps_p.write(f':SOUR:VOLT {gui.adc_p.get()}')
+    ps_n.write(f':INST:SEL P6V')
+    ps_n.write(f':SOUR:VOLT {gui.adc_n.get()}')
+
+    print(f'''
+    Output voltage positive: {ps_p.query(':SOUR:VOLT:LEV?')[:-1]}
+    Output voltage negative: {ps_n.query(':SOUR:VOLT:LEV?')[:-1]}
+	''')
+
+    return gui.current_level
+
 def create_slow_ctrl_packet_auto(bits, pixel_idx):
     """Function to create the slow control packet needed in the FPGA
 

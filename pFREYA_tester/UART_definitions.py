@@ -202,3 +202,7 @@ DAC_DATA_REGISTER_PADDING = '0000'
 # Current level through power source
 CURRENT_LEVEL_MIN = -20 # uA
 CURRENT_LEVEL_MAX = 1 # uA
+
+# Voltage level for ADC inputs
+VOLTAGE_LEVEL_MIN = 0 # V
+VOLTAGE_LEVEL_MAX = 1.2 # V

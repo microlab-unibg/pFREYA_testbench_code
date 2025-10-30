@@ -131,6 +131,16 @@ def check_current_level(strvar):
     if (float(value) < UARTdef.CURRENT_LEVEL_MIN or float(value) > UARTdef.CURRENT_LEVEL_MAX):
         messagebox.showerror('Current Level Error', f'Current level must be between {UARTdef.CURRENT_LEVEL_MIN} and {UARTdef.CURRENT_LEVEL_MAX}.')
 
+def check_voltage_level(strvar):
+    value = strvar.get()
+    try:
+        float(value)
+    except:
+        messagebox.showerror('Voltage Level Error', f'Voltage level must be a number between {UARTdef.VOLTAGE_LEVEL_MIN} and {UARTdef.VOLTAGE_LEVEL_MAX}.')
+    
+    if (float(value) < UARTdef.VOLTAGE_LEVEL_MIN or float(value) > UARTdef.VOLTAGE_LEVEL_MAX):
+        messagebox.showerror('Voltage Level Error', f'Voltage level must be between {UARTdef.VOLTAGE_LEVEL_MIN} and {UARTdef.VOLTAGE_LEVEL_MAX}.')
+
 def check_pixel(strvar,type):
     value = strvar.get()
     if (not value.isnumeric()):
@@ -196,6 +206,8 @@ class pFREYA_GUI():
 
         # INJ config
         self.current_level = StringVar(value=json_config.get("INJ","").get("current_level",""))
+        self.adc_p = StringVar(value=json_config.get("INJ","").get("adc_p",""))
+        self.adc_n = StringVar(value=json_config.get("INJ","").get("adc_n",""))
 
         # slow control
         self.csa_mode_n = StringVar(value=json_config.get("slow_ctrl","").get("csa_mode_n",""))
@@ -288,7 +300,9 @@ class pFREYA_GUI():
                         "level": self.dac["level"].get()
                     },
                     "INJ": {
-                        "current_level": self.current_level.get()
+                        "current_level": self.current_level.get(),
+                        "adc_p": self.adc_p.get(),
+                        "adc_n": self.adc_n.get()
                     },
                     "slow_ctrl": {
                         "csa_mode_n": self.csa_mode_n.get(),
@@ -475,6 +489,49 @@ def run_script_comparator(entry_vthp, entry_vthn, entry_thr, entry_step, entry_s
     print("S Curve COMPARATOR END")
 #/MC 
 
+#gui ADC
+def run_adc_sweep():
+    print("\n--- RUNNING ADC SWEEP---")  
+    
+    print("\n--TO BE IMPLEMENTED--")
+    return 0
+    reset_iniziale()
+    time.sleep(2)
+
+    print("\n--start clk--")
+    auto_clock()
+    time.sleep(2)
+    print("--end clk\n")
+
+    print("--start csa_reset_n--")
+    auto_csa_reset()
+    print("--end csa_reset_n\n")
+    time.sleep(3)
+
+    print("--TRANSIENT CSA START\n")
+    subprocess.run(["python", "transient_auto_csa.py"]) #metodo transient csa
+    print("--TRANSIENT CSA END--")
+    time.sleep(0.5)
+    
+    print("\n--Reset FPGA--")
+    reset_iniziale()
+    time.sleep(2)
+
+    print("\n--start clk--")
+    auto_clock()
+    time.sleep(2)
+    print("--end clk--")
+
+    print("--start csa_reset_n--")
+    auto_csa_reset()
+    print("--end csa_reset_n\n")
+    time.sleep(3)
+
+    print("--TRANCHARACTERISTICS CSA START--")
+    subprocess.run(["python", "transcharacteristics_auto_csa.py"]) #metodo transcharacteristics csa
+    print("--TRANCHARACTERISTICS CSA END--")
+    print("\n---SCRIPT CSA ENDED---\n")  
+
 class gui2(Toplevel):
   def __init__(self,parent):
     super().__init__(parent)
@@ -544,6 +601,27 @@ class gui2(Toplevel):
 def open_child():
     print("opening gui2")
     child=gui2(root)
+
+class gui_adc(Toplevel):
+  def __init__(self,parent):
+    super().__init__(parent)
+    self.title("pFREYA tester v0 - Automatic testing ADC")
+    self.geometry("420x475")
+    self.resizable(False, True)
+    
+    frame = Frame(self)
+    frame.pack(pady=10)
+
+    label1 =Label(frame, text="ADC sweep")
+    label1.grid(row=0, column=0, padx=10, pady=10)
+    button1 = Button(frame, text="run", command=run_adc_sweep)
+    button1.grid(row=0, column=1, padx=10, pady=10)
+
+    self.mainloop()
+
+def open_adc():
+    print("opening adc")
+    child=gui_adc(root)
 
 # Start GUI window
 root = Tk()
@@ -688,7 +766,7 @@ ttk.Button(sc_lframe, text="Auto", command=open_child).grid(column=0, columnspan
 # ttk.Button(ts_lframe, text="Send DAC", command=lambda: pYtp.send_DAC(gui)).grid(column=1, columnspan=2, row=row_idx, pady=[20,0], sticky=SE)
 
 # Current level config power source
-ts_lframe = ttk.Labelframe(main_frame, text="INJ configuration", padding=10, width=200, height=100)
+ts_lframe = ttk.Labelframe(main_frame, text="Inputs", padding=10, width=200, height=100)
 ts_lframe.grid(column=2, row=0, padx=5, pady=30, sticky=NSEW)
 row_idx = 0
 ttk.Label(ts_lframe, text="Current level:").grid(column=0, row=row_idx, sticky=E)
@@ -697,7 +775,22 @@ current_entry.bind("<FocusOut>", lambda x: check_current_level(gui.current_level
 current_entry.grid(column=1, row=row_idx, padx=5)
 ttk.Label(ts_lframe, text="uA").grid(column=2, row=row_idx, sticky=E)
 row_idx += 1
-ttk.Button(ts_lframe, text="Send INJ", command=lambda: pYtp.send_current_level(gui)).grid(column=1, columnspan=2, row=row_idx, pady=[115,0], sticky=SE)
+ttk.Button(ts_lframe, text="Send INJ", command=lambda: pYtp.send_current_level(gui)).grid(column=1, columnspan=2, row=row_idx, pady=[10,10])
+row_idx += 1
+ttk.Label(ts_lframe, text="ADC level P:").grid(column=0, row=row_idx, sticky=E)
+current_entry = ttk.Entry(ts_lframe, textvariable=gui.adc_p, width=8)
+current_entry.bind("<FocusOut>", lambda x: check_voltage_level(gui.adc_p))
+current_entry.grid(column=1, row=row_idx, padx=5)
+ttk.Label(ts_lframe, text="V").grid(column=2, row=row_idx, sticky=E)
+row_idx += 1
+ttk.Label(ts_lframe, text="ADC level N:").grid(column=0, row=row_idx, sticky=E)
+current_entry = ttk.Entry(ts_lframe, textvariable=gui.adc_n, width=8)
+current_entry.bind("<FocusOut>", lambda x: check_voltage_level(gui.adc_n))
+current_entry.grid(column=1, row=row_idx, padx=5)
+ttk.Label(ts_lframe, text="V").grid(column=2, row=row_idx, sticky=E)
+row_idx += 1
+ttk.Button(ts_lframe, text="Auto", command=open_adc).grid(column=0, columnspan=1, row=row_idx, pady=[10,0])
+ttk.Button(ts_lframe, text="Set ADC inputs", command=lambda: pYtp.send_voltage_levels(gui)).grid(column=1, columnspan=2, row=row_idx, pady=[10,0])
 
 
 # Pixel selection

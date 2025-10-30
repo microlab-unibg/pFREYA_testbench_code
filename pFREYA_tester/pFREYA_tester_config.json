@@ -15,7 +15,9 @@
         "level": "420"
     },
     "INJ": {
-        "current_level": "-1.5"
+        "current_level": "-1.5",
+        "adc_p": ".7",
+        "adc_n": ".5"
     },
     "slow_ctrl": {
         "csa_mode_n": "01",
