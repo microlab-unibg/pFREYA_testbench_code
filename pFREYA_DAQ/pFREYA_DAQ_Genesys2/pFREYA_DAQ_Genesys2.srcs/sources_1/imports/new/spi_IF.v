@@ -1,25 +1,26 @@
 `timescale 1ns / 1ps
 
 module spi_IF
-#(parameter CKS_PER_BIT=87)
+#(parameter CKS_PER_BIT=2)
 (
-    // SPI signals
-    output spi_ck,
-    output spi_cs,
-    output [15:0] dac_data_in,
-    output dac_rst
-
+    input dac_clk,
+    input [15:0] tx_data,
+    input tx_dv,   
+    output dac_sclk,  
+    output dac_clr,   
+    output dac_cs,    
+    output dac_din
 );
 
 
-    //uart tx
-    uart_tx #(.CKS_PER_BIT(CKS_PER_BIT)) uart_tx_inst (
-        .i_Clock(uart_ck),
-        .i_Tx_DV(tx_dv),
-        .i_Tx_Byte(tx_byte),
-        .o_Tx_Active(tx_active),
-        .o_Tx_Serial(tx_ser),
-        .o_Tx_Done(tx_done)
+    spi_tx #(.CKS_PER_BIT(CKS_PER_BIT)) spi_tx_inst (
+        .i_Clk(dac_clk),
+        .i_Tx_Data(tx_data),
+        .i_Tx_DV(tx_dv),   
+        .o_SPI_Sclk(dac_sclk),  
+        .o_SPI_Clr(dac_clr),   
+        .o_SPI_Cs(dac_cs),    
+        .o_SPI_Din(dac_din)
     );
 
 endmodule

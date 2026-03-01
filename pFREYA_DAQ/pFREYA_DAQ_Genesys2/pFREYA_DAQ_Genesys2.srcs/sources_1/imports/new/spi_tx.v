@@ -4,68 +4,90 @@ module spi_tx
     #(parameter CKS_PER_BIT=2)
     (
         // Internal clock at 10 MHz, at least 2X SPI clock
-        input i_Clk,
-        input [15:0] i_Tx_Data,
-        // Input Data Valid
-        input i_Tx_DV,   
+        input         i_Clk,
+        input [15:0]  i_Tx_Data,
+        input         i_Tx_DV,      // Input Data is Valid
         
         // Output clock to the DAC at 5 MHz
-        output o_SPI_Sclk,  // To establish bit reading by the DAC
-        output o_SPI_Clr,   // To reset
-        output o_SPI_Cs,    // To establish transmission
-        output o_SPI_Din    // For serial transmission
+        output reg o_SPI_Sclk = 1'b0,  // To establish bit reading by the DAC
+        output reg o_SPI_Clr  = 1'b1,  // To reset
+        output reg o_SPI_Cs   = 1'b1,    // To establish transmission
+        output reg o_SPI_Din  = 1'b0  // For serial transmission
     );
 
-    // Possible transmission states 
-    parameter   s_IDLE      = 2'b00;
-    parameter   s_TRANSFER  = 2'b01; 
+    // State Machine states 
+    parameter   s_IDLE        = 2'b00;
+    parameter   s_TRANSFER    = 2'b01; 
 
-    // State Machine status for main transmission (4 states) 
-    reg [1:0]   r_SM_Main = 0;
-    reg [3:0]   r_Bit_Count = 16;
-    reg [15:0]  r_Data_Local = 0;
-    reg [3:0]   r_Data_Index = 0;
-    reg [1:0]   r_Clock_Count = 0;
+    reg [1:0]   r_SM_Main     = 0;        // State Machine status  
+    reg [3:0]   r_Bit_Count   = 15;       
+    reg [15:0]  r_Data_Local  = 0;
+    reg [1:0]   r_Clock_Count = 0;        
     
-    wire        w_Master_Ready;
+    //wire        w_Master_Ready;
 
     always @(posedge i_Clk)
     begin
         case(r_SM_Main)
             
-            IDLE: 
+            s_IDLE: 
             begin
-                o_SPI_Cs <= 1'b1; 
+                o_SPI_Cs      <= 1'b1; 
+                o_SPI_Sclk    <= 1'b0;
+                r_Bit_Count   <= 15;
+                r_Clock_Count <= 1;
 
-                if( i_Tx_DV == 1'b1 )
-                begin
+                if( i_Tx_DV )
+                  begin
                     // Copy for guaranteed local data integrity 
                     r_Data_Local    <= i_Tx_Data;
-                    // So that CS is already low on next posedge
                     o_SPI_Cs        <= 1'b0;
-                    r_SM_Main       <= TRANSFER; 
-                end
+                    r_Bit_Count     <= 15;
+                    // So that CS is already low on next posedge
+                    o_SPI_Din       <= i_Tx_Data[15];  // First bit is pre-loaded
+                    r_SM_Main       <= s_TRANSFER; 
+                  end
                 else
-                    r_SM_Main <= s_IDLE;
+                  r_SM_Main <= s_IDLE;
             end
             
-            TRANSFER:
+            s_TRANSFER:
             begin
-                if( w_Master_Ready )
-                begin
-                    if ( r_Clock_Count < CKS_PER_BIT )
-                    begin
-                        o_SPI_Din       <= r_Data_Local[r_Data_Index];
+                //if( w_Master_Ready ) 
+                  //begin
+                    if ( o_SPI_Sclk == 0)
+                      o_SPI_Din   <= r_Data_Local[r_Bit_Count];
+
+                    if ( r_Clock_Count < (CKS_PER_BIT -1) ) 
+                      begin 
                         r_Clock_Count   <= r_Clock_Count + 1'b1;
-                    end
+                      end 
                     else 
-                    begin
-                        r_Bit_Count     <= r_Bit_Count - 1'b1;
+                      begin
                         r_Clock_Count   <= 1'b0;  
-                    end 
-                end 
+                        o_SPI_Sclk      <= ~o_SPI_Sclk;
+
+                        if ( o_SPI_Sclk == 1'b1 )   // DAC reads                
+                          begin 
+                            if ( r_Bit_Count == 0 ) 
+                              begin
+                                o_SPI_Cs  <= 1'b1;
+                                r_SM_Main <= s_IDLE;
+                              end
+                            else 
+                              begin    
+                                r_Bit_Count <= r_Bit_Count - 1'b1;
+                              end 
+                          end 
+                        else                        // DAC not reading => update bit 
+                          begin 
+                            //o_SPI_Din   <= r_Data_Local[r_Bit_Count];
+                          end 
+                      end 
+                  //end  
             end 
-        default: 
+          default: r_SM_Main <= s_IDLE;
+        endcase
     end
 
-endmodule;
+endmodule
