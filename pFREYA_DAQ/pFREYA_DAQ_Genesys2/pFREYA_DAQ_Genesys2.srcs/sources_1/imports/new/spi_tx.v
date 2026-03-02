@@ -79,10 +79,10 @@ module spi_tx
                                 r_Bit_Count <= r_Bit_Count - 1'b1;
                               end 
                           end 
-                        else                        // DAC not reading => update bit 
-                          begin 
+                        //else                        // DAC not reading => update bit 
+                        //  begin 
                             //o_SPI_Din   <= r_Data_Local[r_Bit_Count];
-                          end 
+                        //  end 
                       end 
                   //end  
             end 
