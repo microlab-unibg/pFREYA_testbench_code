@@ -1,3 +1,45 @@
+Copyright 1986-2022 Xilinx, Inc. All Rights Reserved. Copyright 2022-2025 Advanced Micro Devices, Inc. All Rights Reserved.
+---------------------------------------------------------------------------------------------------------------------------------------------
+| Tool Version : Vivado v.2025.2 (win64) Build 6299465 Fri Nov 14 19:35:11 GMT 2025
+| Date         : Tue Apr  7 16:31:26 2026
+| Host         : giorgio running 64-bit major release  (build 9200)
+| Command      : upgrade_ip
+| Device       : xcku5p-ffvb676-2-e
+---------------------------------------------------------------------------------------------------------------------------------------------
+
+Upgrade Log for IP 'ila_probes'
+
+1. Summary
+----------
+
+SUCCESS in the upgrade of ila_probes (xilinx.com:ip:ila:6.2) from (Rev. 15) to (Rev. 19)
+
+
+
+
+
+
+Copyright 1986-2022 Xilinx, Inc. All Rights Reserved. Copyright 2022-2025 Advanced Micro Devices, Inc. All Rights Reserved.
+---------------------------------------------------------------------------------------------------------------------------------------------
+| Tool Version : Vivado v.2025.2 (win64) Build 6299465 Fri Nov 14 19:35:11 GMT 2025
+| Date         : Tue Apr  7 16:31:23 2026
+| Host         : giorgio running 64-bit major release  (build 9200)
+| Command      : upgrade_ip
+| Device       : xcku5p-ffvb676-2-e
+---------------------------------------------------------------------------------------------------------------------------------------------
+
+Upgrade Log for IP 'clk_wiz_clocks'
+
+1. Summary
+----------
+
+SUCCESS in the upgrade of clk_wiz_clocks (xilinx.com:ip:clk_wiz:6.0) from (Rev. 14) to (Rev. 17)
+
+
+
+
+
+
 Copyright 1986-2022 Xilinx, Inc. All Rights Reserved. Copyright 2022-2024 Advanced Micro Devices, Inc. All Rights Reserved.
 ---------------------------------------------------------------------------------------------------------------------------------------------
 | Tool Version : Vivado v.2024.1 (win64) Build 5076996 Wed May 22 18:37:14 MDT 2024

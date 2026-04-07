@@ -45,8 +45,9 @@ module pFREYA_DAQ
     output logic slow_ctrl_ck,
 
     output logic csa_reset_n_out,
+    
     // Internal signals
-    input  logic btn_reset,
+    input  logic reset,        
     output logic led_error,
 
     // UART signals
@@ -54,8 +55,8 @@ module pFREYA_DAQ
     output logic tx_ser,
 
     // sys clk
-    input  logic sys_clk_p,
-    input  logic sys_clk_n
+    input  logic clk_in1_p,     
+    input  logic clk_in1_n      
 );
 
     // for UART
@@ -67,6 +68,11 @@ module pFREYA_DAQ
     logic [UART_PACKET_SIZE-1:0] uart_data, pc_uart_data;
     logic uart_valid, pc_uart_valid;
     logic pc_uart_done, pc_uart_active;
+
+    // SPI Signals (TODO: ricordati di pilotare spi_data e spi_dv da qualche parte!)
+    logic [15:0] spi_data;
+    logic        spi_dv;
+    logic        clk_sck;   // clock per SPI 
 
     // clock wizard
     wire locked;
@@ -110,7 +116,7 @@ module pFREYA_DAQ
         .slow_ctrl_reset_n  (slow_ctrl_reset_n),
         .slow_ctrl_ck       (slow_ctrl_ck),
         .ck                 (daq_ck),
-        .reset              (btn_reset),
+        .reset              (reset),      
         .led_error          (led_error),
         .uart_data          (uart_data),
         .uart_valid         (uart_valid),
@@ -119,17 +125,28 @@ module pFREYA_DAQ
         .pc_uart_active     (pc_uart_active),
         .pc_uart_done       (pc_uart_done)
     );
-
+    
+    spi_IF #(.CKS_PER_BIT(CKS_PER_BIT)) spi_IF_inst (
+        .dac_clk   (clk_sck),
+        .tx_data   (spi_data),
+        .tx_dv     (spi_dv),
+        .dac_sclk  (dac_sck),
+        //.dac_clr   (),
+        .dac_cs    (dac_sync_n),
+        .dac_din   (dac_sdin)
+    );
+    
     clk_wiz_clocks clk_wiz_clocks_inst (
         // Clock out ports
-        .daq_ck(daq_ck),             // output daq_ck
-        .uart_ck(uart_ck),           // output uart_ck
+        .daq_ck(daq_ck),       // output daq_ck
+        .uart_ck(uart_ck),     // output uart_ck
+        .clk_sck(clk_sck),     // output clk_sck
         // Status and control signals
-        .reset(btn_reset), // input reset
+        .reset(reset),         
         .locked(locked),       // output locked
         // Clock in ports
-        .clk_in1_p(sys_clk_p),    // input clk_in1_p
-        .clk_in1_n(sys_clk_n)    // input clk_in1_n
+        .clk_in1_p(clk_in1_p), 
+        .clk_in1_n(clk_in1_n)  
     );
 
     ila_probes ila_probes_inst (
@@ -158,8 +175,8 @@ module pFREYA_DAQ
         .probe20(ser_out)
     );
 
-    // always_ff @(posedge daq_ck, posedge btn_reset) begin: reset_daq
-    //     if (btn_reset) begin
+    // always_ff @(posedge daq_ck, posedge reset) begin: reset_daq
+    //     if (reset) begin
     //         // reset all registers
     //         // pc_uart_data <= '0;
     //         // pc_uart_valid <= 1'b0;
@@ -167,10 +184,11 @@ module pFREYA_DAQ
     //     end
     // end
 
-    always_ff @(posedge daq_ck, posedge btn_reset) begin: csa_reset_n_out_creation
-        if (btn_reset)
+    always_ff @(posedge daq_ck, posedge reset) begin: csa_reset_n_out_creation 
+        if (reset)                                                             
             csa_reset_n_out <= 1'b0;
         else
             csa_reset_n_out <= csa_reset_n;
     end
+
 endmodule
