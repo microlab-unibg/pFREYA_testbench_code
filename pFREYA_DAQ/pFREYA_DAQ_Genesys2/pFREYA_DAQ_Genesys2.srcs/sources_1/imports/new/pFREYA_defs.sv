@@ -65,10 +65,18 @@
     // DAC full packet is |CMD_PADDING(4)|CMD(4)|DATA(16)|
     // see below (macro) for addrs and cmds
     //parameter DAC_ADDR_PACKET_LENGTH = 8; // only for I2C
-    parameter DAC_PACKET_LENGTH = 24;
+
+    /*parameter DAC_PACKET_LENGTH = 24;
     parameter DAC_PACKET_REG_LENGTH = 32;
     parameter DAC_UART_DATA_POS = 5;
     parameter DAC_UART_DATA_LAST_POS = 5;
+    */
+
+    //parametri per DAC MAX5443
+    parameter DAC_PACKET_LENGTH = 16;      
+    parameter DAC_PACKET_REG_LENGTH = 16;  
+    parameter DAC_UART_DATA_POS = 5;       
+    parameter DAC_UART_DATA_LAST_POS = 3;  
 
     // fast ctrl feature sizes
     parameter FAST_CTRL_N = 18;

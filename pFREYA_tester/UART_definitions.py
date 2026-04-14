@@ -44,9 +44,14 @@ NOTLAST_UART_PACKET = '0'
 # DAC full packet is |CMD_PADDING(4)|CMD(4)|DATA(16)|
 # see below (macro) for addrs and cmds
 #DAC_ADDR_PACKET_LENGTH = 8 # only for I2C
-DAC_PACKET_LENGTH = 24
+
+#DAC_PACKET_LENGTH = 24
+DAC_PACKET_LENGTH  = 16   # 16 bit
+ 
 DAC_UART_DATA_POS = 5
-DAC_UART_DATA_LAST_POS = 5
+
+#DAC_UART_DATA_LAST_POS = 5
+DAC_UART_DATA_LAST_POS = 3   
 
 # fast ctrl feature sizes
 FAST_CTRL_N = 18
@@ -196,7 +201,9 @@ DAC_DATA_TRIGGER_SOFT_RESET  = '1010'
 # DAC_DATA_REGISTER is RW. = 'XXXX_XXXX_XXXX_0000
 # no bits are reserved, 16 bits are data, left-aligned. For DAC6051 the last 4 bits are 0 since it is 12-bit.
 # Make sure there is enough voltage headroom for the right div and gain.
-DAC_BITS = 12
+
+#DAC_BITS = 12
+DAC_BITS = 16
 DAC_DATA_REGISTER_PADDING = '0000'
 
 # Current level through power source

@@ -22,9 +22,11 @@
 `include "pFREYA_defs.sv"
 
 module pFREYA_IF(
-        output logic dac_sdin, 
-        output logic dac_sync_n, 
-        output logic dac_sck,
+        //output logic dac_sdin, 
+        output logic dac_cs, 
+        //output logic dac_sck,
+        output logic [15:0] spi_data,  //16-bit verso spi_IF
+        output logic        spi_dv,    //data valid verso spi_IF
         output logic sel_init_n,
         output logic sel_ckcol, 
         output logic sel_ckrow,
@@ -81,8 +83,10 @@ module pFREYA_IF(
     logic [CK_CNT_N-1:0] inj_div= '0;
     logic [CK_CNT_N-1:0] ser_cnt = -1;
     logic [CK_CNT_N-1:0] ser_div= '0;
-    logic [CK_CNT_N-1:0] dac_sck_cnt = -1;
-    logic [CK_CNT_N-1:0] dac_sck_div= '0;
+
+    //logic [CK_CNT_N-1:0] dac_sck_cnt = -1;
+    //logic [CK_CNT_N-1:0] dac_sck_div= '0;
+
     // for selection
     logic sel_ck = 1'b0; // internal clock temporisation
     logic [PIXEL_COL_N-1:0] sel_ckcol_cnt= '0;
@@ -345,6 +349,7 @@ module pFREYA_IF(
         end
     end
 
+    /*
     // dac SCK clock generation
     always_ff @(posedge ck, posedge reset) begin: dac_sck_generation
         if (reset) begin
@@ -364,6 +369,9 @@ module pFREYA_IF(
             dac_sck_cnt <= dac_sck_cnt + 1'b1;
         end
     end
+    */
+
+
 //===================== END STD CLOCKS ===============================
 
 //====================== FAST CONTROL ================================
@@ -702,7 +710,8 @@ module pFREYA_IF(
             ser_div <= '0;
             sel_div <= '0;
             inj_div <= '0;
-            dac_sck_div <= '0;
+            
+            //dac_sck_div <= '0;
                                     
             csa_reset_n_delay_div <= '0;
             sh_phi1d_inf_delay_div <= '0;
@@ -724,7 +733,9 @@ module pFREYA_IF(
             slow_ctrl_reset_n <= 1'b0;
             slow_ctrl_in_mask <= 1'b1; // (TS)
             //sh_phi1d_inf_mask <= 1'b0; // (TS)
-            dac_sync_n <= 1'b1;
+            
+            //dac_sync_n <= 1'b1;
+            
             sel_init_n <= 1'b0;
             inj_start <= 1'b0;
 
@@ -759,6 +770,11 @@ module pFREYA_IF(
 
             slow_ctrl_packet = 0;
             dac_packet = 0;
+
+            //nuovi segnali di reset
+            //spi_data        <= '0;
+            //spi_dv          <= 1'b0;
+            //dac_packet_sent <= 1'b0;
         end
         else begin
             case (state)
@@ -769,7 +785,7 @@ module pFREYA_IF(
                     ser_div <= '0;
                     sel_div <= '0;
                     inj_div <= '0;
-                    dac_sck_div <= '0;
+                    //dac_sck_div <= '0;
                                             
                     csa_reset_n_delay_div <= '0;
                     sh_phi1d_inf_delay_div <= '0;
@@ -791,7 +807,11 @@ module pFREYA_IF(
                     slow_ctrl_reset_n <= 1'b0;
                     slow_ctrl_in_mask <= 1'b1; // (TS)
                     //sh_phi1d_inf_mask <= 1'b0; // (TS)
-                    dac_sync_n <= 1'b1;
+
+                    //dac_sync_n <= 1'b1;
+
+                    dac_cs <= 1'b1;
+                    
                     sel_init_n <= 1'b0;
                     inj_start <= 1'b0;
 
@@ -892,8 +912,8 @@ module pFREYA_IF(
                                             inj_div[data_packet_index_receive +: DATA_UART_DATA_POS+1] <= uart_data[DATA_START_POS:DATA_END_POS];
                                         `SER_CK_CODE:
                                             ser_div[data_packet_index_receive +: DATA_UART_DATA_POS+1] <= uart_data[DATA_START_POS:DATA_END_POS];
-                                        `DAC_SCK_CODE:
-                                            dac_sck_div[data_packet_index_receive +: DATA_UART_DATA_POS+1] <= uart_data[DATA_START_POS:DATA_END_POS];
+                                        /*`DAC_SCK_CODE:
+                                            dac_sck_div[data_packet_index_receive +: DATA_UART_DATA_POS+1] <= uart_data[DATA_START_POS:DATA_END_POS];*/
                                     endcase
                                     if (uart_data[DATA_UART_DATA_POS+1] == LAST_UART_PACKET) begin
                                         data_packet_index_receive <= '0;
@@ -1048,12 +1068,12 @@ module pFREYA_IF(
                         slow_ctrl_packet_available <= slow_ctrl_packet_available;
                     end
                 end
-                CMD_SEND_DAC: begin
+                CMD_SEND_DAC: begin /* commentato pperche la gestione della transizione viene fatta nel blocco dac_data_send
                     // this way we are checking on the falling edge and no ck is sent after the signal is on
                     if (dac_packet_sent)
                         dac_sync_n <= 1'b1;
                     else
-                        dac_sync_n <= 1'b0;
+                        dac_sync_n <= 1'b0;*/
                 end
                 CMD_SEL_PIX: begin
                     // this way we are checking on the falling edge and no ck is sent after the signal is off
@@ -1157,6 +1177,8 @@ module pFREYA_IF(
         end
     end
 
+    /* viene sostituito dalla logica spi_dv messa di seguito
+
     // if slow ctrl is posedge then data need to be transmitted
     always_ff @(posedge ck, posedge reset) begin: dac_data_send
         if (reset) begin
@@ -1199,6 +1221,30 @@ module pFREYA_IF(
             dac_sdin <= 1'b0;
         end
     end
+*/
+    always_ff @(posedge ck, posedge reset) begin: dac_data_send
+        if (reset) begin
+            spi_data        <= '0;
+            spi_dv          <= 1'b0;
+            dac_packet_sent <= 1'b0;
+        end
+        else if (state == CMD_SEND_DAC) begin
+            if (!dac_packet_sent) begin
+                spi_data        <= dac_packet[15:0];
+                spi_dv          <= 1'b1;
+                dac_packet_sent <= 1'b1;
+            end
+            else begin
+                spi_dv  <= 1'b0;  
+                spi_data <= spi_data;
+            end
+        end
+        else begin
+            spi_dv          <= 1'b0;
+            dac_packet_sent <= 1'b0;
+        end
+    end
+
 
     // if sel_ck is posedge then col or row ck might need to commute
     always_ff @(posedge ck, posedge reset) begin: pixel_sel_send_posedge

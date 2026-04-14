@@ -391,9 +391,9 @@ def send_clock_single(gui, clock):
             gui.slow_ck_sent = True
         elif (clock == UARTdef.SEL_CK_CODE):
             gui.sel_ck_sent = True
-        elif (clock == UARTdef.DAC_SCK_CODE):
+        '''elif (clock == UARTdef.DAC_SCK_CODE):
             gui.dac_sck_sent = True
-
+        '''
         time.sleep(1)
                 
     except Exception:
@@ -418,7 +418,7 @@ def send_clocks(gui):
         send_clock_single(gui,UARTdef.SEL_CK_CODE)
         send_clock_single(gui,UARTdef.ADC_CK_CODE)
         send_clock_single(gui,UARTdef.INJ_STB_CODE)
-        send_clock_single(gui,UARTdef.DAC_SCK_CODE)
+        """send_clock_single(gui,UARTdef.DAC_SCK_CODE)"""
         send_clock_single(gui,UARTdef.SER_CK_CODE)
 
     except Exception:
@@ -565,6 +565,16 @@ def create_dac_packet(gui, type):
     #remove word divider
     dac_packet_data = dac_packet_data.replace('_','')
     
+    return dac_packet_data
+
+def create_dac_packet_auto(level):
+    """
+    prende il livello per il dac e lo converte nel formato a 16 bit (MSB first) necessario al MAX5443
+    """
+    level = int(level)
+    if level < 0 or level > 65535:
+        raise ValueError(f'DAC level {level} out of range [0, 65535].')
+    dac_packet_data = format(level, '016b')
     return dac_packet_data
 
 def send_current_level(gui):
@@ -764,14 +774,14 @@ def send_UART_DAC(dac_packet):
     for i in range(0,math.ceil(UARTdef.DAC_PACKET_LENGTH/(UARTdef.DAC_UART_DATA_POS+1))-1): # -1 due to last packet different
         bin_data = dac_packet[i*(UARTdef.DAC_UART_DATA_POS+1):(i+1)*(UARTdef.DAC_UART_DATA_POS+1)]
         bin_data = bin_data[::-1] # as above
-        data = create_data_slow(bin_data, UARTdef.NOTLAST_UART_PACKET)
+        data = create_data_slow(bin_data, UARTdef.NOTLAST_UART_PACKET)#vengono messi due parametri ma la funzione è definita su 1
         send_UART('',data)
         print('DATA sent: ',data)
         time.sleep(1)
 
     bin_data = dac_packet[(i+1)*(UARTdef.DAC_UART_DATA_POS+1):]
     bin_data = bin_data[::-1]
-    data = create_data_slow(bin_data, UARTdef.LAST_UART_PACKET)
+    data = create_data_slow(bin_data, UARTdef.LAST_UART_PACKET)#vengono messi due parametri ma la funzione è definita su 1
     send_UART('',data)
     print('DATA sent: ',data)
     time.sleep(1)
@@ -781,6 +791,55 @@ def send_UART_DAC(dac_packet):
     send_UART(cmd)
     print('CMD sent: ',cmd)
     time.sleep(1)
+
+def send_uart_dac_auto(dac_packet_completo):
+    # Invio comando di configurazione DAC
+    cmd = create_cmd(UARTdef.SET_DAC_CMD, UARTdef.UNUSED_CODE)
+    send_UART(cmd)
+    print('CMD sent:', cmd)
+    time.sleep(1)
+
+    # Calcolo quanti pacchetti completi da 6 bit posso ottenere
+    dim = UARTdef.DAC_UART_DATA_POS + 1
+    num_blocchi = UARTdef.DAC_PACKET_LENGTH // dim
+
+    # Invio dei blocchi completi 
+    for i in range(num_blocchi):
+        inizio = i * dim
+        fine = (i + 1) * dim
+
+        blocco_dati = dac_packet_completo[inizio:fine]
+        pacchetto_uart = (
+            UARTdef.DATA_PACKET +
+            UARTdef.NOTLAST_UART_PACKET +
+            blocco_dati
+        )
+
+        send_UART('', pacchetto_uart)
+        print('DATA sent:', pacchetto_uart)
+        time.sleep(1)
+
+    # Gestione dell'ultimo blocco 
+    ultimo_blocco = dac_packet_completo[num_blocchi * dim:]
+    ultimo_blocco_padded = '00' + ultimo_blocco  # padding per arrivare a 6 bit
+
+    pacchetto_finale = (
+        UARTdef.DATA_PACKET +
+        UARTdef.LAST_UART_PACKET +
+        ultimo_blocco_padded
+    )
+
+    send_UART('', pacchetto_finale)
+    print('DATA sent:', pacchetto_finale)
+    time.sleep(1)
+
+    # Invio comando finale per eseguire il DAC
+    comando_send_dac = create_cmd(UARTdef.SEND_DAC_CMD, UARTdef.UNUSED_CODE)
+    send_UART(comando_send_dac)
+    print('CMD sent:', comando_send_dac)
+    time.sleep(1)
+
+''' SEND DAC PRECEDENTE
 
 def send_DAC(gui):
     """Function to DAC configuration in the FPGA
@@ -814,6 +873,17 @@ def send_DAC(gui):
         print(traceback.format_exc())
         return 1
     
+    return 0
+'''
+def send_DAC(gui):
+    try:
+        level = int(gui.dac['level'].get())
+        dac_packet_data = create_dac_packet_auto(level)
+        print(f'DAC packet: {dac_packet_data} → {level}/65535 * VREF')
+        send_UART_DAC(dac_packet_data)
+    except Exception:
+        print(traceback.format_exc())
+        return 1
     return 0
 
 def send_sync_time_bases():

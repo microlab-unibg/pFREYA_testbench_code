@@ -35,7 +35,9 @@ module spi_tx
                 o_SPI_Cs      <= 1'b1; 
                 o_SPI_Sclk    <= 1'b0;
                 r_Bit_Count   <= 15;
-                r_Clock_Count <= 1;
+                /*r_Clock_Count <= 1;  prima: se facessi cosi il primo conteggio avverrebbe troppo presto*/
+
+                r_Clock_Count <= 0; 
 
                 if( i_Tx_DV )
                   begin

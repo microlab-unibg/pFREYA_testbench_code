@@ -12,7 +12,7 @@ import UART_definitions as UARTdef
 import os
 import sys
 
-import pyvisa
+import pyvisa as pyvisa
 import time
 import numpy as np
 import pandas as pd
@@ -190,7 +190,8 @@ class pFREYA_GUI():
         self.adc_ck = StringVar(value=json_config.get("clocks","").get("adc_ck",""))
         self.inj_stb = StringVar(value=json_config.get("clocks","").get("inj_stb",""))
         self.ser_ck = StringVar(value=json_config.get("clocks","").get("ser_ck",""))
-        self.dac_sck = StringVar(value=json_config.get("clocks","").get("dac_sck",""))
+
+        # self.dac_sck = StringVar(value=json_config.get("clocks","").get("dac_sck",""))
 
         self.clock_map = {
             UARTdef.SLOW_CTRL_CK_CODE : self.slow_ck,
@@ -198,16 +199,21 @@ class pFREYA_GUI():
             UARTdef.ADC_CK_CODE       : self.adc_ck,
             UARTdef.INJ_STB_CODE      : self.inj_stb,
             UARTdef.SER_CK_CODE       : self.ser_ck,
-            UARTdef.DAC_SCK_CODE      : self.dac_sck
+            #UARTdef.DAC_SCK_CODE      : self.dac_sck
         }
-
-        # DAC config
         self.dac = {}
+        '''
+        # DAC config vecchio
+        
         self.dac["source"] = StringVar(value=json_config.get("DAC","").get("source",""))
         self.dac["divider"] = StringVar(value=json_config.get("DAC","").get("divider",""))
         self.dac["gain"] = StringVar(value=json_config.get("DAC","").get("gain",""))
         self.dac["level"] = StringVar(value=json_config.get("DAC","").get("level",""))
-
+        '''
+        
+        #nuovo
+        self.dac["level"] = StringVar(value=json_config.get("DAC","").get("level",""))
+                                      
         # INJ config
         self.current_level = StringVar(value=json_config.get("INJ","").get("current_level",""))
         self.adc_p = StringVar(value=json_config.get("INJ","").get("adc_p",""))
@@ -298,9 +304,13 @@ class pFREYA_GUI():
                         "dac_sck":     self.dac_sck.get()
                     },
                     "DAC": {
+                        
+                        '''
+                         relativi al dac vecchio
                         "source": self.dac["source"].get(),
                         "divider": self.dac["divider"].get(),
                         "gain": self.dac["gain"].get(),
+                        '''
                         "level": self.dac["level"].get()
                     },
                     "INJ": {
@@ -551,6 +561,32 @@ def run_adc_sweep():
     df.to_csv(f'G:/Shared drives/FALCON/measures/new/transcharacteristics/monitor/adc_sweep_{step}_{datetime_str}.tsv', sep='\t', index=False)
     print("File tsv salvato con successo.")
 
+
+def run_script_dac():
+    print("\n--- RUNNING SCRIPT DAC ---")
+
+    print("\n--Reset FPGA--")
+    reset_iniziale()
+    time.sleep(2)
+
+    print("\n--Send clocks--")
+    auto_clock()
+    time.sleep(2)
+
+    print("\n--Send DAC level--")
+    try:
+        level = int(gui.dac['level'].get())
+        dac_packet_data = pYtp.create_dac_packet_auto(level)
+        print(f'DAC packet: {dac_packet_data} → {level}/65535 * VREF')
+        pYtp.send_UART_DAC(dac_packet_data)
+        print(f"--DAC level {level} sent successfully--")
+    except Exception:
+        import traceback
+        print(traceback.format_exc())
+        print("--DAC send FAILED--")
+
+    print("\n--- SCRIPT DAC ENDED ---\n")
+
 class gui2(Toplevel):
   def __init__(self,parent):
     super().__init__(parent)
@@ -575,7 +611,6 @@ class gui2(Toplevel):
     label3.grid(row=2, column=0, padx=10, pady=10)
     button3 = Button(frame, text="run", command=run_script_enc)
     button3.grid(row=2, column=1, padx=10, pady=10)
-
     #MC
     # label4 = Label(frame, text="Comparator")
     # label4.grid(row=3, column=0, padx=10, pady=10)
@@ -642,6 +677,44 @@ def open_adc():
     print("opening adc")
     child=gui_adc(root)
 
+
+class gui_dac_auto(Toplevel):
+    def __init__(self, parent):
+        super().__init__(parent)
+        self.title("pFREYA tester v0 - Automatic testing DAC")
+        self.geometry("420x200")
+        self.resizable(False, True)
+
+        # Frame principale come in gui2
+        frame = Frame(self)
+        frame.pack(pady=10)
+
+        label_dac = Label(frame, text="dac")
+        label_dac.grid(row=0, column=0, padx=10, pady=10)
+        button_dac = Button(frame, text="run", command=run_script_dac)
+        button_dac.grid(row=0, column=1, padx=10, pady=10)
+
+        # Riepilogo livello corrente — stessa idea del cmp_frame in gui2
+        info_frame = ttk.Labelframe(self, text="DAC settings", padding=10)
+        info_frame.pack(pady=10, padx=10, fill=X)
+
+        ttk.Label(info_frame, text="Current level:").grid(
+            column=0, row=0, sticky=E, padx=5)
+        ttk.Label(info_frame, textvariable=gui.dac["level"]).grid(
+            column=1, row=0, sticky=W, padx=5)
+        ttk.Label(info_frame, text="/ 65535").grid(
+            column=2, row=0, sticky=W)
+
+        ttk.Label(info_frame, text="VOUT =").grid(
+            column=0, row=1, sticky=E, padx=5, pady=(2,0))
+        ttk.Label(info_frame, text="level / 65535 × VREF",
+                  foreground="gray").grid(column=1, columnspan=2, row=1, sticky=W)
+
+        self.mainloop()
+
+def open_dac_auto():
+    print("opening dac auto")
+    child = gui_dac_auto(root)
 # Start GUI window
 root = Tk()
 root.title("pFREYA tester v1 - Manual/Auto testing")
@@ -712,13 +785,17 @@ current_entry.grid(column=1, row=row_idx, padx=5)
 ttk.Label(ck_lframe, text="FP").grid(column=2, row=row_idx)
 ttk.Button(ck_lframe, text="Send", command=lambda: pYtp.send_clock_single(gui,UARTdef.SER_CK_CODE)).grid(column=3, columnspan=1, row=row_idx, pady=[0,0], sticky=EW)
 row_idx += 1
+
+
+'''
 ttk.Label(ck_lframe, text="DAC SPI clock:").grid(column=0, row=row_idx, sticky=E)
 current_entry = ttk.Entry(ck_lframe, textvariable=gui.dac_sck, width=UARTdef.WIDTH_ENTRY)
 current_entry.bind("<FocusOut>", lambda x: check_fpga_clocks (gui.dac_sck))
 current_entry.grid(column=1, row=row_idx, padx=5)
 ttk.Label(ck_lframe, text="FP").grid(column=2, row=row_idx)
-ttk.Button(ck_lframe, text="Send", command=lambda: pYtp.send_clock_single(gui,UARTdef.DAC_SCK_CODE)).grid(column=3, columnspan=1, row=row_idx, pady=[0,0], sticky=EW)
+tk.Button(ck_lframe, text="Send", command=lambda: pYtp.send_clock_single(gui,UARTdef.DAC_SCK_CODE)).grid(column=3, columnspan=1, row=row_idx, pady=[0,0], sticky=EW)
 row_idx += 1
+'''
 ttk.Button(ck_lframe, text="Send clocks", command=lambda: pYtp.send_clocks(gui)).grid(column=1, columnspan=2, row=row_idx, pady=[10,0], sticky=SE)
 
 # Slow ctrl configuration
@@ -760,6 +837,7 @@ current_entry.grid(column=1, row=row_idx, padx=5)
 row_idx += 1
 ttk.Button(sc_lframe, text="Send slow ctrl", command=lambda: pYtp.send_slow_ctrl(gui)).grid(column=1, columnspan=2, row=row_idx, pady=[10,0], sticky=SE)
 ttk.Button(sc_lframe, text="Auto", command=open_child).grid(column=0, columnspan=1, row=row_idx, pady=[10,0], sticky=SE)
+
 # # DAC configuration
 # ts_lframe = ttk.Labelframe(main_frame, text="DAC configuration", padding=10, width=200, height=100)
 # ts_lframe.grid(column=2, row=0, padx=5, pady=30, sticky=NSEW)
@@ -783,6 +861,25 @@ ttk.Button(sc_lframe, text="Auto", command=open_child).grid(column=0, columnspan
 # current_entry.grid(column=1, row=row_idx, padx=5)
 # row_idx += 1
 # ttk.Button(ts_lframe, text="Send DAC", command=lambda: pYtp.send_DAC(gui)).grid(column=1, columnspan=2, row=row_idx, pady=[20,0], sticky=SE)
+
+
+
+dac_lframe = ttk.Labelframe(main_frame, text="DAC configuration", padding=10)
+dac_lframe.grid(column=3, row=0, padx=5, pady=30, sticky=NSEW)
+row_idx = 0
+ttk.Label(dac_lframe, text="DAC level (0–65535):").grid(column=0, row=row_idx, sticky=E)
+current_entry = ttk.Entry(dac_lframe, textvariable=gui.dac["level"], width=6)
+current_entry.bind("<FocusOut>", lambda x: check_dac_level(gui.dac["level"]))
+current_entry.grid(column=1, row=row_idx, padx=5)
+row_idx += 1
+ttk.Button(dac_lframe, text="Auto", command=open_dac_auto).grid(
+    column=0, row=row_idx, pady=[10,0], sticky=SE)
+ttk.Button(dac_lframe, text="Send DAC",
+           command=lambda: pYtp.send_DAC(gui)).grid(
+    column=1, row=row_idx, pady=[10,0], sticky=SE)
+
+
+
 
 # Current level config power source
 ts_lframe = ttk.Labelframe(main_frame, text="Inputs", padding=10, width=200, height=100)
@@ -1002,6 +1099,3 @@ main_frame.bind("<Configure>", on_canvas_configure)
 canvas.bind_all("<MouseWheel>", on_mouse_scroll)
 
 root.mainloop()
-
-
-

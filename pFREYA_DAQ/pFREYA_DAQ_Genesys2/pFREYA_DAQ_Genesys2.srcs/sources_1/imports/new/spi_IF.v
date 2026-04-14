@@ -1,4 +1,5 @@
 `timescale 1ns / 1ps
+`include "spi_tx.v"
 
 module spi_IF
 #(parameter CKS_PER_BIT=2)

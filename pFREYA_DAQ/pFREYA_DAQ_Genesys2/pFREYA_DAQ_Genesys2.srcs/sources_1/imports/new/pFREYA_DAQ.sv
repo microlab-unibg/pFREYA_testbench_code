@@ -19,13 +19,17 @@
 // 
 //////////////////////////////////////////////////////////////////////////////////
 `include "pFREYA_defs.sv"
+`include "spi_IF.v"
 
 module pFREYA_DAQ
-#(parameter CKS_PER_BIT=87)
+#(parameter CKS_PER_BIT=87, //UART
+  parameter CKS_PER_BIT_SPI = 2 //spi
+  )
+
 (
     // ASIC signals
     output logic dac_sdin,
-    output logic dac_sync_n,
+    output logic dac_cs,
     output logic dac_sck,
     output logic sel_init_n,
     output logic sel_ckcol,
@@ -68,11 +72,16 @@ module pFREYA_DAQ
     logic [UART_PACKET_SIZE-1:0] uart_data, pc_uart_data;
     logic uart_valid, pc_uart_valid;
     logic pc_uart_done, pc_uart_active;
-
+    /*
     // SPI Signals (TODO: ricordati di pilotare spi_data e spi_dv da qualche parte!)
     logic [15:0] spi_data;
     logic        spi_dv;
+    */
     logic        clk_sck;   // clock per SPI 
+
+    // Aggiungere come wire collegati tra pFREYA_IF e spi_IF(meglio wire perchè è una connessione passiva tra i due moduli?):
+    wire [15:0] spi_data;
+    wire        spi_dv;
 
     // clock wizard
     wire locked;
@@ -96,9 +105,14 @@ module pFREYA_DAQ
 
     // pFREYA_ASIC interface
     pFREYA_IF pFREYA_IF_inst (
+        /*sono in spi_IF
         .dac_sdin           (dac_sdin),
         .dac_sync_n         (dac_sync_n),
         .dac_sck            (dac_sck),
+        */
+        .spi_data           (spi_data),
+        .spi_dv             (spi_dv),
+
         .sel_init_n         (sel_init_n),
         .sel_ckcol          (sel_ckcol),
         .sel_ckrow          (sel_ckrow),
@@ -126,13 +140,13 @@ module pFREYA_DAQ
         .pc_uart_done       (pc_uart_done)
     );
     
-    spi_IF #(.CKS_PER_BIT(CKS_PER_BIT)) spi_IF_inst (
+    spi_IF #(.CKS_PER_BIT(CKS_PER_BIT_SPI)) spi_IF_inst (
         .dac_clk   (clk_sck),
         .tx_data   (spi_data),
-        .tx_dv     (spi_dv),
-        .dac_sclk  (dac_sck),
+        .tx_dv     (spi_dv),    //pilotato in pFREYA_IF
+        .dac_sclk  (dac_sck),   //pilotato in pFREYA_IF
         //.dac_clr   (),
-        .dac_cs    (dac_sync_n),
+        .dac_cs    (dac_cs),
         .dac_din   (dac_sdin)
     );
     
@@ -153,8 +167,9 @@ module pFREYA_DAQ
         .clk(daq_ck), // input wire clk
 
         .probe0(dac_sdin), // input wire [0:0]  probe0  
-        .probe1(dac_sync_n), // input wire [0:0]  probe1 
+        .probe1(dac_cs), // input wire [0:0]  probe1 
         .probe2(dac_sck), // input wire [0:0]  probe2 
+
         .probe3(sel_init_n), // input wire [0:0]  probe3 
         .probe4(sel_ckcol), // input wire [0:0]  probe4 
         .probe5(sel_ckrow), // input wire [0:0]  probe5 
