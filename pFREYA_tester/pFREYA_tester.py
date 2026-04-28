@@ -578,7 +578,7 @@ def run_script_dac():
         level = int(gui.dac['level'].get())
         dac_packet_data = pYtp.create_dac_packet_auto(level)
         print(f'DAC packet: {dac_packet_data} → {level}/65535 * VREF')
-        pYtp.send_UART_DAC(dac_packet_data)
+        pYtp.send_uart_dac_auto(dac_packet_data)
         print(f"--DAC level {level} sent successfully--")
     except Exception:
         import traceback

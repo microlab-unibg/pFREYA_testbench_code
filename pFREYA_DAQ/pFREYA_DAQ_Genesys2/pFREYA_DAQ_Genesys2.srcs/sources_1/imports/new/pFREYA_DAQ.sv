@@ -28,9 +28,11 @@ module pFREYA_DAQ
 
 (
     // ASIC signals
+    //inserite nuove
     output logic dac_sdin,
     output logic dac_cs,
     output logic dac_sck,
+
     output logic sel_init_n,
     output logic sel_ckcol,
     output logic sel_ckrow,
@@ -51,7 +53,7 @@ module pFREYA_DAQ
     output logic csa_reset_n_out,
     
     // Internal signals
-    input  logic reset,        
+    input  logic btn_reset,        
     output logic led_error,
 
     // UART signals
@@ -130,7 +132,7 @@ module pFREYA_DAQ
         .slow_ctrl_reset_n  (slow_ctrl_reset_n),
         .slow_ctrl_ck       (slow_ctrl_ck),
         .ck                 (daq_ck),
-        .reset              (reset),      
+        .reset              (btn_reset),      
         .led_error          (led_error),
         .uart_data          (uart_data),
         .uart_valid         (uart_valid),
@@ -156,7 +158,7 @@ module pFREYA_DAQ
         .uart_ck(uart_ck),     // output uart_ck
         .clk_sck(clk_sck),     // output clk_sck
         // Status and control signals
-        .reset(reset),         
+        .reset(btn_reset),         
         .locked(locked),       // output locked
         // Clock in ports
         .clk_in1_p(clk_in1_p), 
@@ -199,8 +201,8 @@ module pFREYA_DAQ
     //     end
     // end
 
-    always_ff @(posedge daq_ck, posedge reset) begin: csa_reset_n_out_creation 
-        if (reset)                                                             
+    always_ff @(posedge daq_ck, posedge btn_reset) begin: csa_reset_n_out_creation 
+        if (btn_reset)                                                             
             csa_reset_n_out <= 1'b0;
         else
             csa_reset_n_out <= csa_reset_n;

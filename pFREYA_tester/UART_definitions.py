@@ -1,5 +1,5 @@
 # UART parameters
-COM_PORT = 'COM7' # COM4 on the other pc
+COM_PORT = 'COM3' # COM4 on the other pc
 BAUD_RATE = 115200
 
 # general

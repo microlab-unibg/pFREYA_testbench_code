@@ -23,7 +23,7 @@
 
 module pFREYA_IF(
         //output logic dac_sdin, 
-        output logic dac_cs, 
+        //output logic dac_cs, 
         //output logic dac_sck,
         output logic [15:0] spi_data,  //16-bit verso spi_IF
         output logic        spi_dv,    //data valid verso spi_IF
@@ -810,7 +810,7 @@ module pFREYA_IF(
 
                     //dac_sync_n <= 1'b1;
 
-                    dac_cs <= 1'b1;
+                    //dac_cs <= 1'b1;
                     
                     sel_init_n <= 1'b0;
                     inj_start <= 1'b0;
