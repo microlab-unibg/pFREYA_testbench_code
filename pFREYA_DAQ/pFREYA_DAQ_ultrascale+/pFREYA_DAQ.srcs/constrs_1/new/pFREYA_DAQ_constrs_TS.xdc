@@ -87,7 +87,11 @@ set_property PULLTYPE PULLDOWN [get_ports slow_ctrl_ck]
 set_property PULLTYPE PULLDOWN [get_ports slow_ctrl_in]
 set_property PULLTYPE PULLDOWN [get_ports slow_ctrl_reset_n]
 #set_property PULLTYPE PULLUP [get_ports dac_sync_n]
-set_property PULLTYPE PULLUP   [get_ports dac_cs]
+
+# PULLUP rimosso da dac_cs perché causa conflitto PULLUP/OBUF nella
+# netlist post-synthesis, bloccando dac_cs a 1. Il segnale è già pilotato
+# attivamente dalla FSM con init = 1'b1, quindi il PULLUP non è necessario.
+set_property PULLTYPE NONE     [get_ports dac_cs]
 set_property PULLTYPE PULLUP [get_ports rx_ser]
 set_property PULLTYPE PULLUP [get_ports sel_init_n]
 set_property PULLTYPE PULLUP [get_ports tx_ser]

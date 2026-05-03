@@ -11,45 +11,41 @@
       </db_ref>
    </db_ref_list>
    <zoom_setting>
-      <ZoomStartTime time="8.184 ns"></ZoomStartTime>
-      <ZoomEndTime time="108.585 ns"></ZoomEndTime>
-      <Cursor1Time time="65.000 ns"></Cursor1Time>
+      <ZoomStartTime time="1.482 ns"></ZoomStartTime>
+      <ZoomEndTime time="1,011.483 ns"></ZoomEndTime>
+      <Cursor1Time time="383.482 ns"></Cursor1Time>
    </zoom_setting>
    <column_width_setting>
       <NameColumnWidth column_width="194"></NameColumnWidth>
-      <ValueColumnWidth column_width="154"></ValueColumnWidth>
+      <ValueColumnWidth column_width="129"></ValueColumnWidth>
    </column_width_setting>
-   <WVObjectSize size="8" />
-   <wvobject fp_name="/tb_spi_IF/uut/dac_clk" type="logic">
+   <WVObjectSize size="7" />
+   <wvobject fp_name="/tb_spi_IF/dac_clk" type="logic">
       <obj_property name="ElementShortName">dac_clk</obj_property>
       <obj_property name="ObjectShortName">dac_clk</obj_property>
    </wvobject>
-   <wvobject fp_name="/tb_spi_IF/uut/tx_data" type="array">
+   <wvobject fp_name="/tb_spi_IF/tx_data" type="array">
       <obj_property name="ElementShortName">tx_data[15:0]</obj_property>
       <obj_property name="ObjectShortName">tx_data[15:0]</obj_property>
    </wvobject>
-   <wvobject fp_name="/tb_spi_IF/uut/tx_dv" type="logic">
+   <wvobject fp_name="/tb_spi_IF/tx_dv" type="logic">
       <obj_property name="ElementShortName">tx_dv</obj_property>
       <obj_property name="ObjectShortName">tx_dv</obj_property>
    </wvobject>
-   <wvobject fp_name="/tb_spi_IF/uut/dac_sclk" type="logic">
+   <wvobject fp_name="/tb_spi_IF/dac_sclk" type="logic">
       <obj_property name="ElementShortName">dac_sclk</obj_property>
       <obj_property name="ObjectShortName">dac_sclk</obj_property>
    </wvobject>
-   <wvobject fp_name="/tb_spi_IF/uut/dac_clr" type="logic">
+   <wvobject fp_name="/tb_spi_IF/dac_clr" type="logic">
       <obj_property name="ElementShortName">dac_clr</obj_property>
       <obj_property name="ObjectShortName">dac_clr</obj_property>
    </wvobject>
-   <wvobject fp_name="/tb_spi_IF/uut/dac_cs" type="logic">
+   <wvobject fp_name="/tb_spi_IF/dac_cs" type="logic">
       <obj_property name="ElementShortName">dac_cs</obj_property>
       <obj_property name="ObjectShortName">dac_cs</obj_property>
    </wvobject>
-   <wvobject fp_name="/tb_spi_IF/uut/dac_din" type="logic">
+   <wvobject fp_name="/tb_spi_IF/dac_din" type="logic">
       <obj_property name="ElementShortName">dac_din</obj_property>
       <obj_property name="ObjectShortName">dac_din</obj_property>
-   </wvobject>
-   <wvobject fp_name="/tb_spi_IF/uut/CKS_PER_BIT" type="array">
-      <obj_property name="ElementShortName">CKS_PER_BIT[31:0]</obj_property>
-      <obj_property name="ObjectShortName">CKS_PER_BIT[31:0]</obj_property>
    </wvobject>
 </wave_config>

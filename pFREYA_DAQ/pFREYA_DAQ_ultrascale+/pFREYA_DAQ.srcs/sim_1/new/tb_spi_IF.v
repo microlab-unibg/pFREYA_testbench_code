@@ -53,8 +53,11 @@ module tb_spi_IF;
         tx_data = 16'h0000;
         tx_dv = 0;
 
-        // aspetta un po'
-        #20;
+        // Aspetta che il GSR (Global Set/Reset) di Xilinx si rilasci.
+        // In post-synthesis simulation, il GSR blocca tutti i FF per 100ns
+        // (ROC_WIDTH = 100000 ps nel modulo glbl). Bisogna aspettare oltre
+        // quel periodo prima di applicare stimoli, altrimenti vengono ignorati.
+        #200;
 
         // invia un dato
         tx_data = 16'hA5A5;
