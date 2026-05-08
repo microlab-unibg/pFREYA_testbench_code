@@ -78,7 +78,7 @@ module pFREYA_DAQ
     logic [15:0] spi_data;
     logic        spi_dv;
     */
-    logic        clk_sck;   // clock per SPI 
+    // clk_sck rimosso: non esiste nel clock wizard, usiamo daq_ck con divisore interno
 
     // Aggiungere come wire collegati tra pFREYA_IF e spi_IF(meglio wire perchè è una connessione passiva tra i due moduli?):
     wire [15:0] spi_data;
@@ -142,7 +142,7 @@ module pFREYA_DAQ
     );
     
     spi_IF #(.CKS_PER_BIT(CKS_PER_BIT_SPI)) spi_IF_inst (
-        .dac_clk   (clk_sck),
+        .dac_clk   (daq_ck),    // era clk_sck (inesistente), ora usa daq_ck
         .tx_data   (spi_data),
         .tx_dv     (spi_dv),    //pilotato in pFREYA_IF
         .dac_sclk  (dac_sck),   //pilotato in pFREYA_IF
@@ -153,9 +153,9 @@ module pFREYA_DAQ
     
     clk_wiz_clocks clk_wiz_clocks_inst (
         // Clock out ports
-        .daq_ck(daq_ck),       // output daq_ck
-        .uart_ck(uart_ck),     // output uart_ck
-        .clk_sck(clk_sck),     // output clk_sck
+        .daq_ck(daq_ck),       // output daq_ck  (200 MHz)
+        //.daq_ck_out(),         // output daq_ck_out (200 MHz, non usato)
+        .uart_ck(uart_ck),     // output uart_ck (10 MHz)
         // Status and control signals
         .reset(btn_reset),         
         .locked(locked),       // output locked

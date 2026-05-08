@@ -3,49 +3,54 @@
    <wave_state>
    </wave_state>
    <db_ref_list>
-      <db_ref path="tb_spi_IF_behav.wdb" id="1">
+      <db_ref path="tb_pFREYA_DAQ_behav.wdb" id="1">
          <top_modules>
             <top_module name="glbl" />
-            <top_module name="tb_spi_IF" />
+            <top_module name="pFREYA_defs" />
+            <top_module name="tb_pFREYA_DAQ" />
          </top_modules>
       </db_ref>
    </db_ref_list>
    <zoom_setting>
-      <ZoomStartTime time="1.482 ns"></ZoomStartTime>
-      <ZoomEndTime time="1,011.483 ns"></ZoomEndTime>
-      <Cursor1Time time="383.482 ns"></Cursor1Time>
+      <ZoomStartTime time="0.000 ns"></ZoomStartTime>
+      <ZoomEndTime time="499.001 ns"></ZoomEndTime>
+      <Cursor1Time time="3,228,135.498 ns"></Cursor1Time>
    </zoom_setting>
    <column_width_setting>
-      <NameColumnWidth column_width="194"></NameColumnWidth>
-      <ValueColumnWidth column_width="129"></ValueColumnWidth>
+      <NameColumnWidth column_width="141"></NameColumnWidth>
+      <ValueColumnWidth column_width="165"></ValueColumnWidth>
    </column_width_setting>
-   <WVObjectSize size="7" />
-   <wvobject fp_name="/tb_spi_IF/dac_clk" type="logic">
-      <obj_property name="ElementShortName">dac_clk</obj_property>
-      <obj_property name="ObjectShortName">dac_clk</obj_property>
+   <WVObjectSize size="8" />
+   <wvobject fp_name="/tb_pFREYA_DAQ/pFREYA_DAQ_inst/pFREYA_IF_inst/uart_valid" type="logic">
+      <obj_property name="ElementShortName">uart_valid</obj_property>
+      <obj_property name="ObjectShortName">uart_valid</obj_property>
    </wvobject>
-   <wvobject fp_name="/tb_spi_IF/tx_data" type="array">
-      <obj_property name="ElementShortName">tx_data[15:0]</obj_property>
-      <obj_property name="ObjectShortName">tx_data[15:0]</obj_property>
+   <wvobject fp_name="/tb_pFREYA_DAQ/pFREYA_DAQ_inst/pFREYA_IF_inst/state" type="array">
+      <obj_property name="ElementShortName">state[9:0]</obj_property>
+      <obj_property name="ObjectShortName">state[9:0]</obj_property>
    </wvobject>
-   <wvobject fp_name="/tb_spi_IF/tx_dv" type="logic">
-      <obj_property name="ElementShortName">tx_dv</obj_property>
-      <obj_property name="ObjectShortName">tx_dv</obj_property>
+   <wvobject fp_name="/tb_pFREYA_DAQ/pFREYA_DAQ_inst/pFREYA_IF_inst/cmd" type="array">
+      <obj_property name="ElementShortName">cmd[3:0]</obj_property>
+      <obj_property name="ObjectShortName">cmd[3:0]</obj_property>
    </wvobject>
-   <wvobject fp_name="/tb_spi_IF/dac_sclk" type="logic">
-      <obj_property name="ElementShortName">dac_sclk</obj_property>
-      <obj_property name="ObjectShortName">dac_sclk</obj_property>
-   </wvobject>
-   <wvobject fp_name="/tb_spi_IF/dac_clr" type="logic">
-      <obj_property name="ElementShortName">dac_clr</obj_property>
-      <obj_property name="ObjectShortName">dac_clr</obj_property>
-   </wvobject>
-   <wvobject fp_name="/tb_spi_IF/dac_cs" type="logic">
+   <wvobject fp_name="/tb_pFREYA_DAQ/dac_cs" type="logic">
       <obj_property name="ElementShortName">dac_cs</obj_property>
       <obj_property name="ObjectShortName">dac_cs</obj_property>
    </wvobject>
-   <wvobject fp_name="/tb_spi_IF/dac_din" type="logic">
-      <obj_property name="ElementShortName">dac_din</obj_property>
-      <obj_property name="ObjectShortName">dac_din</obj_property>
+   <wvobject fp_name="/tb_pFREYA_DAQ/pFREYA_DAQ_inst/pFREYA_IF_inst/spi_dv" type="logic">
+      <obj_property name="ElementShortName">spi_dv</obj_property>
+      <obj_property name="ObjectShortName">spi_dv</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_pFREYA_DAQ/pFREYA_DAQ_inst/pFREYA_IF_inst/spi_data" type="array">
+      <obj_property name="ElementShortName">spi_data[15:0]</obj_property>
+      <obj_property name="ObjectShortName">spi_data[15:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_pFREYA_DAQ/pFREYA_DAQ_inst/dac_sdin" type="logic">
+      <obj_property name="ElementShortName">dac_sdin</obj_property>
+      <obj_property name="ObjectShortName">dac_sdin</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_pFREYA_DAQ/dac_sck" type="logic">
+      <obj_property name="ElementShortName">dac_sck</obj_property>
+      <obj_property name="ObjectShortName">dac_sck</obj_property>
    </wvobject>
 </wave_config>

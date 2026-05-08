@@ -552,7 +552,9 @@ module pFREYA_IF(
                 next <= CMD_EVAL;
             CMD_EVAL:
                 if (!uart_valid && cmd_available) begin
-                    case (cmd)
+                    // Fix: uso direttamente uart_data invece di cmd. cmd si aggiorna in un blocco sequenziale
+                    // quindi ha 1 colpo di clock di ritardo e mi faceva saltare lo stato SEND_DAC_CMD!
+                    case (uart_data[CMD_START_POS:CMD_END_POS])
                         // if the command is a known one
                         // next read which signal to set
                         `SET_CK_CMD,
@@ -1019,8 +1021,8 @@ module pFREYA_IF(
                                         dac_packet_index_receive <= '0;
                                         dac_packet_available <= 1'b1;
                                     end else begin
-                                        dac_packet[dac_packet_index_receive +: DATA_SIZE-1] <= uart_data[DAC_UART_DATA_POS:DATA_END_POS];
-                                        dac_packet_index_receive <= dac_packet_index_receive + DATA_SIZE + 6'd1; // 6 bit per time
+                                        dac_packet[dac_packet_index_receive +: DAC_UART_DATA_POS+1] <= uart_data[DAC_UART_DATA_POS:DATA_END_POS];
+                                        dac_packet_index_receive <= dac_packet_index_receive + DAC_UART_DATA_POS + 1; // 6 bit per time
                                         dac_packet_available <= 1'b0;
                                     end
                                 end

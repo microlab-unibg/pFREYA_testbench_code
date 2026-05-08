@@ -38,7 +38,8 @@ module tb_pFREYA_DAQ;
 
 //===========DAQ======================================
     // ASIC signals
-    wire dac_sdin, dac_sync_n, dac_sck;
+    wire dac_sdin, dac_cs, dac_sck;
+    wire csa_reset_n_out;
     wire sel_init_n;
     wire sel_ckcol, sel_ckrow;
     reg  ser_out;
@@ -102,9 +103,11 @@ module tb_pFREYA_DAQ;
 
     // pFREYA_DAQ interface (integrating UART)
     pFREYA_DAQ #(.CKS_PER_BIT(UART_CKS_PER_BIT)) pFREYA_DAQ_inst (
+        // DAC SPI outputs
         .dac_sdin           (dac_sdin),
-        .dac_sync_n         (dac_sync_n),
+        .dac_cs             (dac_cs),
         .dac_sck            (dac_sck),
+
         .sel_init_n         (sel_init_n),
         .sel_ckcol          (sel_ckcol),
         .sel_ckrow          (sel_ckrow),
@@ -121,6 +124,7 @@ module tb_pFREYA_DAQ;
         .slow_ctrl_in       (slow_ctrl_in),
         .slow_ctrl_reset_n  (slow_ctrl_reset_n),
         .slow_ctrl_ck       (slow_ctrl_ck),
+        .csa_reset_n_out    (csa_reset_n_out),
         //.daq_ck             (daq_ck),
         .btn_reset          (btn_reset),
         .led_error          (led_error),
@@ -129,8 +133,8 @@ module tb_pFREYA_DAQ;
         .rx_ser             (rx_ser),
         .tx_ser             (tx_ser),
         // sys clk
-        .sys_clk_p          (sys_clk_p),
-        .sys_clk_n          (sys_clk_n)
+        .clk_in1_p          (sys_clk_p),
+        .clk_in1_n          (sys_clk_n)
     );
 
 //=========== TASKS ==================================
@@ -192,8 +196,8 @@ module tb_pFREYA_DAQ;
         integer i;
         begin
             // Send DAC packet
-            // must be done 4 times (see defs) with 0 as first bit
-            for (i=0; i<3; i=i+1)
+            // must be done 3 times for 16 bits (6 + 6 + 4)
+            for (i=0; i<2; i=i+1)
             begin
                 uart_to_send[DAC_UART_DATA_POS:DATA_END_POS] <= data[i*(DAC_UART_DATA_POS+1) +: DAC_UART_DATA_POS+1]; // last 6 bits
                 uart_to_send[DAC_UART_DATA_POS+1] <= NOTLAST_UART_PACKET; // second bit
@@ -203,9 +207,8 @@ module tb_pFREYA_DAQ;
                 #200000;
             end
             
-            // last packet not needed, see defs
-            // Send last packet (4th)
-            uart_to_send[DAC_UART_DATA_LAST_POS:DATA_END_POS] <= data[i*(DAC_UART_DATA_POS+1) +: DAC_UART_DATA_LAST_POS+1]; // last 6 bits
+            // Send last packet (3rd)
+            uart_to_send[DAC_UART_DATA_LAST_POS:DATA_END_POS] <= data[i*(DAC_UART_DATA_POS+1) +: DAC_UART_DATA_LAST_POS+1]; // last 4 bits
             uart_to_send[DAC_UART_DATA_POS+1] <= LAST_UART_PACKET; // second bit
             uart_to_send[UART_PACKET_SIZE-1] <= DATA_PACKET; // first bit
             #100;
@@ -630,6 +633,26 @@ module tb_pFREYA_DAQ;
 //         //       data_available <= 1'b0;
 //         //       uart_write_byte(uart_to_send);
 // // ============ END DAC SETUP ==================================================
+
+//============ DAC SETUP (MAX5443 - 16 bit) ====================================
+        // Step 1: send SET_DAC_CMD to load 16-bit DAC data
+        //   signal code is UNUSED (3'b111) as per protocol
+        //   DAC test value: 16'hA5A5 = 1010 0101 1010 0101
+        #200000 uart_to_send <= {CMD_PACKET,`SET_DAC_CMD,`UNUSED_CODE};
+        #10000 uart_write_byte(uart_to_send);
+        // Send 16-bit DAC data via uart_DAC_send task
+        // The task splits 16 bits into 3 NOTLAST packets (6 bits each) + 1 LAST packet (4 bits)
+        #200000 uart_DAC_send(16'hA5A5);
+
+        // Step 2: send SEND_DAC_CMD to trigger SPI transmission
+        //   This causes pFREYA_IF to assert spi_dv and load spi_data,
+        //   which triggers spi_IF -> spi_tx 
+        #200000 uart_to_send <= {CMD_PACKET,`SEND_DAC_CMD,`UNUSED_CODE};
+        #10000 uart_write_byte(uart_to_send);
+
+        
+        #2000000;
+//============ END DAC SETUP ===================================================
 
 // //============ SEND DATA TO PC ======================================================
         // set packet // done in begin
