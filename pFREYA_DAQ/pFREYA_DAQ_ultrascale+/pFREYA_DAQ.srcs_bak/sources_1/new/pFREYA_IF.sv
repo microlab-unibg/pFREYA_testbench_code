@@ -736,8 +736,8 @@ module pFREYA_IF(
             //slow_ctrl_in <= '0;
             //dac_sdin <= '0;
 
-            slow_ctrl_packet = 0;
-            dac_packet = 0;
+            slow_ctrl_packet <= 0;
+            dac_packet <= 0;
         end
         else begin
             case (state)
@@ -803,38 +803,38 @@ module pFREYA_IF(
                     //slow_ctrl_in <= '0;
                     //dac_sdin <= '0;
 
-                    slow_ctrl_packet = 0;
-                    dac_packet = 0;
+                    slow_ctrl_packet <= 0;
+                    dac_packet <= 0;
                 end
                 CMD_EVAL: begin
                     // evaluate command if available
                     // serial to be sure value are stored in cmd and sig
                     if (cmd_available) begin
-                        cmd = uart_data[CMD_START_POS:CMD_END_POS];
-                        signal = uart_data[SIGNAL_START_POS:SIGNAL_END_POS];
+                        cmd <= uart_data[CMD_START_POS:CMD_END_POS];
+                        signal <= uart_data[SIGNAL_START_POS:SIGNAL_END_POS];
                         case (cmd)
                             `SET_CK_CMD,
                             `SET_DELAY_CMD,
                             `SET_HIGH_CMD,
                             `SET_LOW_CMD,
                             `SET_PIXEL_CMD:
-                                data_packet_available = 1'b0;
+                                data_packet_available <= 1'b0;
                             `SET_SLOW_CTRL_CMD: begin
                                 //slow_ctrl_packet_available <= 1'b0;
-                                slow_ctrl_packet_index_receive = '0;
-                                slow_ctrl_packet = '0;
+                                slow_ctrl_packet_index_receive <= '0;
+                                slow_ctrl_packet <= '0;
 
-                                slow_ctrl_reset_n = 1'b0;
-                                slow_ctrl_mask = 1'b0;
+                                slow_ctrl_reset_n <= 1'b0;
+                                slow_ctrl_mask <= 1'b0;
                                 slow_ctrl_in_mask <= 1'b1; // (TS)
                                 //sh_phi1d_inf_mask <= 1'b0; // (TS)
                                 // cannot set directly index_send and _sent so let's use a flag
-                                slow_ctrl_reset_request = 1'b1;
+                                slow_ctrl_reset_request <= 1'b1;
 
-                                data_packet_available = 1'b0;
+                                data_packet_available <= 1'b0;
                             end
                             `SET_DAC_CMD:
-                                dac_packet_available = 1'b0;
+                                dac_packet_available <= 1'b0;
                         endcase
                     end
                     else begin
@@ -981,8 +981,8 @@ module pFREYA_IF(
                                         dac_packet_index_receive <= '0;
                                         dac_packet_available <= 1'b1;
                                     end else begin
-                                        dac_packet[dac_packet_index_receive +: DATA_SIZE-1] <= uart_data[DAC_UART_DATA_POS:DATA_END_POS];
-                                        dac_packet_index_receive <= dac_packet_index_receive + DATA_SIZE + 6'd1; // 6 bit per time
+                                        dac_packet[dac_packet_index_receive +: DAC_UART_DATA_POS+1] <= uart_data[DAC_UART_DATA_POS:DATA_END_POS];
+                                        dac_packet_index_receive <= dac_packet_index_receive + DAC_UART_DATA_POS + 1; // 6 bit per time
                                         dac_packet_available <= 1'b0;
                                     end
                                 end

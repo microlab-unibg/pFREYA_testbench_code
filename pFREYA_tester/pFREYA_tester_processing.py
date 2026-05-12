@@ -809,6 +809,7 @@ def send_uart_dac_auto(dac_packet_completo):
         fine = (i + 1) * dim
 
         blocco_dati = dac_packet_completo[inizio:fine]
+        blocco_dati = blocco_dati[::-1] # REVERSE per inviare MSB first su SPI
         pacchetto_uart = (
             UARTdef.DATA_PACKET +
             UARTdef.NOTLAST_UART_PACKET +
@@ -821,6 +822,7 @@ def send_uart_dac_auto(dac_packet_completo):
 
     # Gestione dell'ultimo blocco 
     ultimo_blocco = dac_packet_completo[num_blocchi * dim:]
+    ultimo_blocco = ultimo_blocco[::-1] # REVERSE per inviare MSB first su SPI
     ultimo_blocco_padded = '00' + ultimo_blocco  # padding per arrivare a 6 bit
 
     pacchetto_finale = (
@@ -880,7 +882,7 @@ def send_DAC(gui):
         level = int(gui.dac['level'].get())
         dac_packet_data = create_dac_packet_auto(level)
         print(f'DAC packet: {dac_packet_data} → {level}/65535 * VREF')
-        send_UART_DAC(dac_packet_data)
+        send_uart_dac_auto(dac_packet_data)
     except Exception:
         print(traceback.format_exc())
         return 1
