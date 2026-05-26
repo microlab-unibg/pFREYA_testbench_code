@@ -32,7 +32,7 @@ def to_json_CSA(): #parametri fissi per caso 1
             "adc_ck": '262143',
             "inj_stb": '1', 
             "ser_ck": '262143', 
-            "dac_sck": '262143' 
+            "dac_sck": '100' 
         }, 
         "INJ": { 
             "current_level": '-0.8'
@@ -191,7 +191,7 @@ class pFREYA_GUI():
         self.inj_stb = StringVar(value=json_config.get("clocks","").get("inj_stb",""))
         self.ser_ck = StringVar(value=json_config.get("clocks","").get("ser_ck",""))
 
-        # self.dac_sck = StringVar(value=json_config.get("clocks","").get("dac_sck",""))
+        self.dac_sck = StringVar(value=json_config.get("clocks","").get("dac_sck",""))
 
         self.clock_map = {
             UARTdef.SLOW_CTRL_CK_CODE : self.slow_ck,
@@ -199,7 +199,7 @@ class pFREYA_GUI():
             UARTdef.ADC_CK_CODE       : self.adc_ck,
             UARTdef.INJ_STB_CODE      : self.inj_stb,
             UARTdef.SER_CK_CODE       : self.ser_ck,
-            #UARTdef.DAC_SCK_CODE      : self.dac_sck
+            UARTdef.DAC_SCK_CODE      : self.dac_sck
         }
         self.dac = {}
         '''
@@ -705,12 +705,41 @@ class gui_dac_auto(Toplevel):
         ttk.Label(info_frame, text="/ 65535").grid(
             column=2, row=0, sticky=W)
 
-        ttk.Label(info_frame, text="VOUT =").grid(
-            column=0, row=1, sticky=E, padx=5, pady=(2,0))
-        ttk.Label(info_frame, text="level / 65535 × VREF",
-                  foreground="gray").grid(column=1, columnspan=2, row=1, sticky=W)
+        ttk.Label(info_frame, text="VREF [V]:").grid(
+            column=0, row=1, sticky=E, padx=5, pady=(4,0))
+        ttk.Label(info_frame, text="2.500").grid(
+            column=1, row=1, sticky=W, padx=5, pady=(4,0))
+
+        ttk.Label(info_frame, text="VOUT_ideale =").grid(
+            column=0, row=2, sticky=E, padx=5, pady=(4,0))
+        self.vout_var = StringVar(value="—")
+        ttk.Label(info_frame, textvariable=self.vout_var,
+                  foreground="blue").grid(column=1, row=2, sticky=W, padx=5, pady=(4,0))
+        ttk.Label(info_frame, text="V   (level / 65535 × VREF)",
+                  foreground="gray").grid(column=2, row=2, sticky=W, pady=(4,0))
+
+        def update_vout(*_):
+            try:
+                level = int(gui.dac["level"].get())
+                vref = 2.5
+                vout = level / 65535.0 * vref
+                self.vout_var.set(f"{vout:.4f}")
+            except (ValueError, ZeroDivisionError):
+                self.vout_var.set("—")
+
+        update_vout()  # calcolo iniziale
+        gui.dac["level"].trace_add("write", update_vout)
+
+        
+        dac_level_entry.configure(state="readonly")
+        self.protocol("WM_DELETE_WINDOW", self._on_close)
 
         self.mainloop()
+
+    def _on_close(self):
+        """Riabilita l'entry del livello DAC quando la finestra Auto viene chiusa."""
+        dac_level_entry.configure(state="normal")
+        self.destroy()
 
 def open_dac_auto():
     print("opening dac auto")
@@ -786,16 +815,13 @@ ttk.Label(ck_lframe, text="FP").grid(column=2, row=row_idx)
 ttk.Button(ck_lframe, text="Send", command=lambda: pYtp.send_clock_single(gui,UARTdef.SER_CK_CODE)).grid(column=3, columnspan=1, row=row_idx, pady=[0,0], sticky=EW)
 row_idx += 1
 
-
-'''
-ttk.Label(ck_lframe, text="DAC SPI clock:").grid(column=0, row=row_idx, sticky=E)
+ttk.Label(ck_lframe, text="SPI clock:").grid(column=0, row=row_idx, sticky=E)
 current_entry = ttk.Entry(ck_lframe, textvariable=gui.dac_sck, width=UARTdef.WIDTH_ENTRY)
 current_entry.bind("<FocusOut>", lambda x: check_fpga_clocks (gui.dac_sck))
 current_entry.grid(column=1, row=row_idx, padx=5)
 ttk.Label(ck_lframe, text="FP").grid(column=2, row=row_idx)
-tk.Button(ck_lframe, text="Send", command=lambda: pYtp.send_clock_single(gui,UARTdef.DAC_SCK_CODE)).grid(column=3, columnspan=1, row=row_idx, pady=[0,0], sticky=EW)
+ttk.Button(ck_lframe, text="Send", command=lambda: pYtp.send_clock_single(gui,UARTdef.DAC_SCK_CODE)).grid(column=3, columnspan=1, row=row_idx, pady=[0,0], sticky=EW)
 row_idx += 1
-'''
 ttk.Button(ck_lframe, text="Send clocks", command=lambda: pYtp.send_clocks(gui)).grid(column=1, columnspan=2, row=row_idx, pady=[10,0], sticky=SE)
 
 # Slow ctrl configuration
@@ -868,9 +894,9 @@ dac_lframe = ttk.Labelframe(main_frame, text="DAC configuration", padding=10)
 dac_lframe.grid(column=3, row=0, padx=5, pady=30, sticky=NSEW)
 row_idx = 0
 ttk.Label(dac_lframe, text="DAC level (0–65535):").grid(column=0, row=row_idx, sticky=E)
-current_entry = ttk.Entry(dac_lframe, textvariable=gui.dac["level"], width=6)
-current_entry.bind("<FocusOut>", lambda x: check_dac_level(gui.dac["level"]))
-current_entry.grid(column=1, row=row_idx, padx=5)
+dac_level_entry = ttk.Entry(dac_lframe, textvariable=gui.dac["level"], width=6)
+dac_level_entry.bind("<FocusOut>", lambda x: check_dac_level(gui.dac["level"]))
+dac_level_entry.grid(column=1, row=row_idx, padx=5)
 row_idx += 1
 ttk.Button(dac_lframe, text="Auto", command=open_dac_auto).grid(
     column=0, row=row_idx, pady=[10,0], sticky=SE)

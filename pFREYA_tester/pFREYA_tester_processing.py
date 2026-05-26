@@ -391,9 +391,9 @@ def send_clock_single(gui, clock):
             gui.slow_ck_sent = True
         elif (clock == UARTdef.SEL_CK_CODE):
             gui.sel_ck_sent = True
-        '''elif (clock == UARTdef.DAC_SCK_CODE):
+        elif (clock == UARTdef.DAC_SCK_CODE):
             gui.dac_sck_sent = True
-        '''
+
         time.sleep(1)
                 
     except Exception:
@@ -418,7 +418,7 @@ def send_clocks(gui):
         send_clock_single(gui,UARTdef.SEL_CK_CODE)
         send_clock_single(gui,UARTdef.ADC_CK_CODE)
         send_clock_single(gui,UARTdef.INJ_STB_CODE)
-        """send_clock_single(gui,UARTdef.DAC_SCK_CODE)"""
+        send_clock_single(gui,UARTdef.DAC_SCK_CODE)
         send_clock_single(gui,UARTdef.SER_CK_CODE)
 
     except Exception:

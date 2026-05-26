@@ -6,7 +6,7 @@
         "adc_ck": "20",
         "inj_stb": "1",
         "ser_ck": "400",
-        "dac_sck": "262140"
+        "dac_sck": "100"
     },
     "DAC": {
         "source": "1",

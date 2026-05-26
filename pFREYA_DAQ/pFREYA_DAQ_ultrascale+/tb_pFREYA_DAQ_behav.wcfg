@@ -12,15 +12,15 @@
       </db_ref>
    </db_ref_list>
    <zoom_setting>
-      <ZoomStartTime time="0.000 ns"></ZoomStartTime>
-      <ZoomEndTime time="499.001 ns"></ZoomEndTime>
-      <Cursor1Time time="3,228,135.498 ns"></Cursor1Time>
+      <ZoomStartTime time="3,227,855.929 ns"></ZoomStartTime>
+      <ZoomEndTime time="3,228,102.930 ns"></ZoomEndTime>
+      <Cursor1Time time="3,228,125.496 ns"></Cursor1Time>
    </zoom_setting>
    <column_width_setting>
       <NameColumnWidth column_width="141"></NameColumnWidth>
-      <ValueColumnWidth column_width="165"></ValueColumnWidth>
+      <ValueColumnWidth column_width="160"></ValueColumnWidth>
    </column_width_setting>
-   <WVObjectSize size="8" />
+   <WVObjectSize size="10" />
    <wvobject fp_name="/tb_pFREYA_DAQ/pFREYA_DAQ_inst/pFREYA_IF_inst/uart_valid" type="logic">
       <obj_property name="ElementShortName">uart_valid</obj_property>
       <obj_property name="ObjectShortName">uart_valid</obj_property>
@@ -52,5 +52,13 @@
    <wvobject fp_name="/tb_pFREYA_DAQ/dac_sck" type="logic">
       <obj_property name="ElementShortName">dac_sck</obj_property>
       <obj_property name="ObjectShortName">dac_sck</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_pFREYA_DAQ/pFREYA_DAQ_inst/clk_wiz_clocks_inst/clk_sck" type="logic">
+      <obj_property name="ElementShortName">clk_sck</obj_property>
+      <obj_property name="ObjectShortName">clk_sck</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_pFREYA_DAQ/pFREYA_DAQ_inst/daq_ck" type="logic">
+      <obj_property name="ElementShortName">daq_ck</obj_property>
+      <obj_property name="ObjectShortName">daq_ck</obj_property>
    </wvobject>
 </wave_config>

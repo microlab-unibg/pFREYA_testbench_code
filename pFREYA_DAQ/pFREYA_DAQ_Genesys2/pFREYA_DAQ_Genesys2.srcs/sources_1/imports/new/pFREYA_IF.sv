@@ -45,6 +45,7 @@ module pFREYA_IF(
         output logic slow_ctrl_ck,
         // internal
         input  logic ck,
+        output logic dac_ck,
         input  logic reset,
         output logic led_error,
         // for UART
@@ -84,8 +85,8 @@ module pFREYA_IF(
     logic [CK_CNT_N-1:0] ser_cnt = -1;
     logic [CK_CNT_N-1:0] ser_div= '0;
 
-    //logic [CK_CNT_N-1:0] dac_sck_cnt = -1;
-    //logic [CK_CNT_N-1:0] dac_sck_div= '0;
+    logic [CK_CNT_N-1:0] dac_cnt = -1;
+    logic [CK_CNT_N-1:0] dac_div= '0;
 
     // for selection
     logic sel_ck = 1'b0; // internal clock temporisation
@@ -254,6 +255,28 @@ module pFREYA_IF(
             adc_cnt <= adc_cnt + 1'b1;
         end
     end
+
+
+    // DAC clock generation
+    always_ff @(posedge ck, posedge reset) begin: dac_ck_generation
+        if (reset) begin
+            dac_ck <= 1'b0;
+            dac_cnt <= -1;
+        end
+        else if (dac_div == '0) begin
+            dac_ck <= 1'b0;
+            dac_cnt <= -1;
+        end
+        else if (dac_cnt == dac_div-1) begin
+            dac_ck <= ~dac_ck;
+            dac_cnt <= '0;
+        end
+        else begin
+            dac_ck <= dac_ck;
+            dac_cnt <= dac_cnt + 1'b1;
+        end
+    end
+
 
     // error generation
     always_ff @(posedge ck, posedge reset) begin: error_generation
@@ -712,8 +735,7 @@ module pFREYA_IF(
             ser_div <= '0;
             sel_div <= '0;
             inj_div <= '0;
-            
-            //dac_sck_div <= '0;
+            dac_div <= '0;
                                     
             csa_reset_n_delay_div <= '0;
             sh_phi1d_inf_delay_div <= '0;
@@ -787,7 +809,7 @@ module pFREYA_IF(
                     ser_div <= '0;
                     sel_div <= '0;
                     inj_div <= '0;
-                    //dac_sck_div <= '0;
+                    dac_div <= '0;
                                             
                     csa_reset_n_delay_div <= '0;
                     sh_phi1d_inf_delay_div <= '0;
@@ -914,8 +936,8 @@ module pFREYA_IF(
                                             inj_div[data_packet_index_receive +: DATA_UART_DATA_POS+1] <= uart_data[DATA_START_POS:DATA_END_POS];
                                         `SER_CK_CODE:
                                             ser_div[data_packet_index_receive +: DATA_UART_DATA_POS+1] <= uart_data[DATA_START_POS:DATA_END_POS];
-                                        /*`DAC_SCK_CODE:
-                                            dac_sck_div[data_packet_index_receive +: DATA_UART_DATA_POS+1] <= uart_data[DATA_START_POS:DATA_END_POS];*/
+                                        `DAC_SCK_CODE:
+                                            dac_div[data_packet_index_receive +: DATA_UART_DATA_POS+1] <= uart_data[DATA_START_POS:DATA_END_POS];
                                     endcase
                                     if (uart_data[DATA_UART_DATA_POS+1] == LAST_UART_PACKET) begin
                                         data_packet_index_receive <= '0;
@@ -1070,12 +1092,12 @@ module pFREYA_IF(
                         slow_ctrl_packet_available <= slow_ctrl_packet_available;
                     end
                 end
-                CMD_SEND_DAC: begin /* commentato pperche la gestione della transizione viene fatta nel blocco dac_data_send
-                    // this way we are checking on the falling edge and no ck is sent after the signal is on
-                    if (dac_packet_sent)
-                        dac_sync_n <= 1'b1;
-                    else
-                        dac_sync_n <= 1'b0;*/
+                CMD_SEND_DAC: begin
+                    // Quando dac_packet_sent è alto (settato dal blocco 10MHz),
+                    // azzeriamo dac_packet_available per completare l'handshake
+                    if (dac_packet_sent) begin
+                        dac_packet_available <= 1'b0;
+                    end
                 end
                 CMD_SEL_PIX: begin
                     // this way we are checking on the falling edge and no ck is sent after the signal is off
@@ -1224,26 +1246,27 @@ module pFREYA_IF(
         end
     end
 */
-    always_ff @(posedge ck, posedge reset) begin: dac_data_send
+    always_ff @(posedge dac_ck, posedge reset) begin: dac_data_send
         if (reset) begin
             spi_data        <= '0;
             spi_dv          <= 1'b0;
             dac_packet_sent <= 1'b0;
         end
-        else if (state == CMD_SEND_DAC) begin
-            if (!dac_packet_sent) begin
-                spi_data        <= dac_packet[15:0];
-                spi_dv          <= 1'b1;
-                dac_packet_sent <= 1'b1;
-            end
-            else begin
-                spi_dv  <= 1'b0;  
-                spi_data <= spi_data;
-            end
+        else if (dac_packet_available && !dac_packet_sent && state == CMD_SEND_DAC) begin
+            //pulsa spi_dv per 1 ciclo di clk_sck per la trasmissione del dato
+            spi_data        <= dac_packet[15:0];
+            spi_dv          <= 1'b1;
+            dac_packet_sent <= 1'b1;  // sticky: resta 1
         end
-        else begin
+        else if (!dac_packet_available && dac_packet_sent) begin
+            //la FSM 200MHz (dac_sck) ha azzerato dac_packet_available
+            // Ora possiamo azzerare dac_packet_sent per la prossima trasmissione
             spi_dv          <= 1'b0;
             dac_packet_sent <= 1'b0;
+        end
+        else begin
+            spi_dv <= 1'b0;
+            // dac_packet_sent resta al suo valore 
         end
     end
 
