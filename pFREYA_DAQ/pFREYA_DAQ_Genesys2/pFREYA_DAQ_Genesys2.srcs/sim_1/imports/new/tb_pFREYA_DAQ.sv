@@ -635,6 +635,17 @@ module tb_pFREYA_DAQ;
 // // ============ END DAC SETUP ==================================================
 
 //============ DAC SETUP (MAX5443 - 16 bit) ====================================
+        // Step 0: Set DAC clock divider so dac_ck can toggle 
+        #200000 uart_to_send <= {CMD_PACKET,`SET_CK_CMD,`DAC_SCK_CODE};
+        #10000 uart_write_byte(uart_to_send);
+        // Send DAC divider value
+        #200000 uart_to_send <= {DATA_PACKET,NOTLAST_UART_PACKET,6'd5};
+        #10000 uart_write_byte(uart_to_send);
+        #200000 uart_to_send <= {DATA_PACKET,NOTLAST_UART_PACKET,6'd0};
+        #10000 uart_write_byte(uart_to_send);
+        #200000 uart_to_send <= {DATA_PACKET,LAST_UART_PACKET,6'd0};
+        #10000 uart_write_byte(uart_to_send);
+
         // Step 1: send SET_DAC_CMD to load 16-bit DAC data
         //   signal code is UNUSED (3'b111) as per protocol
         //   DAC test value: 16'hA5A5 = 1010 0101 1010 0101
@@ -649,9 +660,6 @@ module tb_pFREYA_DAQ;
         //   which triggers spi_IF -> spi_tx 
         #200000 uart_to_send <= {CMD_PACKET,`SEND_DAC_CMD,`UNUSED_CODE};
         #10000 uart_write_byte(uart_to_send);
-
-        
-        #2000000;
 //============ END DAC SETUP ===================================================
 
 // //============ SEND DATA TO PC ======================================================
@@ -695,3 +703,4 @@ module tb_pFREYA_DAQ;
         #100000 $stop;
     end
 endmodule
+
