@@ -145,6 +145,8 @@ module pFREYA_DAQ
     
     spi_IF #(.CKS_PER_BIT(CKS_PER_BIT_SPI)) spi_IF_inst (
         .dac_clk   (dac_ck),
+        // Collegamento clock a 200 MHz per le temporizzazioni CS
+        .sys_clk   (daq_ck),
         .tx_data   (spi_data),
         .tx_dv     (spi_dv),
         .dac_sclk  (dac_sck),
