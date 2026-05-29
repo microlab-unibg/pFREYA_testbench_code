@@ -18,19 +18,24 @@ module spi_tx
     );
 
     // State Machine states 
-    parameter   s_IDLE        = 2'b00;
-    parameter   s_TRANSFER    = 2'b01; 
-    // Nuovi stati per attese
-    parameter   s_WAIT_CS_LOW  = 2'b10;
-    parameter   s_WAIT_CS_HIGH = 2'b11;
+    parameter   s_IDLE        = 3'b000;
+    parameter   s_WAIT_tCSH0  = 3'b001;
+    parameter   s_WAIT_tCSS0  = 3'b010;
+    parameter   s_TRANSFER    = 3'b011; 
+    parameter   s_WAIT_tCSH1  = 3'b100;
+    parameter   s_WAIT_tCSS1  = 3'b101;
 
-    reg [1:0]   r_SM_Main     = s_IDLE;        // State Machine status  
+    reg [2:0]   r_SM_Main     = s_IDLE;        // State Machine status  
     reg [3:0]   r_Bit_Count   = 15;       
     reg [15:0]  r_Data_Local  = 0;
     reg [1:0]   r_Clock_Count = 0;        
     
-    // Contatore attesa 15ns (3 cicli a 200MHz)
-    reg [1:0]   r_Sys_Delay_Count = 0;
+    // Contatore attesa CS timing (a 200MHz, 5ns/ciclo)
+    parameter tCSH0_DELAY = 6;  // 7 cicli = 35ns
+    parameter tCSS0_DELAY = 4;  // 5 cicli = 25ns 
+    parameter tCSH1_DELAY = 3;  // 4 cicli = 20ns
+    parameter tCSS1_DELAY = 3;  // 4 cicli = 20ns
+    reg [3:0]   r_Sys_Delay_Count = 0;
 
     // Rilevamento fronte i_Clk a 200MHz
     reg         r_Clk_Last = 1'b0;
@@ -50,13 +55,11 @@ module spi_tx
                   begin
                     // Copy for guaranteed local data integrity 
                     r_Data_Local    <= i_Tx_Data;
-                    o_SPI_Cs        <= 1'b0;
+                    o_SPI_Cs        <= 1'b1;
                     r_Bit_Count     <= 15;
-                    // So that CS is already low on next posedge
-                    o_SPI_Din       <= 1'b0;  // First bit is NOT pre-loaded to wait 15ns
-                    // Va in attesa CS basso prima di trasmettere
+                    o_SPI_Din       <= 1'b0;
                     r_Sys_Delay_Count <= 0;
-                    r_SM_Main         <= s_WAIT_CS_LOW; 
+                    r_SM_Main         <= s_WAIT_tCSH0; 
                   end
                 else begin
                   r_SM_Main <= s_IDLE;
@@ -69,14 +72,24 @@ module spi_tx
                 end
             end
             
-            s_WAIT_CS_LOW: begin
-                // Aspetta 15ns (3 cicli clock 200MHz)
-                if ( r_Sys_Delay_Count < 2'd2 ) begin
+            s_WAIT_tCSH0: begin
+                if ( r_Sys_Delay_Count < tCSH0_DELAY ) begin
+                    r_Sys_Delay_Count <= r_Sys_Delay_Count + 1'b1;
+                end
+                else begin
+                    o_SPI_Cs          <= 1'b0;
+                    r_Sys_Delay_Count <= 0;
+                    r_SM_Main         <= s_WAIT_tCSS0;
+                end
+            end
+
+            s_WAIT_tCSS0: begin
+                if ( r_Sys_Delay_Count < tCSS0_DELAY ) begin
                     r_Sys_Delay_Count <= r_Sys_Delay_Count + 1'b1;
                 end
                 else begin
                     r_Clock_Count     <= 0;
-                    o_SPI_Din         <= r_Data_Local[15]; // Invia il primo valore di dac_sdin dopo l'attesa di 15ns
+                    o_SPI_Din         <= r_Data_Local[15]; 
                     r_SM_Main         <= s_TRANSFER;
                 end
             end
@@ -103,9 +116,8 @@ module spi_tx
                               begin 
                                 if ( r_Bit_Count == 0 ) 
                                   begin
-                                    // Va in attesa CS alto prima di IDLE
                                     r_Sys_Delay_Count <= 0;
-                                    r_SM_Main         <= s_WAIT_CS_HIGH;
+                                    r_SM_Main         <= s_WAIT_tCSH1;
                                   end
                                 else 
                                   begin    
@@ -121,13 +133,22 @@ module spi_tx
                   //end  
             end 
 
-            s_WAIT_CS_HIGH: begin
-                // Aspetta 15ns (3 cicli clock 200MHz)
-                if ( r_Sys_Delay_Count < 2'd2 ) begin
+            s_WAIT_tCSH1: begin
+                if ( r_Sys_Delay_Count < tCSH1_DELAY ) begin
                     r_Sys_Delay_Count <= r_Sys_Delay_Count + 1'b1;
                 end
                 else begin
-                    o_SPI_Cs          <= 1'b1; // Alziamo CS a 1 dopo l'attesa di 15ns
+                    o_SPI_Cs          <= 1'b1; 
+                    r_Sys_Delay_Count <= 0;
+                    r_SM_Main         <= s_WAIT_tCSS1;
+                end
+            end
+
+            s_WAIT_tCSS1: begin
+                if ( r_Sys_Delay_Count < tCSS1_DELAY ) begin
+                    r_Sys_Delay_Count <= r_Sys_Delay_Count + 1'b1;
+                end
+                else begin
                     r_SM_Main         <= s_IDLE;
                 end
             end
