@@ -98,7 +98,7 @@ module spi_tx
             begin
                 //if( w_Master_Ready ) 
                   //begin
-                    if ( o_SPI_Sclk == 0)
+                    if ( w_Clk_Rising && o_SPI_Sclk == 1'b0 && r_Clock_Count == (CKS_PER_BIT/2 - 1) )
                       o_SPI_Din   <= r_Data_Local[r_Bit_Count];
 
                     // Conteggio sul fronte di salita di i_Clk

@@ -799,41 +799,27 @@ def send_uart_dac_auto(dac_packet_completo):
     print('CMD sent:', cmd)
     time.sleep(1)
 
-    # Calcolo quanti pacchetti completi da 6 bit posso ottenere
-    dim = UARTdef.DAC_UART_DATA_POS + 1
-    num_blocchi = UARTdef.DAC_PACKET_LENGTH // dim
+    # Il DAC MAX5443 richiede 16 bit. Padding a multiplo di 6 (18 bit) devo aggiungere due bit per padding
+    dim = UARTdef.DAC_UART_DATA_POS + 1 # 6
+    missing_bits = dim - (UARTdef.DAC_PACKET_LENGTH % dim) # 2
+    padded_data = dac_packet_completo + '0' * missing_bits # "00" inserito alla fine
 
-    # Invio dei blocchi completi 
-    for i in range(num_blocchi):
-        inizio = i * dim
-        fine = (i + 1) * dim
+    num_blocchi = len(padded_data) // dim # 3
 
-        blocco_dati = dac_packet_completo[inizio:fine]
-        blocco_dati = blocco_dati[::-1] # REVERSE per inviare MSB first su SPI
-        pacchetto_uart = (
-            UARTdef.DATA_PACKET +
-            UARTdef.NOTLAST_UART_PACKET +
-            blocco_dati
-        )
-
+    # Invio dei blocchi. Il pacchetto col flag LAST contiene i bit più significativi (MSB) e deve essere inviato per ultimo.
+    for i in range(num_blocchi, 0, -1):
+        inizio = (i - 1) * dim
+        fine = i * dim
+        blocco_dati = padded_data[inizio:fine]
+        
+        is_last = (i == 1)
+        flag = UARTdef.LAST_UART_PACKET if is_last else UARTdef.NOTLAST_UART_PACKET
+        
+        pacchetto_uart = UARTdef.DATA_PACKET + flag + blocco_dati
+        
         send_UART('', pacchetto_uart)
         print('DATA sent:', pacchetto_uart)
-        time.sleep(1)
-
-    # Gestione dell'ultimo blocco 
-    ultimo_blocco = dac_packet_completo[num_blocchi * dim:]
-    ultimo_blocco = ultimo_blocco[::-1] # REVERSE per inviare MSB first su SPI
-    ultimo_blocco_padded = '00' + ultimo_blocco  # padding per arrivare a 6 bit
-
-    pacchetto_finale = (
-        UARTdef.DATA_PACKET +
-        UARTdef.LAST_UART_PACKET +
-        ultimo_blocco_padded
-    )
-
-    send_UART('', pacchetto_finale)
-    print('DATA sent:', pacchetto_finale)
-    time.sleep(1)
+        time.sleep(0.5)
 
     # Invio comando finale per eseguire il DAC
     comando_send_dac = create_cmd(UARTdef.SEND_DAC_CMD, UARTdef.UNUSED_CODE)
