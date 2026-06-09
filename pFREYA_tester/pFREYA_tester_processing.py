@@ -792,7 +792,7 @@ def send_UART_DAC(dac_packet):
     print('CMD sent: ',cmd)
     time.sleep(1)
 
-def send_uart_dac_auto(dac_packet_completo):
+def send_uart_dac_auto(dac_packet_completo, cs2=False):
     # Invio comando di configurazione DAC
     cmd = create_cmd(UARTdef.SET_DAC_CMD, UARTdef.UNUSED_CODE)
     send_UART(cmd)
@@ -821,10 +821,12 @@ def send_uart_dac_auto(dac_packet_completo):
         print('DATA sent:', pacchetto_uart)
         time.sleep(0.5)
 
-    # Invio comando finale per eseguire il DAC
-    comando_send_dac = create_cmd(UARTdef.SEND_DAC_CMD, UARTdef.UNUSED_CODE)
+    # Invio comando finale per eseguire il DAC (CS1 o CS2)
+    send_cmd = UARTdef.SEND_DAC_CS2_CMD if cs2 else UARTdef.SEND_DAC_CMD
+    comando_send_dac = create_cmd(send_cmd, UARTdef.UNUSED_CODE)
     send_UART(comando_send_dac)
-    print('CMD sent:', comando_send_dac)
+    cs_label = 'CS2' if cs2 else 'CS1'
+    print(f'CMD sent ({cs_label}):', comando_send_dac)
     time.sleep(1)
 
 ''' SEND DAC PRECEDENTE
@@ -863,12 +865,13 @@ def send_DAC(gui):
     
     return 0
 '''
-def send_DAC(gui):
+def send_DAC(gui, cs2=False):
     try:
         level = int(gui.dac['level'].get())
         dac_packet_data = create_dac_packet_auto(level)
-        print(f'DAC packet: {dac_packet_data} → {level}/65535 * VREF')
-        send_uart_dac_auto(dac_packet_data)
+        cs_label = 'CS2' if cs2 else 'CS1'
+        print(f'DAC packet ({cs_label}): {dac_packet_data} → {level}/65535 * VREF')
+        send_uart_dac_auto(dac_packet_data, cs2=cs2)
     except Exception:
         print(traceback.format_exc())
         return 1

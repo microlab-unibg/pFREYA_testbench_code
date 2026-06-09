@@ -30,7 +30,9 @@ module pFREYA_DAQ
     //inserite nuove
     output logic dac_sdin,
     output logic dac_cs,
+    output logic dac_cs2,
     output logic dac_sck,
+    output logic dac_clr,
 
     output logic sel_init_n,
     output logic sel_ckcol,
@@ -79,9 +81,11 @@ module pFREYA_DAQ
     logic        spi_dv;
     */
 
-    // Aggiungere come wire collegati tra pFREYA_IF e spi_IF(meglio wire perchè è una connessione passiva tra i due moduli?):
     wire [15:0] spi_data;
     wire        spi_dv;
+    wire        cs1_select;
+    wire        cs2_select;
+    wire        dac_cs_int;
 
     // clock wizard
     wire locked;
@@ -114,6 +118,8 @@ module pFREYA_DAQ
         */
         .spi_data           (spi_data),
         .spi_dv             (spi_dv),
+        .cs1_select         (cs1_select),
+        .cs2_select         (cs2_select),
 
         .sel_init_n         (sel_init_n),
         .sel_ckcol          (sel_ckcol),
@@ -145,15 +151,18 @@ module pFREYA_DAQ
     
     spi_IF #(.CKS_PER_BIT(CKS_PER_BIT_SPI)) spi_IF_inst (
         .dac_clk   (dac_ck),
-        // Collegamento clock a 200 MHz per le temporizzazioni CS
         .sys_clk   (daq_ck),
         .tx_data   (spi_data),
         .tx_dv     (spi_dv),
         .dac_sclk  (dac_sck),
-        //.dac_clr   (),
-        .dac_cs    (dac_cs),
+        .dac_clr   (dac_clr),
+        .dac_cs    (dac_cs_int),
         .dac_din   (dac_sdin)
     ); 
+
+    // CS routing
+    assign dac_cs  = dac_cs_int | ~cs1_select;
+    assign dac_cs2 = dac_cs_int | ~cs2_select;
     
     clk_wiz_clocks clk_wiz_clocks_inst (
         // Clock out ports

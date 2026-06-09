@@ -562,8 +562,9 @@ def run_adc_sweep():
     print("File tsv salvato con successo.")
 
 
-def run_script_dac():
-    print("\n--- RUNNING SCRIPT DAC ---")
+def run_script_dac(cs2=False):
+    cs_label = 'CS2' if cs2 else 'CS1'
+    print(f"\n--- RUNNING SCRIPT DAC ({cs_label}) ---")
 
     print("\n--Reset FPGA--")
     reset_iniziale()
@@ -573,19 +574,19 @@ def run_script_dac():
     auto_clock()
     time.sleep(2)
 
-    print("\n--Send DAC level--")
+    print(f"\n--Send DAC level ({cs_label})--")
     try:
         level = int(gui.dac['level'].get())
         dac_packet_data = pYtp.create_dac_packet_auto(level)
         print(f'DAC packet: {dac_packet_data} → {level}/65535 * VREF')
-        pYtp.send_uart_dac_auto(dac_packet_data)
-        print(f"--DAC level {level} sent successfully--")
+        pYtp.send_uart_dac_auto(dac_packet_data, cs2=cs2)
+        print(f"--DAC level {level} sent successfully via {cs_label}--")
     except Exception:
         import traceback
         print(traceback.format_exc())
         print("--DAC send FAILED--")
 
-    print("\n--- SCRIPT DAC ENDED ---\n")
+    print(f"\n--- SCRIPT DAC ({cs_label}) ENDED ---\n")
 
 class gui2(Toplevel):
   def __init__(self,parent):
@@ -691,8 +692,10 @@ class gui_dac_auto(Toplevel):
 
         label_dac = Label(frame, text="dac")
         label_dac.grid(row=0, column=0, padx=10, pady=10)
-        button_dac = Button(frame, text="run", command=run_script_dac)
-        button_dac.grid(row=0, column=1, padx=10, pady=10)
+        button_cs1 = Button(frame, text="CS1", command=lambda: run_script_dac(cs2=False))
+        button_cs1.grid(row=0, column=1, padx=5, pady=10)
+        button_cs2 = Button(frame, text="CS2", command=lambda: run_script_dac(cs2=True))
+        button_cs2.grid(row=0, column=2, padx=5, pady=10)
 
         # Riepilogo livello corrente — stessa idea del cmp_frame in gui2
         info_frame = ttk.Labelframe(self, text="DAC settings", padding=10)

@@ -12,49 +12,41 @@
       </db_ref>
    </db_ref_list>
    <zoom_setting>
-      <ZoomStartTime time="986,313.535 ns"></ZoomStartTime>
-      <ZoomEndTime time="986,845.536 ns"></ZoomEndTime>
-      <Cursor1Time time="986,602.281 ns"></Cursor1Time>
+      <ZoomStartTime time="0.523573653 ms"></ZoomStartTime>
+      <ZoomEndTime time="6.093573654 ms"></ZoomEndTime>
+      <Cursor1Time time="3.533256510 ms"></Cursor1Time>
    </zoom_setting>
    <column_width_setting>
       <NameColumnWidth column_width="141"></NameColumnWidth>
-      <ValueColumnWidth column_width="155"></ValueColumnWidth>
+      <ValueColumnWidth column_width="130"></ValueColumnWidth>
    </column_width_setting>
-   <WVObjectSize size="9" />
-   <wvobject fp_name="/tb_pFREYA_DAQ/pFREYA_DAQ_inst/pFREYA_IF_inst/uart_valid" type="logic">
-      <obj_property name="ElementShortName">uart_valid</obj_property>
-      <obj_property name="ObjectShortName">uart_valid</obj_property>
-   </wvobject>
-   <wvobject fp_name="/tb_pFREYA_DAQ/pFREYA_DAQ_inst/pFREYA_IF_inst/state" type="array">
-      <obj_property name="ElementShortName">state[9:0]</obj_property>
-      <obj_property name="ObjectShortName">state[9:0]</obj_property>
-   </wvobject>
-   <wvobject fp_name="/tb_pFREYA_DAQ/pFREYA_DAQ_inst/pFREYA_IF_inst/cmd" type="array">
-      <obj_property name="ElementShortName">cmd[3:0]</obj_property>
-      <obj_property name="ObjectShortName">cmd[3:0]</obj_property>
-   </wvobject>
-   <wvobject fp_name="/tb_pFREYA_DAQ/dac_cs" type="logic">
-      <obj_property name="ElementShortName">dac_cs</obj_property>
-      <obj_property name="ObjectShortName">dac_cs</obj_property>
-   </wvobject>
-   <wvobject fp_name="/tb_pFREYA_DAQ/pFREYA_DAQ_inst/pFREYA_IF_inst/spi_dv" type="logic">
-      <obj_property name="ElementShortName">spi_dv</obj_property>
-      <obj_property name="ObjectShortName">spi_dv</obj_property>
-   </wvobject>
-   <wvobject fp_name="/tb_pFREYA_DAQ/pFREYA_DAQ_inst/pFREYA_IF_inst/spi_data" type="array">
+   <WVObjectSize size="7" />
+   <wvobject fp_name="/tb_pFREYA_DAQ/pFREYA_DAQ_inst/spi_data" type="array">
       <obj_property name="ElementShortName">spi_data[15:0]</obj_property>
       <obj_property name="ObjectShortName">spi_data[15:0]</obj_property>
    </wvobject>
-   <wvobject fp_name="/tb_pFREYA_DAQ/pFREYA_DAQ_inst/dac_sdin" type="logic">
-      <obj_property name="ElementShortName">dac_sdin</obj_property>
-      <obj_property name="ObjectShortName">dac_sdin</obj_property>
+   <wvobject fp_name="/tb_pFREYA_DAQ/pFREYA_DAQ_inst/spi_dv" type="logic">
+      <obj_property name="ElementShortName">spi_dv</obj_property>
+      <obj_property name="ObjectShortName">spi_dv</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_pFREYA_DAQ/pFREYA_DAQ_inst/dac_cs" type="logic">
+      <obj_property name="ElementShortName">dac_cs</obj_property>
+      <obj_property name="ObjectShortName">dac_cs</obj_property>
    </wvobject>
    <wvobject fp_name="/tb_pFREYA_DAQ/dac_sck" type="logic">
       <obj_property name="ElementShortName">dac_sck</obj_property>
       <obj_property name="ObjectShortName">dac_sck</obj_property>
    </wvobject>
-   <wvobject fp_name="/tb_pFREYA_DAQ/pFREYA_DAQ_inst/daq_ck" type="logic">
-      <obj_property name="ElementShortName">daq_ck</obj_property>
-      <obj_property name="ObjectShortName">daq_ck</obj_property>
+   <wvobject fp_name="/tb_pFREYA_DAQ/pFREYA_DAQ_inst/dac_sdin" type="logic">
+      <obj_property name="ElementShortName">dac_sdin</obj_property>
+      <obj_property name="ObjectShortName">dac_sdin</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_pFREYA_DAQ/pFREYA_DAQ_inst/dac_cs2" type="logic">
+      <obj_property name="ElementShortName">dac_cs2</obj_property>
+      <obj_property name="ObjectShortName">dac_cs2</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_pFREYA_DAQ/pFREYA_DAQ_inst/dac_clr" type="logic">
+      <obj_property name="ElementShortName">dac_clr</obj_property>
+      <obj_property name="ObjectShortName">dac_clr</obj_property>
    </wvobject>
 </wave_config>

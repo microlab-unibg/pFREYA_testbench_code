@@ -38,7 +38,7 @@ module tb_pFREYA_DAQ;
 
 //===========DAQ======================================
     // ASIC signals
-    wire dac_sdin, dac_cs, dac_sck;
+    wire dac_sdin, dac_cs, dac_cs2, dac_sck, dac_clr;
     wire csa_reset_n_out;
     wire sel_init_n;
     wire sel_ckcol, sel_ckrow;
@@ -106,6 +106,8 @@ module tb_pFREYA_DAQ;
         // DAC SPI outputs
         .dac_sdin           (dac_sdin),
         .dac_cs             (dac_cs),
+        .dac_cs2            (dac_cs2),
+        .dac_clr            (dac_clr),
         .dac_sck            (dac_sck),
 
         .sel_init_n         (sel_init_n),
@@ -638,7 +640,6 @@ module tb_pFREYA_DAQ;
         // Step 0: Set DAC clock divider so dac_ck can toggle 
         #200000 uart_to_send <= {CMD_PACKET,`SET_CK_CMD,`DAC_SCK_CODE};
         #10000 uart_write_byte(uart_to_send);
-        // Send DAC divider value
         #200000 uart_to_send <= {DATA_PACKET,NOTLAST_UART_PACKET,6'd5};
         #10000 uart_write_byte(uart_to_send);
         #200000 uart_to_send <= {DATA_PACKET,NOTLAST_UART_PACKET,6'd0};
@@ -646,19 +647,38 @@ module tb_pFREYA_DAQ;
         #200000 uart_to_send <= {DATA_PACKET,LAST_UART_PACKET,6'd0};
         #10000 uart_write_byte(uart_to_send);
 
-        // Step 1: send SET_DAC_CMD to load 16-bit DAC data
-        //   signal code is UNUSED (3'b111) as per protocol
-        //   DAC test value: 16'hA5A5 = 1010 0101 1010 0101
+        // ---- Trasmissione CS1 ----
+        // Simula: utente preme "CS1" nella GUI Auto
+        // Python esegue send_uart_dac_auto(data, cs2=False)
+
+        // 1a. SET_DAC_CMD: carica il dato 16-bit nel registro dac_packet
+        //     DAC test value: 16'hA5A5 = 1010_0101_1010_0101
         #200000 uart_to_send <= {CMD_PACKET,`SET_DAC_CMD,`UNUSED_CODE};
         #10000 uart_write_byte(uart_to_send);
-        // Send 16-bit DAC data via uart_DAC_send task
-        // The task splits 16 bits into 3 NOTLAST packets (6 bits each) + 1 LAST packet (4 bits)
         #200000 uart_DAC_send(16'hA5A5);
 
-        // Step 2: send SEND_DAC_CMD to trigger SPI transmission
-        //   This causes pFREYA_IF to assert spi_dv and load spi_data,
-        //   which triggers spi_IF -> spi_tx 
+        // 1b. SEND_DAC_CMD: abbassa dac_cs (CS1) e serializza sul bus SPI
         #200000 uart_to_send <= {CMD_PACKET,`SEND_DAC_CMD,`UNUSED_CODE};
+        #10000 uart_write_byte(uart_to_send);
+
+        // Attendi il completamento della transazione SPI CS1
+        // Le linee SCLK e DIN sono condivise (OR), quindi CS1 deve
+        // terminare prima di avviare CS2
+        #5000000;
+
+        // ---- Trasmissione CS2 ----
+        // Simula: utente preme "CS2" nella GUI Auto (stesso dato)
+        // Python esegue send_uart_dac_auto(data, cs2=True)
+
+        // 2a. SET_DAC_CMD: ricarica lo stesso dato 16-bit
+        //     Necessario perche' dac_packet_available viene azzerato
+        //     dall'handshake della trasmissione CS1 precedente
+        #200000 uart_to_send <= {CMD_PACKET,`SET_DAC_CMD,`UNUSED_CODE};
+        #10000 uart_write_byte(uart_to_send);
+        #200000 uart_DAC_send(16'hA5A5);
+
+        // 2b. SEND_DAC_CS2_CMD: abbassa dac_cs2 (CS2) e serializza sul bus SPI
+        #200000 uart_to_send <= {CMD_PACKET,`SEND_DAC_CS2_CMD,`UNUSED_CODE};
         #10000 uart_write_byte(uart_to_send);
 //============ END DAC SETUP ===================================================
 
@@ -700,7 +720,7 @@ module tb_pFREYA_DAQ;
 
 
         
-        #100000 $stop;
+        #5000000 $stop;
     end
 endmodule
 

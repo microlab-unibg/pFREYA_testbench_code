@@ -25,8 +25,10 @@ module pFREYA_IF(
         //output logic dac_sdin, 
         //output logic dac_cs, 
         //output logic dac_sck,
-        output logic [15:0] spi_data,  //16-bit verso spi_IF
-        output logic        spi_dv,    //data valid verso spi_IF
+        output logic [15:0] spi_data,      //16-bit verso spi_IF 
+        output logic        spi_dv,        //data valid verso spi_IF 
+        output logic        cs1_select,
+        output logic        cs2_select,
         output logic sel_init_n,
         output logic sel_ckcol, 
         output logic sel_ckrow,
@@ -58,11 +60,12 @@ module pFREYA_IF(
     );
 
     // state machine code
-    (* syn_encoding = "one-hot" *) enum logic [9:0] {
+    (* syn_encoding = "one-hot" *) enum logic [10:0] {
         CMD_ERR,
         CMD_EVAL,
         CMD_SEL_PIX,
         CMD_SEND_DAC,
+        CMD_SEND_DAC_CS2,
         CMD_SEND_SLOW,
         CMD_SET_LONG,
         CMD_SET,
@@ -142,6 +145,7 @@ module pFREYA_IF(
     logic slow_ctrl_packet_sent = 1'b0;
     logic dac_packet_available = 1'b0;
     logic dac_packet_sent = 1'b0;
+
     logic sel_ckcol_sent = 1'b0;
     logic sel_ckrow_sent = 1'b0;
     logic ser_shift_done = 1'b0;
@@ -604,6 +608,9 @@ module pFREYA_IF(
                         // next send DAC config
                         `SEND_DAC_CMD:
                             next <= CMD_SEND_DAC;
+                        // next send DAC config via CS2
+                        `SEND_DAC_CS2_CMD:
+                            next <= CMD_SEND_DAC_CS2;
                         // next send sel pixel
                         `SEND_PIXEL_SEL_CMD:
                             next <= CMD_SEL_PIX;
@@ -662,6 +669,11 @@ module pFREYA_IF(
             CMD_SEND_DAC:
                 if (dac_packet_available & !dac_packet_sent)
                     next <= CMD_SEND_DAC;
+                else
+                    next <= CMD_EVAL;
+            CMD_SEND_DAC_CS2:
+                if (dac_packet_available & !dac_packet_sent)
+                    next <= CMD_SEND_DAC_CS2;
                 else
                     next <= CMD_EVAL;
             CMD_SEL_PIX:
@@ -1099,6 +1111,11 @@ module pFREYA_IF(
                         dac_packet_available <= 1'b0;
                     end
                 end
+                CMD_SEND_DAC_CS2: begin
+                    if (dac_packet_sent) begin
+                        dac_packet_available <= 1'b0;
+                    end
+                end
                 CMD_SEL_PIX: begin
                     // this way we are checking on the falling edge and no ck is sent after the signal is off
                     if (sel_ckcol_sent && sel_ckrow_sent) begin
@@ -1252,7 +1269,8 @@ module pFREYA_IF(
             spi_dv          <= 1'b0;
             dac_packet_sent <= 1'b0;
         end
-        else if (dac_packet_available && !dac_packet_sent && state == CMD_SEND_DAC) begin
+        else if (dac_packet_available && !dac_packet_sent && 
+                 (state == CMD_SEND_DAC || state == CMD_SEND_DAC_CS2)) begin
             //pulsa spi_dv per 1 ciclo di clk_sck per la trasmissione del dato
             spi_data        <= dac_packet[15:0];
             spi_dv          <= 1'b1;
@@ -1267,6 +1285,21 @@ module pFREYA_IF(
         else begin
             spi_dv <= 1'b0;
             // dac_packet_sent resta al suo valore 
+        end
+    end
+
+    always_ff @(posedge ck, posedge reset) begin: cs_select_logic
+        if (reset) begin
+            cs1_select <= 1'b1;
+            cs2_select <= 1'b0;
+        end
+        else if (state == CMD_SEND_DAC) begin
+            cs1_select <= 1'b1;
+            cs2_select <= 1'b0;
+        end
+        else if (state == CMD_SEND_DAC_CS2) begin
+            cs1_select <= 1'b0;
+            cs2_select <= 1'b1;
         end
     end
 

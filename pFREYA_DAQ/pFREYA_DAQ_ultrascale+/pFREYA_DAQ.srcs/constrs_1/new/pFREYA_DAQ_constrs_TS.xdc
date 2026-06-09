@@ -91,7 +91,6 @@ set_property PULLTYPE PULLDOWN [get_ports slow_ctrl_reset_n]
 # PULLUP rimosso da dac_cs perché causa conflitto PULLUP/OBUF nella
 # netlist post-synthesis, bloccando dac_cs a 1. Il segnale è già pilotato
 # attivamente dalla FSM con init = 1'b1, quindi il PULLUP non è necessario.
-set_property PULLTYPE NONE     [get_ports dac_cs]
 set_property PULLTYPE PULLUP [get_ports rx_ser]
 set_property PULLTYPE PULLUP [get_ports sel_init_n]
 set_property PULLTYPE PULLUP [get_ports tx_ser]
@@ -166,6 +165,8 @@ set_output_delay -clock [get_clocks VIRTUAL_daq_ck_clk_wiz_clocks] -max -add_del
 #set_output_delay -clock [get_clocks VIRTUAL_daq_ck_clk_wiz_clocks] -max -add_delay 1.000 [get_ports dac_sync_n]
 set_output_delay -clock [get_clocks VIRTUAL_daq_ck_clk_wiz_clocks] -min -add_delay 0.000 [get_ports dac_cs]
 set_output_delay -clock [get_clocks VIRTUAL_daq_ck_clk_wiz_clocks] -max -add_delay 1.000 [get_ports dac_cs]
+set_output_delay -clock [get_clocks VIRTUAL_daq_ck_clk_wiz_clocks] -min -add_delay 0.000 [get_ports dac_cs2]
+set_output_delay -clock [get_clocks VIRTUAL_daq_ck_clk_wiz_clocks] -max -add_delay 1.000 [get_ports dac_cs2]
 
 set_output_delay -clock [get_clocks VIRTUAL_daq_ck_clk_wiz_clocks] -min -add_delay 0.000 [get_ports inj_stb]
 set_output_delay -clock [get_clocks VIRTUAL_daq_ck_clk_wiz_clocks] -max -add_delay 1.000 [get_ports inj_stb]
@@ -194,6 +195,17 @@ set_output_delay -clock [get_clocks VIRTUAL_daq_ck_clk_wiz_clocks] -max -add_del
 
 
 
+
+
+set_property OFFCHIP_TERM FP_VTT_50 [get_ports csa_reset_n_out]
+set_property PACKAGE_PIN J15 [get_ports dac_cs2]
+set_property IOSTANDARD LVCMOS33 [get_ports dac_cs2]
+set_property DRIVE 8 [get_ports dac_cs2]
+set_property SLEW SLOW [get_ports dac_cs2]
+set_property PACKAGE_PIN E13 [get_ports dac_clr]
+set_property IOSTANDARD LVCMOS33 [get_ports dac_clr]
+set_property DRIVE 8 [get_ports dac_clr]
+set_property SLEW SLOW [get_ports dac_clr]
 create_debug_core u_ila_0 ila
 set_property ALL_PROBE_SAME_MU true [get_debug_cores u_ila_0]
 set_property ALL_PROBE_SAME_MU_CNT 1 [get_debug_cores u_ila_0]
@@ -290,8 +302,6 @@ connect_debug_port u_ila_1/clk [get_nets [list uart_ck]]
 set_property PROBE_TYPE DATA_AND_TRIGGER [get_debug_ports u_ila_1/probe0]
 set_property port_width 1 [get_debug_ports u_ila_1/probe0]
 connect_debug_port u_ila_1/probe0 [get_nets [list uart_valid]]
-
-set_property OFFCHIP_TERM FP_VTT_50 [get_ports csa_reset_n_out]
 set_property C_CLK_INPUT_FREQ_HZ 300000000 [get_debug_cores dbg_hub]
 set_property C_ENABLE_CLK_DIVIDER false [get_debug_cores dbg_hub]
 set_property C_USER_SCAN_CHAIN 1 [get_debug_cores dbg_hub]
