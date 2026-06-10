@@ -802,8 +802,9 @@ def send_uart_dac_auto(dac_packet_completo, cs2=False):
     # Il DAC MAX5443 richiede 16 bit. Padding a multiplo di 6 (18 bit) devo aggiungere due bit per padding
     dim = UARTdef.DAC_UART_DATA_POS + 1 # 6
     missing_bits = dim - (UARTdef.DAC_PACKET_LENGTH % dim) # 2
-    padded_data = dac_packet_completo + '0' * missing_bits # "00" inserito alla fine
-
+    padded_data = '0' * missing_bits + dac_packet_completo # "00" inserito all'inizio per allineare i 16 bit ai LSB del registro a 18 bit
+    #padded_data = dac_packet_completo + '0' * missing_bits # "00" inserito alla fine
+    
     num_blocchi = len(padded_data) // dim # 3
 
     # Invio dei blocchi. Il pacchetto col flag LAST contiene i bit più significativi (MSB) e deve essere inviato per ultimo.

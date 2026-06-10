@@ -1,8 +1,8 @@
 #!/usr/bin/python
 """Script per la caratterizzazione del DAC (CS1 / CS2).
 Genera file TSV e grafico PDF della curva ingresso/uscita.
+Comunicazione con multimetro Agilent 34461A via USB (USBTMC).
 """
-
 import os
 import sys
 import time
@@ -24,58 +24,80 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import UART_definitions as UARTdef
 import pFREYA_tester_processing as pYtp
 
-# Indirizzo VISA del multimetro (scommenta quello corretto)
-#MULTIMETER_VISA_ADDR = 'GPIB0::20::INSTR'   # back-contact
-MULTIMETER_VISA_ADDR = 'GPIB0::9::INSTR'     # back-frame
+# Indirizzo VISA del multimetro via USB (USBTMC).
+
+MULTIMETER_VISA_ADDR = 'USB0::0x0957::0x1C07::MY53202489::INSTR'
 
 # Directory di output
 OUTPUT_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'data')
 
 
-# Interfaccia clock per riusare send_clock_single senza la GUI principale
+#per clock senza gui principale
 class ClockConfig:
     def __init__(self, root, dac_sck_period='100'):
+        self.slow_ck = tk.StringVar(root, value='40')
+        self.sel_ck = tk.StringVar(root, value='262143')
+        self.adc_ck = tk.StringVar(root, value='262143')
+        self.inj_stb = tk.StringVar(root, value='1')
+        self.ser_ck = tk.StringVar(root, value='262143')
         self.dac_sck = tk.StringVar(root, value=dac_sck_period)
-        self.clock_map = {UARTdef.DAC_SCK_CODE: self.dac_sck}
+        
+        self.clock_map = {
+            UARTdef.SLOW_CTRL_CK_CODE: self.slow_ck,
+            UARTdef.SEL_CK_CODE:       self.sel_ck,
+            UARTdef.ADC_CK_CODE:       self.adc_ck,
+            UARTdef.INJ_STB_CODE:      self.inj_stb,
+            UARTdef.DAC_SCK_CODE:      self.dac_sck,
+            UARTdef.SER_CK_CODE:       self.ser_ck
+        }
         self.slow_ck_sent = False
-        self.sel_ck_sent = False
+        self.sel_ck_sent  = False
         self.dac_sck_sent = False
 
 
-# --- Inizializzazione ---
 def init_fpga(clock_cfg):
     """Reset FPGA e configura SPI clock."""
     print('Reset FPGA...')
     pYtp.send_reset_FPGA()
     time.sleep(2)
-    print(f'SPI clock = {clock_cfg.dac_sck.get()} FP')
-    pYtp.send_clock_single(clock_cfg, UARTdef.DAC_SCK_CODE)
+    print('Invio di tutti i clock necessari...')
+    for ck_code in [UARTdef.SLOW_CTRL_CK_CODE, UARTdef.SEL_CK_CODE, UARTdef.ADC_CK_CODE, 
+                    UARTdef.INJ_STB_CODE, UARTdef.DAC_SCK_CODE, UARTdef.SER_CK_CODE]:
+        pYtp.send_clock_single(clock_cfg, ck_code)
     time.sleep(1)
     print('FPGA pronta.')
 
 
 def init_multimeter(visa_addr):
-    """Apre e configura il multimetro per misure DC."""
+    """Apre e configura il multimetro Agilent 34461A via USBTMC."""
     rm = pyvisa.ResourceManager()
-    print(f'Risorse VISA: {rm.list_resources()}')
+    print(f'Risorse VISA disponibili: {rm.list_resources()}')
+
     multi = rm.open_resource(visa_addr)
-    print(f'Multimetro: {multi.query("*IDN?").strip()}')
+    
+    # Su USBTMC basta impostare timeout e terminatori.
+    multi.timeout           = 10000   # ms
+    multi.read_termination  = '\n'
+    multi.write_termination = '\n'
+
+    idn = multi.query('*IDN?').strip()
+    print(f'Multimetro identificato: {idn}')
+
     multi.write('*RST')
-    multi.write('INP:IMP:AUTO ON')
+    time.sleep(1)                        # attesa per reset
     multi.write('CONF:VOLT:DC 10, MAX')
-    multi.write('FUNC "VOLT:DC"')
-    multi.write('DISP:TEXT "DAC CHR"')
+    multi.write('INP:IMP:AUTO ON')       # Deve essere inviato DOPO CONF, altrimenti viene sovrascritto
+    multi.write('DISP:TEXT "DAC AUTO"')
     print('Multimetro configurato.')
     return rm, multi
 
 
-# --- Misura ---
+#misure
 def measure_voltage(multimeter, n_samples):
     """Legge n_samples tensioni DC e ritorna media e std."""
     readings = np.empty(n_samples, dtype=float)
     for j in range(n_samples):
-        multimeter.write('MEAS:VOLT:DC?')
-        readings[j] = float(multimeter.read())
+        readings[j] = float(multimeter.query('READ?'))
     return float(np.mean(readings)), float(np.std(readings))
 
 
@@ -83,13 +105,13 @@ def set_dac_code(code, cs2=False):
     """Invia un codice digitale al DAC selezionato."""
     dac_packet = pYtp.create_dac_packet_auto(code)
     pYtp.send_uart_dac_auto(dac_packet, cs2=cs2)
-
-
-# --- Salvataggio ---
+    print(f"Invio DAC code = {code}")
+    print(f"Packet = {dac_packet}")
+#salva e plot
 def save_results(df, dac_id, output_dir):
     """Salva i risultati in un file TSV."""
     os.makedirs(output_dir, exist_ok=True)
-    dt_str = datetime.now().strftime('%Y%m%d_%H%M')
+    dt_str   = datetime.now().strftime('%Y%m%d_%H%M')
     filepath = os.path.join(output_dir, f'dac_characterization_{dac_id}_{dt_str}.tsv')
     df.to_csv(filepath, sep='\t', index=False)
     print(f'Dati salvati: {filepath}')
@@ -99,7 +121,7 @@ def save_results(df, dac_id, output_dir):
 def plot_results(df, dac_id, output_dir, fig=None, ax=None):
     """Genera e salva il grafico della caratteristica del DAC."""
     os.makedirs(output_dir, exist_ok=True)
-    dt_str = datetime.now().strftime('%Y%m%d_%H%M')
+    dt_str   = datetime.now().strftime('%Y%m%d_%H%M')
     filepath = os.path.join(output_dir, f'dac_characterization_{dac_id}_{dt_str}.pdf')
 
     if fig is None or ax is None:
@@ -132,7 +154,7 @@ def plot_results(df, dac_id, output_dir, fig=None, ax=None):
     return filepath
 
 
-# --- GUI ---
+#gui
 class GUI(ttk.Frame):
     def __init__(self, parent, *args, **kwargs):
         ttk.Frame.__init__(self, parent, *args, **kwargs)
@@ -140,61 +162,54 @@ class GUI(ttk.Frame):
         self.parent.title('Caratterizzazione DAC')
         self.running = False
 
-        # Variabili
-        self.dac_select = tk.StringVar(self.parent, value='1')
-        self.step = tk.StringVar(self.parent, value='1000')
-        self.samples = tk.StringVar(self.parent, value='5')
-        self.settling = tk.StringVar(self.parent, value='0.5')
+        #var
+        self.dac_select      = tk.StringVar(self.parent, value='1')
+        self.step            = tk.StringVar(self.parent, value='1000')
+        self.samples         = tk.StringVar(self.parent, value='5')
+        self.settling        = tk.StringVar(self.parent, value='0.5')
         self.multimeter_addr = tk.StringVar(self.parent, value=MULTIMETER_VISA_ADDR)
 
-        # Costruzione GUI
+        #grafica
         row = 0
 
         ttk.Label(self.parent, text='DAC:').grid(row=row, column=0, sticky=tk.W, padx=5, pady=5)
         dac_frame = ttk.Frame(self.parent)
         dac_frame.grid(row=row, column=1, columnspan=2, sticky=tk.W, padx=5)
-        ttk.Radiobutton(dac_frame, text='DAC1 (CS1)', variable=self.dac_select,
-                         value='1').pack(side=tk.LEFT, padx=5)
-        ttk.Radiobutton(dac_frame, text='DAC2 (CS2)', variable=self.dac_select,
-                         value='2').pack(side=tk.LEFT, padx=5)
+        ttk.Radiobutton(dac_frame, text='CS1', variable=self.dac_select,
+                        value='1').pack(side=tk.LEFT, padx=5)
+        ttk.Radiobutton(dac_frame, text='CS2', variable=self.dac_select,
+                        value='2').pack(side=tk.LEFT, padx=5)
         row += 1
 
         ttk.Label(self.parent, text='Step (0-65535):').grid(row=row, column=0, sticky=tk.W, padx=5, pady=5)
-        ttk.Entry(self.parent, textvariable=self.step, width=8).grid(row=row, column=1, columnspan=2, sticky=tk.E, padx=5)
+        ttk.Entry(self.parent, textvariable=self.step, width=8).grid(
+            row=row, column=1, columnspan=2, sticky=tk.E, padx=5)
         row += 1
 
-        ttk.Label(self.parent, text='Campioni per punto:').grid(row=row, column=0, sticky=tk.W, padx=5, pady=5)
-        ttk.Entry(self.parent, textvariable=self.samples, width=8).grid(row=row, column=1, columnspan=2, sticky=tk.E, padx=5)
-        row += 1
 
-        ttk.Label(self.parent, text='Tempo assestamento [s]:').grid(row=row, column=0, sticky=tk.W, padx=5, pady=5)
-        ttk.Entry(self.parent, textvariable=self.settling, width=8).grid(row=row, column=1, columnspan=2, sticky=tk.E, padx=5)
-        row += 1
 
-        ttk.Label(self.parent, text='Multimetro VISA:').grid(row=row, column=0, sticky=tk.W, padx=5, pady=5)
-        ttk.Entry(self.parent, textvariable=self.multimeter_addr, width=22).grid(row=row, column=1, columnspan=2, sticky=tk.E, padx=5)
-        row += 1
-
-        # Bottoni
+        #button
         self.buttonLaunch = ttk.Button(self.parent, text='Avvia', command=self.launch)
         self.buttonLaunch.grid(row=row, column=2, sticky=tk.E, padx=5, pady=5)
         self.buttonStop = ttk.Button(self.parent, text='Stop', command=self.stop)
         row += 1
 
-        # Grafico
+        #plot
         self.figure = plt.Figure(figsize=(8, 5), dpi=100)
-        self.axes = self.figure.add_subplot(111)
-        self.axes.tick_params(axis='both', which='both', labeltop=True,
-                              labelright=True, labelbottom=True, labelleft=True,
+        self.axes   = self.figure.add_subplot(111)
+        self.axes.tick_params(axis='both', which='both',
+                              labeltop=True, labelright=True,
+                              labelbottom=True, labelleft=True,
                               top=True, right=True, bottom=True, left=True)
         self.axes.minorticks_on()
         self.canvas = backend_tkagg.FigureCanvasTkAgg(self.figure, self.parent)
         self.canvas.draw()
 
-        ttk.Label(self.parent, text='Caratteristica DAC').grid(row=row, column=0, sticky=tk.W, padx=15)
+        ttk.Label(self.parent, text='Caratteristica DAC').grid(
+            row=row, column=0, sticky=tk.W, padx=15)
         row += 1
         self.canvas.get_tk_widget().grid(row=row, column=0, rowspan=4, columnspan=3,
-                                          sticky=(tk.N, tk.S, tk.E, tk.W), padx=15, pady=15)
+                                         sticky=(tk.N, tk.S, tk.E, tk.W), padx=15, pady=15)
 
         self.grid(row=0, column=0, sticky=(tk.N, tk.S, tk.E, tk.W))
 
@@ -208,40 +223,46 @@ class GUI(ttk.Frame):
             self.thread = threading.Thread(target=self.launch_t)
             self.thread.start()
             self.running = True
-            self.buttonStop.grid(row=5, column=1, sticky=tk.E, padx=5)
+            self.buttonStop.grid(row=2, column=1, sticky=tk.E, padx=5, pady=5)
+
         else:
-            messagebox.showerror(message='Misura in corso. Fermala prima di avviarne una nuova.')
+            messagebox.showerror(
+                message='Misura in corso. Ferma per avviarne una nuova.')
 
     def launch_t(self):
-        # Lettura parametri dalla GUI
-        cs2 = (int(self.dac_select.get()) == 2)
-        dac_id = 'CS2' if cs2 else 'CS1'
-        step = int(self.step.get())
-        n_samples = int(self.samples.get())
-        settling_time = float(self.settling.get())
-        visa_addr = self.multimeter_addr.get()
+        cs2           = (int(self.dac_select.get()) == 2)
+        dac_id        = 'CS2' if cs2 else 'CS1'
+        step          = int(self.step.get())
+        n_samples     = 5
+        settling_time = 0.5
+        visa_addr     = self.multimeter_addr.get()
 
         codes = np.arange(0, 2**UARTdef.DAC_BITS, step)
         if codes[-1] != 2**UARTdef.DAC_BITS - 1:
             codes = np.append(codes, 2**UARTdef.DAC_BITS - 1)
 
         total = len(codes)
-        print(f'\n--- Caratterizzazione {dac_id} | {total} punti | step={step} ---')
+        print(f'\n--- Caratterizzazione {dac_id} | {total} punti | step={step} '
+              f'| porta={visa_addr} ---')
 
         clock_cfg = ClockConfig(self.parent)
-        rm = None
-        multi = None
+        rm        = None
+        multi     = None
 
         try:
             init_fpga(clock_cfg)
             rm, multi = init_multimeter(visa_addr)
 
-            # Sweep
-            results = {'dac_id': [], 'dac_code': [], 'measured_voltage': [], 'voltage_std': []}
+            results = {
+                'dac_id':            [],
+                'dac_code':          [],
+                'measured_voltage':  [],
+                'voltage_std':       [],
+            }
 
             for i, code in enumerate(codes):
                 if not self.running:
-                    print('Interrotto.')
+                    print('Interrotto dall\'utente.')
                     break
 
                 set_dac_code(code, cs2=cs2)
@@ -260,11 +281,12 @@ class GUI(ttk.Frame):
 
             save_results(df, dac_id, OUTPUT_DIR)
             plot_results(df, dac_id, OUTPUT_DIR, fig=self.figure, ax=self.axes)
-            self.canvas.draw()
+            self.parent.after(0, self.canvas.draw)
             self.stop()
 
         except BaseException as err:
-            print(f"Errore: {err}")
+            print(f'Errore: {err}')
+            traceback.print_exc()
             raise
 
         finally:
