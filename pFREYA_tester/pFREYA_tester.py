@@ -696,6 +696,9 @@ class gui_dac_auto(Toplevel):
         button_cs1.grid(row=0, column=1, padx=5, pady=10)
         button_cs2 = Button(frame, text="CS2", command=lambda: run_script_dac(cs2=True))
         button_cs2.grid(row=0, column=2, padx=5, pady=10)
+        #apertura gui grafici dac
+        button_all = Button(frame, text="ALL LEVEL", command=lambda: run_dac_plot())
+        button_all.grid(row=0, column=3, padx=5, pady=10)
 
         # Riepilogo livello corrente — stessa idea del cmp_frame in gui2
         info_frame = ttk.Labelframe(self, text="DAC settings", padding=10)
@@ -720,6 +723,10 @@ class gui_dac_auto(Toplevel):
                   foreground="blue").grid(column=1, row=2, sticky=W, padx=5, pady=(4,0))
         ttk.Label(info_frame, text="V   (level / 65535 × VREF)",
                   foreground="gray").grid(column=2, row=2, sticky=W, pady=(4,0))
+
+        def run_dac_plot():
+            script_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "dac_plot.py")
+            subprocess.Popen([sys.executable, script_path])
 
         def update_vout(*_):
             try:

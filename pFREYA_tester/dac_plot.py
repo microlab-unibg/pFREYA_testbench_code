@@ -54,7 +54,6 @@ class ClockConfig:
         self.sel_ck_sent  = False
         self.dac_sck_sent = False
 
-
 def init_fpga(clock_cfg):
     """Reset FPGA e configura SPI clock."""
     print('Reset FPGA...')
@@ -85,9 +84,11 @@ def init_multimeter(visa_addr):
 
     multi.write('*RST')
     time.sleep(1)                        # attesa per reset
-    multi.write('CONF:VOLT:DC 10, MAX')
+    multi.write('CONF:VOLT:DC 0.1')
+    multi.write('VOLT:DC:RANGE:AUTO ON')
+    multi.query('READ?') 
     multi.write('INP:IMP:AUTO ON')       # Deve essere inviato DOPO CONF, altrimenti viene sovrascritto
-    multi.write('DISP:TEXT "DAC AUTO"')
+
     print('Multimetro configurato.')
     return rm, multi
 
@@ -185,6 +186,10 @@ class GUI(ttk.Frame):
         ttk.Entry(self.parent, textvariable=self.step, width=8).grid(
             row=row, column=1, columnspan=2, sticky=tk.E, padx=5)
         row += 1
+        ttk.Label(self.parent, text='N samples:').grid(row=row, column=0, sticky=tk.W, padx=5, pady=5)
+        ttk.Entry(self.parent, textvariable=self.samples, width=8).grid(
+            row=row, column=1, columnspan=2, sticky=tk.E, padx=5)
+        row += 1
 
 
 
@@ -233,13 +238,19 @@ class GUI(ttk.Frame):
         cs2           = (int(self.dac_select.get()) == 2)
         dac_id        = 'CS2' if cs2 else 'CS1'
         step          = int(self.step.get())
-        n_samples     = 5
-        settling_time = 0.5
+        n_samples     = int(self.samples.get())
+        settling_time = 0.2
         visa_addr     = self.multimeter_addr.get()
 
-        codes = np.arange(0, 2**UARTdef.DAC_BITS, step)
-        if codes[-1] != 2**UARTdef.DAC_BITS - 1:
-            codes = np.append(codes, 2**UARTdef.DAC_BITS - 1)
+        #PER PRENDERE TUTTI I 65535 LIVELLI
+        #codes = np.arange(0, 2**UARTdef.DAC_BITS, step)
+        #if codes[-1] != 2**UARTdef.DAC_BITS - 1:
+        #    codes = np.append(codes, 2**UARTdef.DAC_BITS - 1)
+
+        #PER PRENDERE DA 0 A 1.5[V] circa da livello 0 a 39000, dato che ci interess prendere il livello 1.2 di entrambi i cs1 e cs2
+        codes = np.arange(0, 32501, step)
+        if codes[-1] != 32500:
+            codes = np.append(codes, 32500)
 
         total = len(codes)
         print(f'\n--- Caratterizzazione {dac_id} | {total} punti | step={step} '
@@ -267,6 +278,11 @@ class GUI(ttk.Frame):
 
                 set_dac_code(code, cs2=cs2)
                 time.sleep(settling_time)
+                #metodo per verificare che sia settato auto sul multimetro ad ogni codice
+                multi.write('CONF:VOLT:DC 0.1')
+                multi.write('VOLT:DC:RANGE:AUTO ON')
+                multi.write('INP:IMP:AUTO ON')
+
                 v_mean, v_std = measure_voltage(multi, n_samples)
 
                 results['dac_id'].append(dac_id)
