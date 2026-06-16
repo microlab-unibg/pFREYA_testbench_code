@@ -566,8 +566,8 @@ def run_script_dac(cs2=False):
     cs_label = 'CS2' if cs2 else 'CS1'
     print(f"\n--- RUNNING SCRIPT DAC ({cs_label}) ---")
 
-    print("\n--Reset FPGA--")
-    reset_iniziale()
+    #print("\n--Reset FPGA--")
+    #reset_iniziale()
     time.sleep(2)
 
     print("\n--Send clocks--")

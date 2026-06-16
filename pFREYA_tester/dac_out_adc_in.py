@@ -2,6 +2,7 @@
 
 import os
 import sys
+import csv
 import time
 import threading
 import traceback
@@ -9,8 +10,10 @@ from datetime import datetime
 import tkinter as tk
 import tkinter.ttk as ttk
 from tkinter import messagebox
-
+from matplotlib.ticker import FuncFormatter
 import numpy as np
+import matplotlib.pyplot as plt
+import matplotlib.backends.backend_tkagg as backend_tkagg
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
@@ -18,7 +21,7 @@ import UART_definitions as UARTdef
 import pFREYA_tester_processing as pYtp
 
 # Directory di output
-OUTPUT_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'data')
+OUTPUT_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'data', 'adc')
 
 # Livello DAC corrispondente a ~1.25 V in ingresso all'ADC (per CS1 e CS2)
 DAC_LEVEL_1V25 = 32500
@@ -46,6 +49,17 @@ class ClockConfig:
         self.sel_ck_sent  = False
         self.dac_sck_sent = False
 
+        #selezione pixel  
+        self.pixel_row = tk.StringVar(root, value='4')
+        self.pixel_col = tk.StringVar(root, value='0')
+
+        # timing adc
+        self.adc_start = {
+            'delay': tk.StringVar(root, value='604'),
+            'high':  tk.StringVar(root, value='2'),
+            'low':   tk.StringVar(root, value='9980'),
+        }
+
 
 def init_fpga(clock_cfg):
     """Reset FPGA e configura SPI clock."""
@@ -68,6 +82,17 @@ def set_dac_code(code, cs2=False):
     print(f"Packet = {dac_packet}")
 
 
+# selezione del pixel
+def select_pixel(cfg):
+    """Seleziona il pixel attivo sull'ASIC, stessa sequenza della GUI."""
+    print('Selezione pixel...')
+    ret = pYtp.send_pixel(cfg)
+    if ret != 0:
+        raise RuntimeError('Errore nella selezione del pixel.')
+    time.sleep(1)
+    print(f'Pixel selezionato: row={cfg.pixel_row.get()}, col={cfg.pixel_col.get()}')
+
+
 #gui
 class GUI(ttk.Frame):
     def __init__(self, parent, *args, **kwargs):
@@ -77,14 +102,23 @@ class GUI(ttk.Frame):
         self.running = False
 
         #var
-        self.step     = tk.StringVar(self.parent, value='1000')
+        self.step     = tk.StringVar(self.parent, value='6')
         self.settling = tk.StringVar(self.parent, value='0.5')
+
+        # numero di campioni ADC per livello DAC
+        self.n_samples = tk.StringVar(self.parent, value='6')
 
         #grafica
         row = 0
 
-        ttk.Label(self.parent, text='Step (0-65535):').grid(row=row, column=0, sticky=tk.W, padx=5, pady=5)
+        ttk.Label(self.parent, text='Step (0-31500):').grid(row=row, column=0, sticky=tk.W, padx=5, pady=5)
         ttk.Entry(self.parent, textvariable=self.step, width=8).grid(
+            row=row, column=1, columnspan=2, sticky=tk.E, padx=5)
+        row += 1
+
+        # numero campioni ADC per livello (default 6)
+        ttk.Label(self.parent, text='N campioni ADC:').grid(row=row, column=0, sticky=tk.W, padx=5, pady=5)
+        ttk.Entry(self.parent, textvariable=self.n_samples, width=8).grid(
             row=row, column=1, columnspan=2, sticky=tk.E, padx=5)
         row += 1
 
@@ -94,19 +128,61 @@ class GUI(ttk.Frame):
         self.buttonStop = ttk.Button(self.parent, text='Stop', command=self.stop)
         row += 1
 
+        #plot
+        self.figure = plt.Figure(figsize=(8, 5), dpi=100)
+        self.axes   = self.figure.add_subplot(111)
+        self.axes.tick_params(axis='both', which='both',
+                              labeltop=False, labelright=True,
+                              labelbottom=True, labelleft=True,
+                              top=True, right=True, bottom=True, left=True)
+        self.axes.minorticks_on()
+        self.canvas = backend_tkagg.FigureCanvasTkAgg(self.figure, self.parent)
+        self.canvas.draw()
+        
+        self.canvas.get_tk_widget().grid(row=row, column=0, rowspan=4, columnspan=3,
+                                         sticky=(tk.N, tk.S, tk.E, tk.W), padx=15, pady=15)
+        row += 4
+
         self.grid(row=0, column=0, sticky=(tk.N, tk.S, tk.E, tk.W))
+
+
+    def update_plot(self):
+        self.axes.clear()
+
+        if len(self.x_steps) > 0:
+            self.axes.step(self.x_steps, self.y_steps, color='red', where='post', label='Caratteristica ADC')
+
+        if len(self.x_samples) > 0:
+            self.axes.plot(self.x_samples, self.y_samples, 'g|', markersize=6, alpha=0.6, label='Campioni')
+
+        self.axes.set_title('Caratteristica di Trasferimento ADC')
+        self.axes.set_ylabel('Codice ADC')
+        self.axes.set_xlabel('Vin differenziale (V)')
+        
+        def bin_format(x, pos):
+            val = int(x)
+            if 0 <= val <= 1023:
+                return f'{val:010b}'
+            return ''
+        self.axes.yaxis.set_major_formatter(FuncFormatter(bin_format))
+        self.axes.grid(True, alpha=0.3)
+        self.axes.legend(loc='upper left')
+
+        self.canvas.draw()
+
 
     def stop(self):
         if self.running:
             self.running = False
             self.buttonStop.grid_forget()
-
+            
     def launch(self):
         if not self.running:
             self.thread = threading.Thread(target=self.launch_t)
             self.thread.start()
             self.running = True
-            self.buttonStop.grid(row=1, column=1, sticky=tk.E, padx=5, pady=5)
+
+            self.buttonStop.grid(row=3, column=1, sticky=tk.E, padx=5, pady=5)
 
         else:
             messagebox.showerror(
@@ -115,28 +191,36 @@ class GUI(ttk.Frame):
     def launch_t(self):
         step          = int(self.step.get())
         settling_time = float(self.settling.get())
+        n_samples     = int(self.n_samples.get())
 
-        #PER PRENDERE TUTTI I 65535 LIVELLI
-        #codes = np.arange(0, 2**UARTdef.DAC_BITS, step)
-        #if codes[-1] != 2**UARTdef.DAC_BITS - 1:
-        #    codes = np.append(codes, 2**UARTdef.DAC_BITS - 1)
+        # CS1: crescente da 0 a 31500
+        # CS2: decrescente da 31500 a 0
+        max_val = 31500
+        codes_cs1 = np.arange(0, max_val + 1, step)
+        if len(codes_cs1) > 0 and codes_cs1[-1] != max_val:
+            codes_cs1 = np.append(codes_cs1, max_val)
 
-        # CS1:  crescente da 0 a ~1.25V (livello DAC_LEVEL_1V25)
-        # CS2:  decrescente da ~1.25V (livello DAC_LEVEL_1V25) a 0
-        # Entrambi inviati in contemporanea, stesso numero di punti.
-        codes_cs1 = np.arange(0, DAC_LEVEL_1V25 + 1, step)
-        if codes_cs1[-1] != DAC_LEVEL_1V25:
-            codes_cs1 = np.append(codes_cs1, DAC_LEVEL_1V25)
-
-        codes_cs2 = codes_cs1[::-1]  # CS2 parte da 1.25V e scende a 0
+        codes_cs2 = max_val - codes_cs1
 
         total = len(codes_cs1)
-        print(f'\n--- Invio livelli CS1+CS2 simultaneo | {total} punti | step={step} ---')
+        print(f'\n--- Invio livelli CS1+CS2 differenziale | {total} punti | step={step} | n_samples={n_samples} ---')
 
         clock_cfg = ClockConfig(self.parent)
+        # risultati ADC
+        results = []
+
+        # Variabili per il grafico real-time
+        self.x_samples = []
+        self.y_samples = []
+        self.x_steps = []
+        self.y_steps = []
 
         try:
+            # 1. invio clock
             init_fpga(clock_cfg)
+
+            # 2. selezioni pixel
+            select_pixel(clock_cfg)
 
             for i in range(total):
                 if not self.running:
@@ -146,15 +230,56 @@ class GUI(ttk.Frame):
                 code_cs1 = codes_cs1[i]
                 code_cs2 = codes_cs2[i]
 
-                # Invio contemporaneo dei due codici
+                # 3. invio dato sul primo dac 
                 set_dac_code(code_cs1, cs2=False)
+                # 4. invio dato sul secondo dac
                 set_dac_code(code_cs2, cs2=True)
-
+                
                 time.sleep(settling_time)
 
-                print(f'  [{i+1}/{total}] CS1={code_cs1:>5d} CS2={code_cs2:>5d}')
+                #  avvio adc
+                pYtp.send_ADC_START(clock_cfg)
+                time.sleep(0.1)
 
-            print('Invio CS1+CS2 completato.')
+                #  sync
+                pYtp.send_sync_time_bases()
+                time.sleep(0.5)
+
+                step_adc_values = []
+                
+                # leggo dato
+                for s in range(n_samples):
+                    result = pYtp.send_READ_DATA(clock_cfg)
+                    if result != 1:
+                        adc_data, sot = result
+                        adc_value = int(adc_data, 2)
+                        results.append({
+                            'step': i,
+                            'sample': s,
+                            'cs1_code': int(code_cs1),
+                            'cs2_code': int(code_cs2),
+                            'adc_raw': adc_data,
+                            'adc_value': adc_value,
+                            'sot': sot
+                        })
+                        
+                        v_in = (code_cs1 - code_cs2) * (2.5 / 65535.0)
+                        self.x_samples.append(v_in)
+                        self.y_samples.append(adc_value)
+                        step_adc_values.append(adc_value)
+                        print(f'  [{i+1}/{total}][step{s+1}] CS1={code_cs1:>5d} CS2={code_cs2:>5d} ADC={adc_data}')
+                    else:
+                        print(f'  [{i+1}/{total}][step{s+1}] CS1={code_cs1:>5d} CS2={code_cs2:>5d} ADC=ERRORE')
+                        
+                if step_adc_values:
+                    v_in = (code_cs1 - code_cs2) * (2.5 / 65535.0)
+                    self.x_steps.append(v_in)
+                    self.y_steps.append(int(np.round(np.mean(step_adc_values))))
+                    
+                # aggiornamento 
+                self.parent.after(0, self.update_plot)
+
+            print('Scansione completata.')
             self.stop()
 
         except BaseException as err:
@@ -170,6 +295,25 @@ class GUI(ttk.Frame):
                 print('DAC CS1 e CS2 azzerati.')
             except Exception:
                 pass
+
+            # salvo dati e grafico
+            if results:
+                timestamp = datetime.strftime(datetime.now(), '%d%m%y_%H%M%S')
+                os.makedirs(OUTPUT_DIR, exist_ok=True)
+                
+                filename = os.path.join(OUTPUT_DIR, f'dac_adc_scan_{timestamp}.csv')
+                with open(filename, 'w', newline='') as f:
+                    writer = csv.DictWriter(f, fieldnames=results[0].keys())
+                    writer.writeheader()
+                    writer.writerows(results)
+                print(f'Risultati salvati in: {filename}')
+                
+                fig_filename = os.path.join(OUTPUT_DIR, f'dac_adc_scan_{timestamp}.pdf')
+                self.figure.savefig(fig_filename, dpi=300)
+                print(f'Grafico salvato in: {fig_filename}')
+            else:
+                print('Nessun risultato ADC da salvare.')
+
             print('Fatto.\n')
 
 
@@ -177,3 +321,4 @@ if __name__ == '__main__':
     root = tk.Tk()
     GUI(root)
     root.mainloop()
+
