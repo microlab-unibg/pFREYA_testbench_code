@@ -10,7 +10,6 @@ from datetime import datetime
 import tkinter as tk
 import tkinter.ttk as ttk
 from tkinter import messagebox
-from matplotlib.ticker import FuncFormatter
 import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.backends.backend_tkagg as backend_tkagg
@@ -22,9 +21,6 @@ import pFREYA_tester_processing as pYtp
 
 # Directory di output
 OUTPUT_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'data', 'adc')
-
-# Livello DAC corrispondente a ~1.25 V in ingresso all'ADC (per CS1 e CS2)
-DAC_LEVEL_1V25 = 32500
 
 
 #per clock senza gui principale
@@ -136,6 +132,10 @@ class GUI(ttk.Frame):
                               labelbottom=True, labelleft=True,
                               top=True, right=True, bottom=True, left=True)
         self.axes.minorticks_on()
+        self.axes.set_title('Caratteristica  ADC')
+        self.axes.set_xlabel('Vin(V)')
+        self.axes.set_ylabel('Codice ADC')
+        self.axes.grid(True, alpha=0.3)
         self.canvas = backend_tkagg.FigureCanvasTkAgg(self.figure, self.parent)
         self.canvas.draw()
         
@@ -149,22 +149,18 @@ class GUI(ttk.Frame):
     def update_plot(self):
         self.axes.clear()
 
+        # Grafico a gradini (staircase) della caratteristica ADC
         if len(self.x_steps) > 0:
             self.axes.step(self.x_steps, self.y_steps, color='red', where='post', label='Caratteristica ADC')
 
+        # Singoli campioni ADC sovrapposti come marker
         if len(self.x_samples) > 0:
             self.axes.plot(self.x_samples, self.y_samples, 'g|', markersize=6, alpha=0.6, label='Campioni')
 
         self.axes.set_title('Caratteristica di Trasferimento ADC')
-        self.axes.set_ylabel('Codice ADC')
         self.axes.set_xlabel('Vin differenziale (V)')
-        
-        def bin_format(x, pos):
-            val = int(x)
-            if 0 <= val <= 1023:
-                return f'{val:010b}'
-            return ''
-        self.axes.yaxis.set_major_formatter(FuncFormatter(bin_format))
+        # Asse Y in codici ADC DECIMALI (0–1023 per 10 bit)
+        self.axes.set_ylabel('Codice ADC (decimale)')
         self.axes.grid(True, alpha=0.3)
         self.axes.legend(loc='upper left')
 
@@ -235,19 +231,20 @@ class GUI(ttk.Frame):
                 # 4. invio dato sul secondo dac
                 set_dac_code(code_cs2, cs2=True)
                 
+                # 5. attesa di stabilizzazione dell'uscita analogica dei DAC
                 time.sleep(settling_time)
 
-                #  avvio adc
+                # 6. avvio ADC  configura il segnale ADC_START nella FPGA
                 pYtp.send_ADC_START(clock_cfg)
-                time.sleep(0.1)
 
-                #  sync
+                # 7. sincronizzazione allinea le basi tempi dei segnali generati
                 pYtp.send_sync_time_bases()
-                time.sleep(0.5)
+
+                time.sleep(1.0)
 
                 step_adc_values = []
                 
-                # leggo dato
+                # 8. lettura dati ADC  n_samples letture per ogni livello DAC
                 for s in range(n_samples):
                     result = pYtp.send_READ_DATA(clock_cfg)
                     if result != 1:
@@ -267,16 +264,16 @@ class GUI(ttk.Frame):
                         self.x_samples.append(v_in)
                         self.y_samples.append(adc_value)
                         step_adc_values.append(adc_value)
-                        print(f'  [{i+1}/{total}][step{s+1}] CS1={code_cs1:>5d} CS2={code_cs2:>5d} ADC={adc_data}')
+                        print(f'  [{i+1}/{total}][s{s+1}] CS1={code_cs1:>5d} CS2={code_cs2:>5d} ADC={adc_value} (raw={adc_data})')
                     else:
-                        print(f'  [{i+1}/{total}][step{s+1}] CS1={code_cs1:>5d} CS2={code_cs2:>5d} ADC=ERRORE')
-                        
+                        print(f'  [{i+1}/{total}][s{s+1}] CS1={code_cs1:>5d} CS2={code_cs2:>5d} ADC=ERRORE')
+
                 if step_adc_values:
                     v_in = (code_cs1 - code_cs2) * (2.5 / 65535.0)
                     self.x_steps.append(v_in)
                     self.y_steps.append(int(np.round(np.mean(step_adc_values))))
                     
-                # aggiornamento 
+                # 9. aggiornamento grafico real-time
                 self.parent.after(0, self.update_plot)
 
             print('Scansione completata.')
@@ -321,4 +318,3 @@ if __name__ == '__main__':
     root = tk.Tk()
     GUI(root)
     root.mainloop()
-
