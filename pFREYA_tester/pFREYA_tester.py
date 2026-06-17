@@ -566,14 +566,6 @@ def run_script_dac(cs2=False):
     cs_label = 'CS2' if cs2 else 'CS1'
     print(f"\n--- RUNNING SCRIPT DAC ({cs_label}) ---")
 
-    #print("\n--Reset FPGA--")
-    #reset_iniziale()
-    time.sleep(2)
-
-    print("\n--Send clocks--")
-    auto_clock()
-    time.sleep(2)
-
     print(f"\n--Send DAC level ({cs_label})--")
     try:
         level = int(gui.dac['level'].get())

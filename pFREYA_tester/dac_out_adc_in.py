@@ -26,11 +26,11 @@ OUTPUT_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'dat
 #per clock senza gui principale
 class ClockConfig:
     def __init__(self, root, dac_sck_period='100'):
-        self.slow_ck = tk.StringVar(root, value='40')
-        self.sel_ck = tk.StringVar(root, value='262143')
-        self.adc_ck = tk.StringVar(root, value='262143')
+        self.slow_ck = tk.StringVar(root, value='4000')
+        self.sel_ck = tk.StringVar(root, value='4000')
+        self.adc_ck = tk.StringVar(root, value='20')
         self.inj_stb = tk.StringVar(root, value='1')
-        self.ser_ck = tk.StringVar(root, value='262143')
+        self.ser_ck = tk.StringVar(root, value='400')
         self.dac_sck = tk.StringVar(root, value=dac_sck_period)
         
         self.clock_map = {
@@ -67,7 +67,7 @@ def init_fpga(clock_cfg):
                     UARTdef.INJ_STB_CODE, UARTdef.DAC_SCK_CODE, UARTdef.SER_CK_CODE]:
         pYtp.send_clock_single(clock_cfg, ck_code)
     time.sleep(1)
-    print('FPGA pronta.')
+    print('FPGA pronta.\n')
 
 
 def set_dac_code(code, cs2=False):
@@ -75,7 +75,7 @@ def set_dac_code(code, cs2=False):
     dac_packet = pYtp.create_dac_packet_auto(code)
     pYtp.send_uart_dac_auto(dac_packet, cs2=cs2)
     print(f"Invio DAC code = {code}")
-    print(f"Packet = {dac_packet}")
+    print(f"Packet = {dac_packet}\n")
 
 
 # selezione del pixel
@@ -86,7 +86,7 @@ def select_pixel(cfg):
     if ret != 0:
         raise RuntimeError('Errore nella selezione del pixel.')
     time.sleep(1)
-    print(f'Pixel selezionato: row={cfg.pixel_row.get()}, col={cfg.pixel_col.get()}')
+    print(f'Pixel selezionato: row={cfg.pixel_row.get()}, col={cfg.pixel_col.get()}\n')
 
 
 #gui
@@ -215,8 +215,14 @@ class GUI(ttk.Frame):
             # 1. invio clock
             init_fpga(clock_cfg)
 
-            # 2. selezioni pixel
+            # 2. avvio ADC  configura il segnale ADC_START nella FPGA
+            pYtp.send_ADC_START(clock_cfg)
+
+            # .3 selezioni pixel
             select_pixel(clock_cfg)
+
+            # 4. sincronizzazione allinea le basi tempi dei segnali generati
+            pYtp.send_sync_time_bases()
 
             for i in range(total):
                 if not self.running:
@@ -226,25 +232,17 @@ class GUI(ttk.Frame):
                 code_cs1 = codes_cs1[i]
                 code_cs2 = codes_cs2[i]
 
-                # 3. invio dato sul primo dac 
+                # 5.1 invio dato sul primo dac 
                 set_dac_code(code_cs1, cs2=False)
-                # 4. invio dato sul secondo dac
+                # 5.2 invio dato sul secondo dac
                 set_dac_code(code_cs2, cs2=True)
                 
-                # 5. attesa di stabilizzazione dell'uscita analogica dei DAC
+                # 6. attesa di stabilizzazione dell'uscita analogica dei DAC
                 time.sleep(settling_time)
-
-                # 6. avvio ADC  configura il segnale ADC_START nella FPGA
-                pYtp.send_ADC_START(clock_cfg)
-
-                # 7. sincronizzazione allinea le basi tempi dei segnali generati
-                pYtp.send_sync_time_bases()
-
-                time.sleep(1.0)
 
                 step_adc_values = []
                 
-                # 8. lettura dati ADC  n_samples letture per ogni livello DAC
+                # 7. lettura dati ADC  n_samples letture per ogni livello DAC
                 for s in range(n_samples):
                     result = pYtp.send_READ_DATA(clock_cfg)
                     if result != 1:
@@ -264,16 +262,17 @@ class GUI(ttk.Frame):
                         self.x_samples.append(v_in)
                         self.y_samples.append(adc_value)
                         step_adc_values.append(adc_value)
-                        print(f'  [{i+1}/{total}][s{s+1}] CS1={code_cs1:>5d} CS2={code_cs2:>5d} ADC={adc_value} (raw={adc_data})')
+                        print(f'  [{i+1}/{total}][s{s+1}] CS1={code_cs1:>5d} CS2={code_cs2:>5d} ADC={adc_value} (raw={adc_data})\n')
+                        time.sleep(2)
                     else:
-                        print(f'  [{i+1}/{total}][s{s+1}] CS1={code_cs1:>5d} CS2={code_cs2:>5d} ADC=ERRORE')
+                        print(f'  [{i+1}/{total}][s{s+1}] CS1={code_cs1:>5d} CS2={code_cs2:>5d} ADC=ERRORE\n')
 
                 if step_adc_values:
                     v_in = (code_cs1 - code_cs2) * (2.5 / 65535.0)
                     self.x_steps.append(v_in)
                     self.y_steps.append(int(np.round(np.mean(step_adc_values))))
                     
-                # 9. aggiornamento grafico real-time
+                # 8. aggiornamento grafico real-time
                 self.parent.after(0, self.update_plot)
 
             print('Scansione completata.')
