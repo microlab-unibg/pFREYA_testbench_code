@@ -51,6 +51,134 @@ def sendread_UART(cmd='', num_bytes=1):
     ser.close()
     return res
 
+#mantenere porta seriale aperta per Vin differenziale adc
+def send_UART_persistent(ser, cmd='', data=''):
+    """Come send_UART, ma usa un oggetto serial.Serial già aperto.
+
+    Parameters
+    ----------
+    ser : serial.Serial
+        Porta seriale già aperta.
+    cmd : str
+        Command to be sent on UART
+    data : str, opt
+        Data to be sent on UART
+    """
+    if (cmd != ''):
+        ser.write(bitstring_to_bytes(cmd))
+    if (data != ''):
+        ser.write(bitstring_to_bytes(data))
+
+def sendread_UART_persistent(ser, cmd='', num_bytes=1):
+    """Come sendread_UART, ma usa un oggetto serial.Serial già aperto.
+
+    Parameters
+    ----------
+    ser : serial.Serial
+        Porta seriale già aperta.
+    cmd : str
+        Command to be sent on UART
+    num_bytes : int
+        Bytes to be read
+
+    Returns
+    ----------
+    bytes
+        res if everything was ok.
+    """
+    ser.write(bitstring_to_bytes(cmd))
+    res = ser.read(num_bytes)
+    return res
+
+def send_uart_dac_auto_persistent(ser, dac_packet_completo, cs2=False):
+    """Come send_uart_dac_auto, ma usa una porta seriale persistente.
+
+    Parameters
+    ----------
+    ser : serial.Serial
+        Porta seriale già aperta.
+    dac_packet_completo : str
+        Pacchetto DAC a 16 bit in formato stringa binaria.
+    cs2 : bool
+        Se True, invia su CS2 invece che CS1.
+    """
+    # Invio comando di configurazione DAC
+    cmd = create_cmd(UARTdef.SET_DAC_CMD, UARTdef.UNUSED_CODE)
+    send_UART_persistent(ser, cmd)
+    print('CMD sent:', cmd)
+    time.sleep(0.01)
+
+    # Il DAC MAX5443 richiede 16 bit. Padding a multiplo di 6 (18 bit)
+    dim = UARTdef.DAC_UART_DATA_POS + 1  # 6
+    missing_bits = dim - (UARTdef.DAC_PACKET_LENGTH % dim)  # 2
+    padded_data = '0' * missing_bits + dac_packet_completo
+
+    num_blocchi = len(padded_data) // dim  # 3
+
+    # Invio dei blocchi
+    for i in range(num_blocchi, 0, -1):
+        inizio = (i - 1) * dim
+        fine = i * dim
+        blocco_dati = padded_data[inizio:fine]
+
+        is_last = (i == 1)
+        flag = UARTdef.LAST_UART_PACKET if is_last else UARTdef.NOTLAST_UART_PACKET
+
+        pacchetto_uart = UARTdef.DATA_PACKET + flag + blocco_dati
+
+        send_UART_persistent(ser, '', pacchetto_uart)
+        print('DATA sent:', pacchetto_uart)
+        time.sleep(0.01)
+
+    # Invio comando finale per eseguire il DAC (CS1 o CS2)
+    send_cmd = UARTdef.SEND_DAC_CS2_CMD if cs2 else UARTdef.SEND_DAC_CMD
+    comando_send_dac = create_cmd(send_cmd, UARTdef.UNUSED_CODE)
+    send_UART_persistent(ser, comando_send_dac)
+    cs_label = 'CS2' if cs2 else 'CS1'
+    print(f'CMD sent ({cs_label}):', comando_send_dac)
+    time.sleep(0.01)
+
+def send_READ_DATA_persistent(ser, gui):
+    """Come send_READ_DATA, ma usa una porta seriale persistente.
+
+    Parameters
+    ----------
+    ser : serial.Serial
+        Porta seriale già aperta.
+    gui : pFREYA_GUI
+        The structure containing all the data related to the tester.
+
+    Returns
+    ----------
+    tuple or int
+        (adc_data, SOT) if everything was ok, 1 otherwise.
+    """
+    try:
+        cmd = create_cmd(UARTdef.SEND_READ_DATA_CMD, UARTdef.UNUSED_CODE)
+        send_UART_persistent(ser, cmd, '')
+        print('CMD sent: ', cmd)
+
+        cmd = create_cmd(UARTdef.SEND_SEND_DATA_CMD, UARTdef.UNUSED_CODE)
+        res = sendread_UART_persistent(ser, cmd, 2)
+        print('CMD sent: ', cmd)
+
+        s = format(int.from_bytes(res), '016b')
+        print(s[0:8], s[8:16])
+
+        adc_lsb = s[12:15]
+        adc_msb = s[0:7]
+        adc_data = adc_msb[::-1] + adc_lsb[::-1]
+
+        sot = s[11]
+
+        print(adc_data, sot)
+        return adc_data, sot
+    except Exception:
+        print(traceback.format_exc())
+        return 1
+
+
+
 def read_UART():
     """Function to read UART commands and data from FPGA
 
@@ -797,7 +925,7 @@ def send_uart_dac_auto(dac_packet_completo, cs2=False):
     cmd = create_cmd(UARTdef.SET_DAC_CMD, UARTdef.UNUSED_CODE)
     send_UART(cmd)
     print('CMD sent:', cmd)
-    time.sleep(.3)
+    time.sleep(0.01)
 
     # Il DAC MAX5443 richiede 16 bit. Padding a multiplo di 6 (18 bit) devo aggiungere due bit per padding
     dim = UARTdef.DAC_UART_DATA_POS + 1 # 6
@@ -820,7 +948,7 @@ def send_uart_dac_auto(dac_packet_completo, cs2=False):
         
         send_UART('', pacchetto_uart)
         print('DATA sent:', pacchetto_uart)
-        time.sleep(0.2)
+        time.sleep(0.01)
 
     # Invio comando finale per eseguire il DAC (CS1 o CS2)
     send_cmd = UARTdef.SEND_DAC_CS2_CMD if cs2 else UARTdef.SEND_DAC_CMD
@@ -828,7 +956,7 @@ def send_uart_dac_auto(dac_packet_completo, cs2=False):
     send_UART(comando_send_dac)
     cs_label = 'CS2' if cs2 else 'CS1'
     print(f'CMD sent ({cs_label}):', comando_send_dac)
-    time.sleep(.3)
+    time.sleep(0.01)
 
 ''' SEND DAC PRECEDENTE
 

@@ -4,6 +4,7 @@ import os
 import sys
 import csv
 import time
+import serial
 import threading
 import traceback
 from datetime import datetime
@@ -20,6 +21,7 @@ import UART_definitions as UARTdef
 import pFREYA_tester_processing as pYtp
 
 # Directory di output
+#OUTPUT_DIR = r'C:\Users\giorg\Desktop\tesi\pFREYA_testbench_code\data'
 OUTPUT_DIR = f'G:/Shared drives/FALCON/measures/new/adc'
 
 
@@ -56,24 +58,30 @@ class ClockConfig:
             'low':   tk.StringVar(root, value='9980'),
         }
 
-
 def init_fpga(clock_cfg):
     """Reset FPGA e configura SPI clock."""
     print('Reset FPGA...')
     pYtp.send_reset_FPGA()
-    time.sleep(2)
+    time.sleep(0.2)
     print('Invio di tutti i clock necessari...')
     for ck_code in [UARTdef.SLOW_CTRL_CK_CODE, UARTdef.SEL_CK_CODE, UARTdef.ADC_CK_CODE, 
                     UARTdef.INJ_STB_CODE, UARTdef.DAC_SCK_CODE, UARTdef.SER_CK_CODE]:
         pYtp.send_clock_single(clock_cfg, ck_code)
-    time.sleep(1)
+    time.sleep(0.1)
     print('FPGA pronta.\n')
 
 
-def set_dac_code(code, cs2=False):
-    """Invia un codice digitale al DAC selezionato."""
+def set_dac_code(code, cs2=False, ser=None):
+    """Invia un codice digitale al DAC selezionato.
+    
+    Se ser è fornito, usa la porta seriale persistente (senza aprire/chiudere).
+    Altrimenti usa la funzione originale.
+    """
     dac_packet = pYtp.create_dac_packet_auto(code)
-    pYtp.send_uart_dac_auto(dac_packet, cs2=cs2)
+    if ser is not None:
+        pYtp.send_uart_dac_auto_persistent(ser, dac_packet, cs2=cs2)
+    else:
+        pYtp.send_uart_dac_auto(dac_packet, cs2=cs2)
     print(f"Invio DAC code = {code}")
     print(f"Packet = {dac_packet}\n")
 
@@ -85,7 +93,7 @@ def select_pixel(cfg):
     ret = pYtp.send_pixel(cfg)
     if ret != 0:
         raise RuntimeError('Errore nella selezione del pixel.')
-    time.sleep(1)
+    time.sleep(0.1)
     print(f'Pixel selezionato: row={cfg.pixel_row.get()}, col={cfg.pixel_col.get()}\n')
 
 # Source - https://stackoverflow.com/a/11686764
@@ -218,6 +226,8 @@ class GUI(ttk.Frame):
         self.x_steps_med = []
         self.y_steps_med = []
 
+        ser = None
+
         try:
             # 1. invio clock
             init_fpga(clock_cfg)
@@ -231,6 +241,14 @@ class GUI(ttk.Frame):
             # 4. sincronizzazione allinea le basi tempi dei segnali generati
             pYtp.send_sync_time_bases()
 
+            # Apertura porta seriale persistente per tutta la sessione di misura
+            ser = serial.Serial(UARTdef.COM_PORT, UARTdef.BAUD_RATE, timeout=10)
+            ser.reset_input_buffer()
+            ser.reset_output_buffer()
+            print(f'Porta seriale {UARTdef.COM_PORT} aperta (persistente per la sessione).\n')
+
+            t_start = time.perf_counter()
+
             for i in range(total):
                 if not self.running:
                     print('Interrotto dall\'utente.')
@@ -239,19 +257,20 @@ class GUI(ttk.Frame):
                 code_cs1 = codes_cs1[i]
                 code_cs2 = codes_cs2[i]
 
-                # 5.1 invio dato sul primo dac 
-                set_dac_code(code_cs1, cs2=False)
-                # 5.2 invio dato sul secondo dac
-                set_dac_code(code_cs2, cs2=True)
+                # 5.1 invio dato sul primo dac (porta persistente)
+                set_dac_code(code_cs1, cs2=False, ser=ser)
+                # 5.2 invio dato sul secondo dac (porta persistente)
+                set_dac_code(code_cs2, cs2=True, ser=ser)
                 
                 # 6. attesa di stabilizzazione dell'uscita analogica dei DAC
                 time.sleep(settling_time)
 
                 step_adc_values = []
                 
-                # 7. lettura dati ADC  n_samples letture per ogni livello DAC
+                # 7. lettura dati ADC  n_samples letture per ogni livello DAC (porta persistente)
                 for s in range(n_samples):
-                    result = pYtp.send_READ_DATA(clock_cfg)
+                    result = pYtp.send_READ_DATA_persistent(ser, clock_cfg)
+                    time.sleep(0.05) #attesa tra un campione e l'altro
                     if result != 1:
                         adc_data, sot = result
                         adc_value = int(adc_data, 2)
@@ -270,7 +289,6 @@ class GUI(ttk.Frame):
                         self.y_samples.append(adc_value)
                         step_adc_values.append(adc_value)
                         print(f'  [{i+1}/{total}][s{s+1}] CS1={code_cs1:>5d} CS2={code_cs2:>5d} ADC={adc_value} (raw={adc_data})\n')
-                        time.sleep(.2)
                     else:
                         print(f'  [{i+1}/{total}][s{s+1}] CS1={code_cs1:>5d} CS2={code_cs2:>5d} ADC=ERRORE\n')
 
@@ -285,7 +303,8 @@ class GUI(ttk.Frame):
                 # 8. aggiornamento grafico real-time
                 self.parent.after(0, self.update_plot)
 
-            print('Scansione completata.')
+            t_end = time.perf_counter()
+            print(f'Scansione completata in {t_end - t_start:.1f} secondi.')
             self.stop()
 
         except BaseException as err:
@@ -296,9 +315,16 @@ class GUI(ttk.Frame):
         finally:
             print('Pulizia risorse...')
             try:
-                set_dac_code(0, cs2=False)
-                set_dac_code(0, cs2=True)
+                set_dac_code(0, cs2=False, ser=ser)
+                set_dac_code(0, cs2=True, ser=ser)
                 print('DAC CS1 e CS2 azzerati.')
+            except Exception:
+                pass
+
+            # Chiusura porta seriale persistente
+            try:
+                ser.close()
+                print(f'Porta seriale {UARTdef.COM_PORT} chiusa.')
             except Exception:
                 pass
 
