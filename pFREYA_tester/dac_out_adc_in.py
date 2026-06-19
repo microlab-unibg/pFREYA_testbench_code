@@ -20,7 +20,7 @@ import UART_definitions as UARTdef
 import pFREYA_tester_processing as pYtp
 
 # Directory di output
-OUTPUT_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'data', 'adc')
+OUTPUT_DIR = f'G:/Shared drives/FALCON/measures/new/adc'
 
 
 #per clock senza gui principale
@@ -88,6 +88,11 @@ def select_pixel(cfg):
     time.sleep(1)
     print(f'Pixel selezionato: row={cfg.pixel_row.get()}, col={cfg.pixel_col.get()}\n')
 
+# Source - https://stackoverflow.com/a/11686764
+# Posted by eumiro, modified by community. See post 'Timeline' for change history
+# Retrieved 2026-06-17, License - CC BY-SA 3.0
+def reject_outliers(data, m=2):
+    return data[abs(data - np.mean(data)) < m * np.std(data)]
 
 #gui
 class GUI(ttk.Frame):
@@ -98,11 +103,11 @@ class GUI(ttk.Frame):
         self.running = False
 
         #var
-        self.step     = tk.StringVar(self.parent, value='6')
-        self.settling = tk.StringVar(self.parent, value='0.5')
+        self.step     = tk.StringVar(self.parent, value='100')
+        self.settling = tk.StringVar(self.parent, value='1')
 
         # numero di campioni ADC per livello DAC
-        self.n_samples = tk.StringVar(self.parent, value='6')
+        self.n_samples = tk.StringVar(self.parent, value='5')
 
         #grafica
         row = 0
@@ -155,7 +160,7 @@ class GUI(ttk.Frame):
 
         # Singoli campioni ADC sovrapposti come marker
         if len(self.x_samples) > 0:
-            self.axes.plot(self.x_samples, self.y_samples, 'g|', markersize=6, alpha=0.6, label='Campioni')
+            self.axes.plot(self.x_samples, self.y_samples, 'g.', markersize=6, alpha=0.6, label='Campioni')
 
         self.axes.set_title('Caratteristica di Trasferimento ADC')
         self.axes.set_xlabel('Vin differenziale (V)')
@@ -210,6 +215,8 @@ class GUI(ttk.Frame):
         self.y_samples = []
         self.x_steps = []
         self.y_steps = []
+        self.x_steps_med = []
+        self.y_steps_med = []
 
         try:
             # 1. invio clock
@@ -263,7 +270,7 @@ class GUI(ttk.Frame):
                         self.y_samples.append(adc_value)
                         step_adc_values.append(adc_value)
                         print(f'  [{i+1}/{total}][s{s+1}] CS1={code_cs1:>5d} CS2={code_cs2:>5d} ADC={adc_value} (raw={adc_data})\n')
-                        time.sleep(2)
+                        time.sleep(.2)
                     else:
                         print(f'  [{i+1}/{total}][s{s+1}] CS1={code_cs1:>5d} CS2={code_cs2:>5d} ADC=ERRORE\n')
 
@@ -271,7 +278,10 @@ class GUI(ttk.Frame):
                     v_in = (code_cs1 - code_cs2) * (2.5 / 65535.0)
                     self.x_steps.append(v_in)
                     self.y_steps.append(int(np.round(np.mean(step_adc_values))))
-                    
+                
+                self.x_steps_med.append(np.median(v_in))
+                self.y_steps_med.append(np.median((reject_outliers(np.array(step_adc_values)))))
+
                 # 8. aggiornamento grafico real-time
                 self.parent.after(0, self.update_plot)
 

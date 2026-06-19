@@ -769,7 +769,7 @@ def send_UART_DAC(dac_packet):
     cmd = create_cmd(UARTdef.SET_DAC_CMD, UARTdef.UNUSED_CODE)
     send_UART(cmd)
     print('CMD sent: ',cmd)
-    time.sleep(1)
+    time.sleep(.3)
 
     for i in range(0,math.ceil(UARTdef.DAC_PACKET_LENGTH/(UARTdef.DAC_UART_DATA_POS+1))-1): # -1 due to last packet different
         bin_data = dac_packet[i*(UARTdef.DAC_UART_DATA_POS+1):(i+1)*(UARTdef.DAC_UART_DATA_POS+1)]
@@ -777,27 +777,27 @@ def send_UART_DAC(dac_packet):
         data = create_data_slow(bin_data, UARTdef.NOTLAST_UART_PACKET)#vengono messi due parametri ma la funzione è definita su 1
         send_UART('',data)
         print('DATA sent: ',data)
-        time.sleep(1)
+        time.sleep(.3)
 
     bin_data = dac_packet[(i+1)*(UARTdef.DAC_UART_DATA_POS+1):]
     bin_data = bin_data[::-1]
     data = create_data_slow(bin_data, UARTdef.LAST_UART_PACKET)#vengono messi due parametri ma la funzione è definita su 1
     send_UART('',data)
     print('DATA sent: ',data)
-    time.sleep(1)
+    time.sleep(.3)
 
     # send DAC
     cmd = create_cmd(UARTdef.SEND_DAC_CMD, UARTdef.UNUSED_CODE)
     send_UART(cmd)
     print('CMD sent: ',cmd)
-    time.sleep(1)
+    time.sleep(.3)
 
 def send_uart_dac_auto(dac_packet_completo, cs2=False):
     # Invio comando di configurazione DAC
     cmd = create_cmd(UARTdef.SET_DAC_CMD, UARTdef.UNUSED_CODE)
     send_UART(cmd)
     print('CMD sent:', cmd)
-    time.sleep(1)
+    time.sleep(.3)
 
     # Il DAC MAX5443 richiede 16 bit. Padding a multiplo di 6 (18 bit) devo aggiungere due bit per padding
     dim = UARTdef.DAC_UART_DATA_POS + 1 # 6
@@ -820,7 +820,7 @@ def send_uart_dac_auto(dac_packet_completo, cs2=False):
         
         send_UART('', pacchetto_uart)
         print('DATA sent:', pacchetto_uart)
-        time.sleep(0.5)
+        time.sleep(0.2)
 
     # Invio comando finale per eseguire il DAC (CS1 o CS2)
     send_cmd = UARTdef.SEND_DAC_CS2_CMD if cs2 else UARTdef.SEND_DAC_CMD
@@ -828,7 +828,7 @@ def send_uart_dac_auto(dac_packet_completo, cs2=False):
     send_UART(comando_send_dac)
     cs_label = 'CS2' if cs2 else 'CS1'
     print(f'CMD sent ({cs_label}):', comando_send_dac)
-    time.sleep(1)
+    time.sleep(.3)
 
 ''' SEND DAC PRECEDENTE
 
