@@ -746,6 +746,11 @@ class gui_dac_auto(Toplevel):
 def open_dac_auto():
     print("opening dac auto")
     child = gui_dac_auto(root)
+
+def run_adc_plot():
+    script_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "dac_out_adc_in.py")
+    subprocess.Popen([sys.executable, script_path])
+    
 # Start GUI window
 root = Tk()
 root.title("pFREYA tester v1 - Manual/Auto testing")
@@ -1068,8 +1073,11 @@ col_idx += 3
 ttk.Button(asic_lframe, text="Send ADC_START", command=lambda: pYtp.send_ADC_START(gui)).grid(column=col_idx, columnspan=3, row=row_idx, pady=[0,0], sticky=EW)
 col_idx += 3
 ttk.Button(asic_lframe, text="Send READ_DATA", command=lambda: pYtp.send_READ_DATA(gui)).grid(column=col_idx, columnspan=3, row=row_idx, pady=[0,0], sticky=EW)
+col_idx += 3
 
+ttk.Button(asic_lframe, text="Auto", command=lambda: run_adc_plot()).grid(column=col_idx, columnspan=3, row=row_idx, pady=[0,0], sticky=EW)
 row_idx += 1
+
 ttk.Button(asic_lframe, text="Send ASIC control", command=lambda: pYtp.send_asic_ctrl(gui)).grid(column=4, columnspan=5, row=row_idx, pady=[10,0], sticky=SE)
 
 # ASIC serialiser control
