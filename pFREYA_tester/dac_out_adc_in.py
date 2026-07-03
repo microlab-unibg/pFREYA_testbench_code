@@ -21,8 +21,8 @@ import UART_definitions as UARTdef
 import pFREYA_tester_processing as pYtp
 
 # Directory di output
-#OUTPUT_DIR = r'C:\Users\giorg\Desktop\tesi\pFREYA_testbench_code\data'
-OUTPUT_DIR = f'G:/Shared drives/FALCON/measures/new/adc'
+OUTPUT_DIR = r'C:/Users/giorg/Desktop/tesi/pFREYA_testbench_code/data'
+#OUTPUT_DIR = f'G:/Shared drives/FALCON/measures/new/adc'
 
 
 #per clock senza gui principale
@@ -55,7 +55,7 @@ class ClockConfig:
         self.adc_start = {
             'delay': tk.StringVar(root, value='604'),
             'high':  tk.StringVar(root, value='2'),
-            'low':   tk.StringVar(root, value='9980'),
+            'low':   tk.StringVar(root, value='262141')
         }
 
 def init_fpga(clock_cfg):

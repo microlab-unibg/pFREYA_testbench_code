@@ -158,6 +158,9 @@ def send_READ_DATA_persistent(ser, gui):
         send_UART_persistent(ser, cmd, '')
         print('CMD sent: ', cmd)
 
+        #ritardo per una corretta acquisizione dei segnali
+        time.sleep(0.001)
+
         cmd = create_cmd(UARTdef.SEND_SEND_DATA_CMD, UARTdef.UNUSED_CODE)
         res = sendread_UART_persistent(ser, cmd, 2)
         print('CMD sent: ', cmd)
