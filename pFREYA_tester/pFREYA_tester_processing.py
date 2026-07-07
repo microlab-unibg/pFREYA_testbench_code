@@ -180,7 +180,183 @@ def send_READ_DATA_persistent(ser, gui):
         print(traceback.format_exc())
         return 1
 
+def send_ADC_START_persistent(ser, gui):
+    """Come send_ADC_START, ma usa una porta seriale persistente.
 
+    Parameters
+    ----------
+    ser : serial.Serial
+        Porta seriale già aperta.
+    gui : pFREYA_GUI
+        The structure containing all the data related to the tester.
+
+    Returns
+    ----------
+    int
+        0 if everything was ok, 1 otherwise.
+    """
+    try:
+        cmd = create_cmd(UARTdef.SET_DELAY_CMD, UARTdef.ADC_START_CODE)
+        send_UART_persistent(ser, cmd, '')
+        print('CMD sent: ', cmd)
+        for data in create_data(convert_strvar_bin(gui.adc_start['delay'], UARTdef.DATA_PACKET_LENGTH)):
+            send_UART_persistent(ser, '', data)
+            print('Data sent: ', data)
+
+        cmd = create_cmd(UARTdef.SET_HIGH_CMD, UARTdef.ADC_START_CODE)
+        send_UART_persistent(ser, cmd, '')
+        print('CMD sent: ', cmd)
+        for data in create_data(convert_strvar_bin(gui.adc_start['high'], UARTdef.DATA_PACKET_LENGTH)):
+            send_UART_persistent(ser, '', data)
+            print('Data sent: ', data)
+
+        cmd = create_cmd(UARTdef.SET_LOW_CMD, UARTdef.ADC_START_CODE)
+        send_UART_persistent(ser, cmd, '')
+        print('CMD sent: ', cmd)
+        for data in create_data(convert_strvar_bin(gui.adc_start['low'], UARTdef.DATA_PACKET_LENGTH)):
+            send_UART_persistent(ser, '', data)
+            print('Data sent: ', data)
+    except Exception:
+        print(traceback.format_exc())
+        return 1
+
+    return 0
+
+def send_clock_single_persistent(ser, gui, clock):
+    """Come send_clock_single, ma usa una porta seriale persistente.
+
+    Parameters
+    ----------
+    ser : serial.Serial
+        Porta seriale già aperta.
+    gui : pFREYA_GUI
+        The structure containing all the data related to the tester.
+    clock : str
+        The clock to be set.
+
+    Returns
+    ----------
+    int
+        0 if everything was ok, 1 otherwise.
+    """
+    try:
+        cmd = create_cmd(UARTdef.SET_CK_CMD, clock)
+        send_UART_persistent(ser, cmd, '')
+        print('CMD sent: ', cmd)
+        for data in create_data(convert_strvar_bin(gui.clock_map[clock], UARTdef.DATA_PACKET_LENGTH)):
+            send_UART_persistent(ser, '', data)
+            print('Data sent: ', data)
+
+        if (clock == UARTdef.SLOW_CTRL_CK_CODE):
+            gui.slow_ck_sent = True
+        elif (clock == UARTdef.SEL_CK_CODE):
+            gui.sel_ck_sent = True
+        elif (clock == UARTdef.DAC_SCK_CODE):
+            gui.dac_sck_sent = True
+
+        time.sleep(1)
+
+    except Exception:
+        print(traceback.format_exc())
+        return 1
+
+def send_clocks_persistent(ser, gui):
+    """Come send_clocks, ma usa una porta seriale persistente.
+
+    Parameters
+    ----------
+    ser : serial.Serial
+        Porta seriale già aperta.
+    gui : pFREYA_GUI
+        The structure containing all the data related to the tester.
+
+    Returns
+    ----------
+    int
+        0 if everything was ok, 1 otherwise.
+    """
+    try:
+        send_clock_single_persistent(ser, gui, UARTdef.SLOW_CTRL_CK_CODE)
+        send_clock_single_persistent(ser, gui, UARTdef.SEL_CK_CODE)
+        send_clock_single_persistent(ser, gui, UARTdef.ADC_CK_CODE)
+        send_clock_single_persistent(ser, gui, UARTdef.INJ_STB_CODE)
+        send_clock_single_persistent(ser, gui, UARTdef.DAC_SCK_CODE)
+        send_clock_single_persistent(ser, gui, UARTdef.SER_CK_CODE)
+
+    except Exception:
+        print(traceback.format_exc())
+        return 1
+
+    return 0
+
+def send_pixel_persistent(ser, gui):
+    """Come send_pixel, ma usa una porta seriale persistente.
+
+    Parameters
+    ----------
+    ser : serial.Serial
+        Porta seriale già aperta.
+    gui : pFREYA_GUI
+        The structure containing all the data related to the tester.
+
+    Returns
+    ----------
+    int
+        0 if everything was ok, 1 otherwise.
+    """
+    if (not gui.sel_ck_sent):
+        return 1
+
+    try:
+        cmd = create_cmd(UARTdef.SET_PIXEL_CMD, UARTdef.PIXEL_ROW_CODE)
+        send_UART_persistent(ser, cmd)
+        print('CMD sent: ', cmd)
+        for data in create_data(convert_strvar_bin(gui.pixel_row, UARTdef.DATA_PACKET_LENGTH)):
+            send_UART_persistent(ser, '', data)
+            print('Data sent: ', data)
+            time.sleep(0.5)
+
+        cmd = create_cmd(UARTdef.SET_PIXEL_CMD, UARTdef.PIXEL_COL_CODE)
+        send_UART_persistent(ser, cmd)
+        print('CMD sent: ', cmd)
+        for data in create_data(convert_strvar_bin(gui.pixel_col, UARTdef.DATA_PACKET_LENGTH)):
+            send_UART_persistent(ser, '', data)
+            print('Data sent: ', data)
+            time.sleep(0.5)
+
+        cmd = create_cmd(UARTdef.SEND_PIXEL_SEL_CMD, UARTdef.UNUSED_CODE)
+        send_UART_persistent(ser, cmd)
+        print('CMD sent: ', cmd)
+        time.sleep(1)
+    except Exception:
+        print(traceback.format_exc())
+        return 1
+
+    return 0
+
+def send_sync_time_bases_persistent(ser):
+    """Come send_sync_time_bases, ma usa una porta seriale persistente.
+
+    Parameters
+    ----------
+    ser : serial.Serial
+        Porta seriale già aperta.
+
+    Returns
+    ----------
+    int
+        0 if everything was ok, 1 otherwise.
+    """
+    try:
+        cmd = create_cmd(UARTdef.SYNC_TIME_BASE_CMD, UARTdef.UNUSED_CODE)
+        send_UART_persistent(ser, cmd)
+        print('CMD sent: ', cmd)
+        time.sleep(1)
+    except Exception:
+        print(traceback.format_exc())
+        return 1
+
+    return 0
 
 def read_UART():
     """Function to read UART commands and data from FPGA

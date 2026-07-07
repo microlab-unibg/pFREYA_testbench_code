@@ -87,10 +87,16 @@ def set_dac_code(code, cs2=False, ser=None):
 
 
 # selezione del pixel
-def select_pixel(cfg):
-    """Seleziona il pixel attivo sull'ASIC, stessa sequenza della GUI."""
+def select_pixel(cfg, ser=None):
+    """Seleziona il pixel attivo sull'ASIC, stessa sequenza della GUI.
+
+    Se ser è fornito, usa la porta seriale persistente (senza aprire/chiudere).
+    """
     print('Selezione pixel...')
-    ret = pYtp.send_pixel(cfg)
+    if ser is not None:
+        ret = pYtp.send_pixel_persistent(ser, cfg)
+    else:
+        ret = pYtp.send_pixel(cfg)
     if ret != 0:
         raise RuntimeError('Errore nella selezione del pixel.')
     time.sleep(0.1)
@@ -117,11 +123,26 @@ class GUI(ttk.Frame):
         # numero di campioni ADC per livello DAC
         self.n_samples = tk.StringVar(self.parent, value='5')
 
+        # estremi della scansione (CS1). Se min == max viene acquisito un solo livello e posso impostare diversi campioni.
+        self.level_min = tk.StringVar(self.parent, value='0')
+        self.level_max = tk.StringVar(self.parent, value='31500')
+
         #grafica
         row = 0
 
         ttk.Label(self.parent, text='Step (0-31500):').grid(row=row, column=0, sticky=tk.W, padx=5, pady=5)
         ttk.Entry(self.parent, textvariable=self.step, width=8).grid(
+            row=row, column=1, columnspan=2, sticky=tk.E, padx=5)
+        row += 1
+
+        # estremi scansione: se uguali, acquisisce un solo livello, i livelli vengono impostati del dac1 perchè quello del dac2 lo calcolo 31500-dac1
+        ttk.Label(self.parent, text='Livello min (DAC1):').grid(row=row, column=0, sticky=tk.W, padx=5, pady=5)
+        ttk.Entry(self.parent, textvariable=self.level_min, width=8).grid(
+            row=row, column=1, columnspan=2, sticky=tk.E, padx=5)
+        row += 1
+
+        ttk.Label(self.parent, text='Livello max (DAC1):').grid(row=row, column=0, sticky=tk.W, padx=5, pady=5)
+        ttk.Entry(self.parent, textvariable=self.level_max, width=8).grid(
             row=row, column=1, columnspan=2, sticky=tk.E, padx=5)
         row += 1
 
@@ -136,6 +157,7 @@ class GUI(ttk.Frame):
         self.buttonLaunch.grid(row=row, column=2, sticky=tk.E, padx=5, pady=5)
         self.buttonStop = ttk.Button(self.parent, text='Stop', command=self.stop)
         row += 1
+        self.stop_button_row = row
 
         #plot
         self.figure = plt.Figure(figsize=(8, 5), dpi=100)
@@ -191,7 +213,7 @@ class GUI(ttk.Frame):
             self.thread.start()
             self.running = True
 
-            self.buttonStop.grid(row=3, column=1, sticky=tk.E, padx=5, pady=5)
+            self.buttonStop.grid(row=self.stop_button_row, column=1, sticky=tk.E, padx=5, pady=5)
 
         else:
             messagebox.showerror(
@@ -201,17 +223,21 @@ class GUI(ttk.Frame):
         step          = int(self.step.get())
         settling_time = float(self.settling.get())
         n_samples     = int(self.n_samples.get())
+        level_min     = int(self.level_min.get())
+        level_max     = int(self.level_max.get())
 
-        # CS1: crescente da 0 a 31500
-        # CS2: decrescente da 31500 a 0
-        max_val = 31500
-        codes_cs1 = np.arange(0, max_val + 1, step)
-        if len(codes_cs1) > 0 and codes_cs1[-1] != max_val:
-            codes_cs1 = np.append(codes_cs1, max_val)
+        # CS1: crescente da level_min a level_max
+        # CS2: decrescente (fondo scala DAC fisso a 31500, indipendente dagli estremi di scansione)
+        dac_max = 31500
+        codes_cs1 = np.arange(level_min, level_max + 1, step)
+        if len(codes_cs1) > 0 and codes_cs1[-1] != level_max:
+            codes_cs1 = np.append(codes_cs1, level_max)
 
-        codes_cs2 = max_val - codes_cs1
+        codes_cs2 = dac_max - codes_cs1
 
         total = len(codes_cs1)
+        # se min == max (un solo punto), è un'acquisizione a livello singolo
+        single_level = total == 1
         print(f'\n--- Invio livelli CS1+CS2 differenziale | {total} punti | step={step} | n_samples={n_samples} ---')
 
         clock_cfg = ClockConfig(self.parent)
@@ -257,9 +283,16 @@ class GUI(ttk.Frame):
                 code_cs1 = codes_cs1[i]
                 code_cs2 = codes_cs2[i]
 
-                # 5.1 invio dato sul primo dac (porta persistente)
+                # Rinvio clock, selezione pixel, ADC start e sync ad ogni livello(ora tutti commentati tranne sync)
+                # per garantire che il dato arrivi effettivamente ogni volta
+                #pYtp.send_clocks_persistent(ser, clock_cfg)
+                #pYtp.send_ADC_START_persistent(ser, clock_cfg)
+                #select_pixel(clock_cfg, ser=ser)
+                pYtp.send_sync_time_bases_persistent(ser)
+
+                # invio dato sul primo dac 
                 set_dac_code(code_cs1, cs2=False, ser=ser)
-                # 5.2 invio dato sul secondo dac (porta persistente)
+                # invio dato sul secondo dac 
                 set_dac_code(code_cs2, cs2=True, ser=ser)
                 
                 # 6. attesa di stabilizzazione dell'uscita analogica dei DAC
@@ -267,7 +300,7 @@ class GUI(ttk.Frame):
 
                 step_adc_values = []
                 
-                # 7. lettura dati ADC  n_samples letture per ogni livello DAC (porta persistente)
+                # 7. lettura dati ADC  n_samples letture per ogni livello DAC 
                 for s in range(n_samples):
                     result = pYtp.send_READ_DATA_persistent(ser, clock_cfg)
                     time.sleep(0.05) #attesa tra un campione e l'altro
@@ -283,7 +316,7 @@ class GUI(ttk.Frame):
                             'adc_value': adc_value,
                             'sot': sot
                         })
-                        
+
                         v_in = (code_cs1 - code_cs2) * (2.5 / 65535.0)
                         self.x_samples.append(v_in)
                         self.y_samples.append(adc_value)
@@ -331,18 +364,43 @@ class GUI(ttk.Frame):
             # salvo dati e grafico
             if results:
                 timestamp = datetime.strftime(datetime.now(), '%d%m%y_%H%M%S')
-                os.makedirs(OUTPUT_DIR, exist_ok=True)
-                
-                filename = os.path.join(OUTPUT_DIR, f'dac_adc_scan_{timestamp}.csv')
-                with open(filename, 'w', newline='') as f:
-                    writer = csv.DictWriter(f, fieldnames=results[0].keys())
-                    writer.writeheader()
-                    writer.writerows(results)
-                print(f'Risultati salvati in: {filename}')
-                
-                fig_filename = os.path.join(OUTPUT_DIR, f'dac_adc_scan_{timestamp}.pdf')
-                self.figure.savefig(fig_filename, dpi=300)
-                print(f'Grafico salvato in: {fig_filename}')
+
+                if single_level:
+                    # acquisizione a livello singolo: salvo in data/singleLevel con dettagli sulla misura
+                    level_value = int(codes_cs1[0])
+                    single_level_dir = os.path.join(OUTPUT_DIR, 'singleLevel')
+                    os.makedirs(single_level_dir, exist_ok=True)
+
+                    filename = os.path.join(single_level_dir, f'single_level_{level_value}_{timestamp}.csv')
+                    with open(filename, 'w', newline='') as f:
+                        f.write('# Acquisizione a livello singolo\n')
+                        f.write(f'# Livello (codice CS1): {level_value}\n')
+                        f.write(f'# Codice CS2 corrispondente: {int(codes_cs2[0])}\n')
+                        f.write(f'# Numero di campioni: {n_samples}\n')
+                        f.write(f'# Step: {step}\n')
+                        f.write(f'# Tempo di settling (s): {settling_time}\n')
+                        f.write(f'# Timestamp: {timestamp}\n')
+                        writer = csv.DictWriter(f, fieldnames=results[0].keys())
+                        writer.writeheader()
+                        writer.writerows(results)
+                    print(f'Risultati livello singolo salvati in: {filename}')
+
+                    fig_filename = os.path.join(single_level_dir, f'single_level_{level_value}_{timestamp}.pdf')
+                    self.figure.savefig(fig_filename, dpi=300)
+                    print(f'Grafico salvato in: {fig_filename}')
+                else:
+                    os.makedirs(OUTPUT_DIR, exist_ok=True)
+
+                    filename = os.path.join(OUTPUT_DIR, f'dac_adc_scan_{timestamp}.csv')
+                    with open(filename, 'w', newline='') as f:
+                        writer = csv.DictWriter(f, fieldnames=results[0].keys())
+                        writer.writeheader()
+                        writer.writerows(results)
+                    print(f'Risultati salvati in: {filename}')
+
+                    fig_filename = os.path.join(OUTPUT_DIR, f'dac_adc_scan_{timestamp}.pdf')
+                    self.figure.savefig(fig_filename, dpi=300)
+                    print(f'Grafico salvato in: {fig_filename}')
             else:
                 print('Nessun risultato ADC da salvare.')
 
@@ -353,3 +411,4 @@ if __name__ == '__main__':
     root = tk.Tk()
     GUI(root)
     root.mainloop()
+
