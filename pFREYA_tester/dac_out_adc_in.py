@@ -283,14 +283,13 @@ class GUI(ttk.Frame):
                 code_cs1 = codes_cs1[i]
                 code_cs2 = codes_cs2[i]
 
-                # Rinvio clock, selezione pixel, ADC start e sync ad ogni livello(ora tutti commentati tranne sync)
+                # Rinvio clock, selezione pixel, ADC start ad ogni livello (ora tutti commentati)
                 # per garantire che il dato arrivi effettivamente ogni volta
                 #pYtp.send_clocks_persistent(ser, clock_cfg)
                 #pYtp.send_ADC_START_persistent(ser, clock_cfg)
                 #select_pixel(clock_cfg, ser=ser)
-                pYtp.send_sync_time_bases_persistent(ser)
 
-                # invio dato sul primo dac 
+                # invio dato sul primo dac
                 set_dac_code(code_cs1, cs2=False, ser=ser)
                 # invio dato sul secondo dac 
                 set_dac_code(code_cs2, cs2=True, ser=ser)
@@ -300,8 +299,10 @@ class GUI(ttk.Frame):
 
                 step_adc_values = []
                 
-                # 7. lettura dati ADC  n_samples letture per ogni livello DAC 
+                # 7. lettura dati ADC  n_samples letture per ogni livello DAC
                 for s in range(n_samples):
+                    # sync inviato prima di ogni singolo campione
+                    pYtp.send_sync_time_bases_persistent(ser)
                     result = pYtp.send_READ_DATA_persistent(ser, clock_cfg)
                     time.sleep(0.05) #attesa tra un campione e l'altro
                     if result != 1:
@@ -393,6 +394,14 @@ class GUI(ttk.Frame):
 
                     filename = os.path.join(OUTPUT_DIR, f'dac_adc_scan_{timestamp}.csv')
                     with open(filename, 'w', newline='') as f:
+                        f.write('# Acquisizione a range di livelli\n')
+                        f.write(f'# Livello minimo (codice CS1): {level_min}\n')
+                        f.write(f'# Livello massimo (codice CS1): {level_max}\n')
+                        f.write(f'# Numero di punti: {total}\n')
+                        f.write(f'# Numero di campioni: {n_samples}\n')
+                        f.write(f'# Step: {step}\n')
+                        f.write(f'# Tempo di settling (s): {settling_time}\n')
+                        f.write(f'# Timestamp: {timestamp}\n')
                         writer = csv.DictWriter(f, fieldnames=results[0].keys())
                         writer.writeheader()
                         writer.writerows(results)

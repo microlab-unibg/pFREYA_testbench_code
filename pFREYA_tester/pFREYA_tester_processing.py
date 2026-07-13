@@ -314,7 +314,7 @@ def send_pixel_persistent(ser, gui):
         for data in create_data(convert_strvar_bin(gui.pixel_row, UARTdef.DATA_PACKET_LENGTH)):
             send_UART_persistent(ser, '', data)
             print('Data sent: ', data)
-            time.sleep(0.5)
+            time.sleep(0.1)
 
         cmd = create_cmd(UARTdef.SET_PIXEL_CMD, UARTdef.PIXEL_COL_CODE)
         send_UART_persistent(ser, cmd)
@@ -322,12 +322,12 @@ def send_pixel_persistent(ser, gui):
         for data in create_data(convert_strvar_bin(gui.pixel_col, UARTdef.DATA_PACKET_LENGTH)):
             send_UART_persistent(ser, '', data)
             print('Data sent: ', data)
-            time.sleep(0.5)
+            time.sleep(0.1)
 
         cmd = create_cmd(UARTdef.SEND_PIXEL_SEL_CMD, UARTdef.UNUSED_CODE)
         send_UART_persistent(ser, cmd)
         print('CMD sent: ', cmd)
-        time.sleep(1)
+        time.sleep(0.1)
     except Exception:
         print(traceback.format_exc())
         return 1
@@ -351,7 +351,7 @@ def send_sync_time_bases_persistent(ser):
         cmd = create_cmd(UARTdef.SYNC_TIME_BASE_CMD, UARTdef.UNUSED_CODE)
         send_UART_persistent(ser, cmd)
         print('CMD sent: ', cmd)
-        time.sleep(1)
+        time.sleep(0.05)
     except Exception:
         print(traceback.format_exc())
         return 1
