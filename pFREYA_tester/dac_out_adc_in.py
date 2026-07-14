@@ -369,8 +369,7 @@ class GUI(ttk.Frame):
                 if single_level:
                     # acquisizione a livello singolo: salvo in data/singleLevel con dettagli sulla misura
                     level_value = int(codes_cs1[0])
-                    single_level_dir = os.path.join(OUTPUT_DIR, 'singleLevel')
-                    os.makedirs(single_level_dir, exist_ok=True)
+                    single_level_dir = os.makedirs(OUTPUT_DIR, exist_ok=True)
 
                     filename = os.path.join(single_level_dir, f'single_level_{level_value}_{timestamp}.csv')
                     with open(filename, 'w', newline='') as f:
