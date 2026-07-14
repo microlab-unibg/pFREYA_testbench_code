@@ -369,9 +369,8 @@ class GUI(ttk.Frame):
                 if single_level:
                     # acquisizione a livello singolo: salvo in data/singleLevel con dettagli sulla misura
                     level_value = int(codes_cs1[0])
-                    single_level_dir = os.makedirs(OUTPUT_DIR, exist_ok=True)
-
-                    filename = os.path.join(single_level_dir, f'single_level_{level_value}_{timestamp}.csv')
+                    os.makedirs(OUTPUT_DIR, exist_ok=True)
+                    filename = os.path.join(OUTPUT_DIR, f'single_level_{level_value}_{timestamp}.csv')
                     with open(filename, 'w', newline='') as f:
                         f.write('# Acquisizione a livello singolo\n')
                         f.write(f'# Livello (codice CS1): {level_value}\n')
@@ -385,7 +384,7 @@ class GUI(ttk.Frame):
                         writer.writerows(results)
                     print(f'Risultati livello singolo salvati in: {filename}')
 
-                    fig_filename = os.path.join(single_level_dir, f'single_level_{level_value}_{timestamp}.pdf')
+                    fig_filename = os.path.join(OUTPUT_DIR, f'single_level_{level_value}_{timestamp}.pdf')
                     self.figure.savefig(fig_filename, dpi=300)
                     print(f'Grafico salvato in: {fig_filename}')
                 else:
