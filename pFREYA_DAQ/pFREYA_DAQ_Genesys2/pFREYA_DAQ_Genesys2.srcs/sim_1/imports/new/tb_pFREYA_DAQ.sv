@@ -499,111 +499,217 @@ module tb_pFREYA_DAQ;
 //         // #10000 uart_write_byte(uart_to_send);
 // //============ END SLOW CTRL ==================================================
 
+// test auto read delay
+        #200000 uart_to_send <= {CMD_PACKET,`SET_SLOW_CTRL_CMD,`UNUSED_CODE};
+        #10000 uart_write_byte(uart_to_send);
+        #200000 slow_pkt_rnd <= $urandom(42069); 
+        #10000 uart_slow_ctrl_send(slow_pkt_rnd);
+        
+        #200000 uart_to_send <= {CMD_PACKET,`SET_CK_CMD,`SLOW_CTRL_CK_CODE};
+        #10000 uart_write_byte(uart_to_send);
+        #200000 uart_to_send <= {DATA_PACKET,NOTLAST_UART_PACKET,6'd2};
+        #10000 uart_write_byte(uart_to_send);
+        #200000 uart_to_send <= {DATA_PACKET,LAST_UART_PACKET,6'd0};
+        #10000 uart_write_byte(uart_to_send);
+        
+        #200000 uart_to_send <= {CMD_PACKET,`SEND_SLOW_CTRL_CMD,`UNUSED_CODE};
+        #10000 uart_write_byte(uart_to_send);
+
+        #180000 uart_to_send <= {CMD_PACKET,`SET_CK_CMD,`SER_CK_CODE};
+        #10000 uart_write_byte(uart_to_send);
+        #500000 uart_to_send <= {DATA_PACKET,NOTLAST_UART_PACKET,6'd2};
+        #10000 uart_write_byte(uart_to_send);
+        #500000 uart_to_send <= {DATA_PACKET,NOTLAST_UART_PACKET,6'd0};
+        #10000 uart_write_byte(uart_to_send);
+        #500000 uart_to_send <= {DATA_PACKET,LAST_UART_PACKET,6'd0};
+        #10000 uart_write_byte(uart_to_send);
+
+        #180000 uart_to_send <= {CMD_PACKET,`SET_DELAY_CMD,`ADC_START_CODE};
+        #10000 uart_write_byte(uart_to_send);
+        #500000 uart_to_send <= {DATA_PACKET,NOTLAST_UART_PACKET,6'd2};
+        #10000 uart_write_byte(uart_to_send);
+        #500000 uart_to_send <= {DATA_PACKET,NOTLAST_UART_PACKET,6'd0};
+        #10000 uart_write_byte(uart_to_send);
+        #500000 uart_to_send <= {DATA_PACKET,LAST_UART_PACKET,6'd0};
+        #10000 uart_write_byte(uart_to_send);
+
+        #200000 uart_to_send <= {CMD_PACKET,`SET_HIGH_CMD,`ADC_START_CODE};
+        #10000 uart_write_byte(uart_to_send);
+        #500000 uart_to_send <= {DATA_PACKET,NOTLAST_UART_PACKET,6'd2};
+        #10000 uart_write_byte(uart_to_send);
+        #500000 uart_to_send <= {DATA_PACKET,NOTLAST_UART_PACKET,6'd0};
+        #10000 uart_write_byte(uart_to_send);
+        #500000 uart_to_send <= {DATA_PACKET,LAST_UART_PACKET,6'd0};
+        #10000 uart_write_byte(uart_to_send);
+
+        #200000 uart_to_send <= {CMD_PACKET,`SET_LOW_CMD,`ADC_START_CODE};
+        #10000 uart_write_byte(uart_to_send);
+        #500000 uart_to_send <= {DATA_PACKET,NOTLAST_UART_PACKET,6'd2};
+        #10000 uart_write_byte(uart_to_send);
+        #500000 uart_to_send <= {DATA_PACKET,NOTLAST_UART_PACKET,6'd0};
+        #10000 uart_write_byte(uart_to_send);
+        #500000 uart_to_send <= {DATA_PACKET,LAST_UART_PACKET,6'd0};
+        #10000 uart_write_byte(uart_to_send);
+
+        #180000 uart_to_send <= {CMD_PACKET,`SET_DELAY_CMD,`AUTO_READ_DELAY_CODE};
+        #10000 uart_write_byte(uart_to_send);
+        #500000 uart_to_send <= {DATA_PACKET,NOTLAST_UART_PACKET,6'd2};
+        #10000 uart_write_byte(uart_to_send);
+        #500000 uart_to_send <= {DATA_PACKET,NOTLAST_UART_PACKET,6'd0};
+        #10000 uart_write_byte(uart_to_send);
+        #500000 uart_to_send <= {DATA_PACKET,LAST_UART_PACKET,6'd0};
+        #10000 uart_write_byte(uart_to_send);
+
+        #180000 uart_to_send <= {CMD_PACKET,`SYNC_TIME_BASE_CMD,`UNUSED_CODE};
+        #10000 uart_write_byte(uart_to_send);
+
 // //============ SLOW CTRL + sh_inf (TS) ======================================================
-//         // // send a command to set slow ctrl word
-//         // // signal is not used
-//         // #200000 uart_to_send <= {CMD_PACKET,`SET_SLOW_CTRL_CMD,`UNUSED_CODE};
-//         // #10000 uart_write_byte(uart_to_send);
-//         // // set slow ctrl word
-//         // #200000 slow_pkt_rnd <= $urandom(42069); // 42 is the seed and the packet is repeated for each pixel;
-//         // #10000 uart_slow_ctrl_send(slow_pkt_rnd);
+        // send a command to set slow ctrl word
+        // signal is not used
+        // #200000 uart_to_send <= {CMD_PACKET,`SET_SLOW_CTRL_CMD,`UNUSED_CODE};
+        // #10000 uart_write_byte(uart_to_send);
+        // // set slow ctrl word
+        // #200000 slow_pkt_rnd <= $urandom(42069); // 42 is the seed and the packet is repeated for each pixel;
+        // #10000 uart_slow_ctrl_send(slow_pkt_rnd);
         
-//         // // send a command to set slow ctrl div
-//         // #200000 uart_to_send <= {CMD_PACKET,`SET_CK_CMD,`SLOW_CTRL_CK_CODE};
-//         // #10000 uart_write_byte(uart_to_send);
-//         // // set slow ctrl div
-//         // #200000 uart_to_send <= {DATA_PACKET,NOTLAST_UART_PACKET,6'd2};
-//         // #10000 uart_write_byte(uart_to_send);
-//         // #200000 uart_to_send <= {DATA_PACKET,LAST_UART_PACKET,6'd0};
-//         // #10000 uart_write_byte(uart_to_send);
+        // // send a command to set slow ctrl div
+        // #200000 uart_to_send <= {CMD_PACKET,`SET_CK_CMD,`SLOW_CTRL_CK_CODE};
+        // #10000 uart_write_byte(uart_to_send);
+        // // set slow ctrl div
+        // #200000 uart_to_send <= {DATA_PACKET,NOTLAST_UART_PACKET,6'd2};
+        // #10000 uart_write_byte(uart_to_send);
+        // #200000 uart_to_send <= {DATA_PACKET,LAST_UART_PACKET,6'd0};
+        // #10000 uart_write_byte(uart_to_send);
         
-//         // // send a command to send slow ctrl
-//         // #200000 uart_to_send <= {CMD_PACKET,`SEND_SLOW_CTRL_CMD,`UNUSED_CODE};
-//         // #10000 uart_write_byte(uart_to_send);
+        // // send a command to send slow ctrl
+        // #200000 uart_to_send <= {CMD_PACKET,`SEND_SLOW_CTRL_CMD,`UNUSED_CODE};
+        // #10000 uart_write_byte(uart_to_send);
 
-//         // // send a command to set csa_reset_n delay divider
-//         // // 0 0001 000
-//         // #180000 uart_to_send <= {CMD_PACKET,`SET_DELAY_CMD,`SH_INF_CODE};
-//         // #10000 uart_write_byte(uart_to_send);
-//         // // set csa_reset_n delay divider
-//         // #500000 uart_to_send <= {DATA_PACKET,NOTLAST_UART_PACKET,6'd2};
-//         // #10000 uart_write_byte(uart_to_send);
-//         // #500000 uart_to_send <= {DATA_PACKET,NOTLAST_UART_PACKET,6'd0};
-//         // #10000 uart_write_byte(uart_to_send);
-//         // #500000 uart_to_send <= {DATA_PACKET,LAST_UART_PACKET,6'd0};
-//         // #10000 uart_write_byte(uart_to_send);
-//         // // send a command to set csa_reset_n HIGH divider
-//         // #200000 uart_to_send <= {CMD_PACKET,`SET_HIGH_CMD,`SH_INF_CODE};
-//         // #10000 uart_write_byte(uart_to_send);
-//         // // set csa_reset_n HIGH divider
-//         // #500000 uart_to_send <= {DATA_PACKET,NOTLAST_UART_PACKET,6'd2};
-//         // #10000 uart_write_byte(uart_to_send);
-//         // #500000 uart_to_send <= {DATA_PACKET,NOTLAST_UART_PACKET,6'd0};
-//         // #10000 uart_write_byte(uart_to_send);
-//         // #500000 uart_to_send <= {DATA_PACKET,LAST_UART_PACKET,6'd0};
-//         // #10000 uart_write_byte(uart_to_send);
-//         // // send a command to set csa_reset_n LOW divider
-//         // #200000 uart_to_send <= {CMD_PACKET,`SET_LOW_CMD,`SH_INF_CODE};
-//         // #10000 uart_write_byte(uart_to_send);
-//         // // set csa_reset_n LOW divider
-//         // #500000 uart_to_send <= {DATA_PACKET,NOTLAST_UART_PACKET,6'd2};
-//         // #10000 uart_write_byte(uart_to_send);
-//         // #500000 uart_to_send <= {DATA_PACKET,NOTLAST_UART_PACKET,6'd0};
-//         // #10000 uart_write_byte(uart_to_send);
-//         // #500000 uart_to_send <= {DATA_PACKET,LAST_UART_PACKET,6'd0};
-//         // #10000 uart_write_byte(uart_to_send);
+        // // send a command to set csa_reset_n delay divider
+        // // 0 0001 000
+        // #180000 uart_to_send <= {CMD_PACKET,`SET_DELAY_CMD,`SH_INF_CODE};
+        // #10000 uart_write_byte(uart_to_send);
+        // // set csa_reset_n delay divider
+        // #500000 uart_to_send <= {DATA_PACKET,NOTLAST_UART_PACKET,6'd2};
+        // #10000 uart_write_byte(uart_to_send);
+        // #500000 uart_to_send <= {DATA_PACKET,NOTLAST_UART_PACKET,6'd0};
+        // #10000 uart_write_byte(uart_to_send);
+        // #500000 uart_to_send <= {DATA_PACKET,LAST_UART_PACKET,6'd0};
+        // #10000 uart_write_byte(uart_to_send);
+        // // send a command to set csa_reset_n HIGH divider
+        // #200000 uart_to_send <= {CMD_PACKET,`SET_HIGH_CMD,`SH_INF_CODE};
+        // #10000 uart_write_byte(uart_to_send);
+        // // set csa_reset_n HIGH divider
+        // #500000 uart_to_send <= {DATA_PACKET,NOTLAST_UART_PACKET,6'd2};
+        // #10000 uart_write_byte(uart_to_send);
+        // #500000 uart_to_send <= {DATA_PACKET,NOTLAST_UART_PACKET,6'd0};
+        // #10000 uart_write_byte(uart_to_send);
+        // #500000 uart_to_send <= {DATA_PACKET,LAST_UART_PACKET,6'd0};
+        // #10000 uart_write_byte(uart_to_send);
+        // // send a command to set csa_reset_n LOW divider
+        // #200000 uart_to_send <= {CMD_PACKET,`SET_LOW_CMD,`SH_INF_CODE};
+        // #10000 uart_write_byte(uart_to_send);
+        // // set csa_reset_n LOW divider
+        // #500000 uart_to_send <= {DATA_PACKET,NOTLAST_UART_PACKET,6'd2};
+        // #10000 uart_write_byte(uart_to_send);
+        // #500000 uart_to_send <= {DATA_PACKET,NOTLAST_UART_PACKET,6'd0};
+        // #10000 uart_write_byte(uart_to_send);
+        // #500000 uart_to_send <= {DATA_PACKET,LAST_UART_PACKET,6'd0};
+        // #10000 uart_write_byte(uart_to_send);
 
-//         // // // 0 0001 000
-//         // #180000 uart_to_send <= {CMD_PACKET,`SET_DELAY_CMD,`SH_SUP_CODE};
-//         // #10000 uart_write_byte(uart_to_send);
-//         // // set csa_reset_n delay divider
-//         // #500000 uart_to_send <= {DATA_PACKET,NOTLAST_UART_PACKET,6'd2};
-//         // #10000 uart_write_byte(uart_to_send);
-//         // #500000 uart_to_send <= {DATA_PACKET,NOTLAST_UART_PACKET,6'd0};
-//         // #10000 uart_write_byte(uart_to_send);
-//         // #500000 uart_to_send <= {DATA_PACKET,LAST_UART_PACKET,6'd0};
-//         // #10000 uart_write_byte(uart_to_send);
-//         // // send a command to set csa_reset_n HIGH divider
-//         // #200000 uart_to_send <= {CMD_PACKET,`SET_HIGH_CMD,`SH_SUP_CODE};
-//         // #10000 uart_write_byte(uart_to_send);
-//         // // set csa_reset_n HIGH divider
-//         // #500000 uart_to_send <= {DATA_PACKET,NOTLAST_UART_PACKET,6'd2};
-//         // #10000 uart_write_byte(uart_to_send);
-//         // #500000 uart_to_send <= {DATA_PACKET,NOTLAST_UART_PACKET,6'd0};
-//         // #10000 uart_write_byte(uart_to_send);
-//         // #500000 uart_to_send <= {DATA_PACKET,LAST_UART_PACKET,6'd0};
-//         // #10000 uart_write_byte(uart_to_send);
-//         // // send a command to set csa_reset_n LOW divider
-//         // #200000 uart_to_send <= {CMD_PACKET,`SET_LOW_CMD,`SH_SUP_CODE};
-//         // #10000 uart_write_byte(uart_to_send);
-//         // // set csa_reset_n LOW divider
-//         // #500000 uart_to_send <= {DATA_PACKET,NOTLAST_UART_PACKET,6'd2};
-//         // #10000 uart_write_byte(uart_to_send);
-//         // #500000 uart_to_send <= {DATA_PACKET,NOTLAST_UART_PACKET,6'd0};
-//         // #10000 uart_write_byte(uart_to_send);
-//         // #500000 uart_to_send <= {DATA_PACKET,LAST_UART_PACKET,6'd0};
-//         // #10000 uart_write_byte(uart_to_send);
+        // // // 0 0001 000
+        // #180000 uart_to_send <= {CMD_PACKET,`SET_DELAY_CMD,`SH_SUP_CODE};
+        // #10000 uart_write_byte(uart_to_send);
+        // // set csa_reset_n delay divider
+        // #500000 uart_to_send <= {DATA_PACKET,NOTLAST_UART_PACKET,6'd2};
+        // #10000 uart_write_byte(uart_to_send);
+        // #500000 uart_to_send <= {DATA_PACKET,NOTLAST_UART_PACKET,6'd0};
+        // #10000 uart_write_byte(uart_to_send);
+        // #500000 uart_to_send <= {DATA_PACKET,LAST_UART_PACKET,6'd0};
+        // #10000 uart_write_byte(uart_to_send);
+        // // send a command to set csa_reset_n HIGH divider
+        // #200000 uart_to_send <= {CMD_PACKET,`SET_HIGH_CMD,`SH_SUP_CODE};
+        // #10000 uart_write_byte(uart_to_send);
+        // // set csa_reset_n HIGH divider
+        // #500000 uart_to_send <= {DATA_PACKET,NOTLAST_UART_PACKET,6'd2};
+        // #10000 uart_write_byte(uart_to_send);
+        // #500000 uart_to_send <= {DATA_PACKET,NOTLAST_UART_PACKET,6'd0};
+        // #10000 uart_write_byte(uart_to_send);
+        // #500000 uart_to_send <= {DATA_PACKET,LAST_UART_PACKET,6'd0};
+        // #10000 uart_write_byte(uart_to_send);
+        // // send a command to set csa_reset_n LOW divider
+        // #200000 uart_to_send <= {CMD_PACKET,`SET_LOW_CMD,`SH_SUP_CODE};
+        // #10000 uart_write_byte(uart_to_send);
+        // // set csa_reset_n LOW divider
+        // #500000 uart_to_send <= {DATA_PACKET,NOTLAST_UART_PACKET,6'd2};
+        // #10000 uart_write_byte(uart_to_send);
+        // #500000 uart_to_send <= {DATA_PACKET,NOTLAST_UART_PACKET,6'd0};
+        // #10000 uart_write_byte(uart_to_send);
+        // #500000 uart_to_send <= {DATA_PACKET,LAST_UART_PACKET,6'd0};
+        // #10000 uart_write_byte(uart_to_send);
 
-//         // // send a command to set slow ctrl word
-//         // // signal is not used
-//         // #200000 uart_to_send <= {CMD_PACKET,`SET_SLOW_CTRL_CMD,`UNUSED_CODE};
-//         // #10000 uart_write_byte(uart_to_send);
-//         // // set slow ctrl word
-//         // #200000 slow_pkt_rnd <= $urandom(42069); // 42 is the seed and the packet is repeated for each pixel;
-//         // #10000 uart_slow_ctrl_send(slow_pkt_rnd);
+        // // // 0 0001 000 ADC START
+        // #180000 uart_to_send <= {CMD_PACKET,`SET_DELAY_CMD,`ADC_START_CODE};
+        // #10000 uart_write_byte(uart_to_send);
+        // // set csa_reset_n delay divider
+        // #500000 uart_to_send <= {DATA_PACKET,NOTLAST_UART_PACKET,6'd2};
+        // #10000 uart_write_byte(uart_to_send);
+        // #500000 uart_to_send <= {DATA_PACKET,NOTLAST_UART_PACKET,6'd0};
+        // #10000 uart_write_byte(uart_to_send);
+        // #500000 uart_to_send <= {DATA_PACKET,LAST_UART_PACKET,6'd0};
+        // #10000 uart_write_byte(uart_to_send);
+        // // send a command to set csa_reset_n HIGH divider
+        // #200000 uart_to_send <= {CMD_PACKET,`SET_HIGH_CMD,`ADC_START_CODE};
+        // #10000 uart_write_byte(uart_to_send);
+        // // set csa_reset_n HIGH divider
+        // #500000 uart_to_send <= {DATA_PACKET,NOTLAST_UART_PACKET,6'd2};
+        // #10000 uart_write_byte(uart_to_send);
+        // #500000 uart_to_send <= {DATA_PACKET,NOTLAST_UART_PACKET,6'd0};
+        // #10000 uart_write_byte(uart_to_send);
+        // #500000 uart_to_send <= {DATA_PACKET,LAST_UART_PACKET,6'd0};
+        // #10000 uart_write_byte(uart_to_send);
+        // // send a command to set csa_reset_n LOW divider
+        // #200000 uart_to_send <= {CMD_PACKET,`SET_LOW_CMD,`ADC_START_CODE};
+        // #10000 uart_write_byte(uart_to_send);
+        // // set csa_reset_n LOW divider
+        // #500000 uart_to_send <= {DATA_PACKET,NOTLAST_UART_PACKET,6'd2};
+        // #10000 uart_write_byte(uart_to_send);
+        // #500000 uart_to_send <= {DATA_PACKET,NOTLAST_UART_PACKET,6'd0};
+        // #10000 uart_write_byte(uart_to_send);
+        // #500000 uart_to_send <= {DATA_PACKET,LAST_UART_PACKET,6'd0};
+        // #10000 uart_write_byte(uart_to_send);
+
+        // // ADC DELAY
+        // #180000 uart_to_send <= {CMD_PACKET,`SET_DELAY_CMD,`AUTO_READ_DELAY_CODE};
+        // #10000 uart_write_byte(uart_to_send);
+        // // set csa_reset_n delay divider
+        // #500000 uart_to_send <= {DATA_PACKET,NOTLAST_UART_PACKET,6'd2};
+        // #10000 uart_write_byte(uart_to_send);
+        // #500000 uart_to_send <= {DATA_PACKET,NOTLAST_UART_PACKET,6'd0};
+        // #10000 uart_write_byte(uart_to_send);
+        // #500000 uart_to_send <= {DATA_PACKET,LAST_UART_PACKET,6'd0};
+        // #10000 uart_write_byte(uart_to_send);
+
+        // send a command to set slow ctrl word
+        // signal is not used
+        // #200000 uart_to_send <= {CMD_PACKET,`SET_SLOW_CTRL_CMD,`UNUSED_CODE};
+        // #10000 uart_write_byte(uart_to_send);
+        // // set slow ctrl word
+        // #200000 slow_pkt_rnd <= $urandom(42069); // 42 is the seed and the packet is repeated for each pixel;
+        // #10000 uart_slow_ctrl_send(slow_pkt_rnd);
         
-//         // // send a command to set slow ctrl div
-//         // #200000 uart_to_send <= {CMD_PACKET,`SET_CK_CMD,`SLOW_CTRL_CK_CODE};
-//         // #10000 uart_write_byte(uart_to_send);
-//         // // set slow ctrl div
-//         // #200000 uart_to_send <= {DATA_PACKET,NOTLAST_UART_PACKET,6'd5};
-//         // #10000 uart_write_byte(uart_to_send);
-//         // #200000 uart_to_send <= {DATA_PACKET,LAST_UART_PACKET,6'd0};
-//         // #10000 uart_write_byte(uart_to_send);
+        // send a command to set slow ctrl div
+        // #200000 uart_to_send <= {CMD_PACKET,`SET_CK_CMD,`SLOW_CTRL_CK_CODE};
+        // #10000 uart_write_byte(uart_to_send);
+        // // set slow ctrl div
+        // #200000 uart_to_send <= {DATA_PACKET,NOTLAST_UART_PACKET,6'd5};
+        // #10000 uart_write_byte(uart_to_send);
+        // #200000 uart_to_send <= {DATA_PACKET,LAST_UART_PACKET,6'd0};
+        // #10000 uart_write_byte(uart_to_send);
         
-//         // // send a command to send slow ctrl
-//         // #200000 uart_to_send <= {CMD_PACKET,`SEND_SLOW_CTRL_CMD,`UNUSED_CODE};
-//         // #10000 uart_write_byte(uart_to_send);
+        // // send a command to send slow ctrl
+        // #200000 uart_to_send <= {CMD_PACKET,`SEND_SLOW_CTRL_CMD,`UNUSED_CODE};
+        // #10000 uart_write_byte(uart_to_send);
 // //============ END SLOW CTRL ==================================================
 
 // //============ DAC SETUP ======================================================

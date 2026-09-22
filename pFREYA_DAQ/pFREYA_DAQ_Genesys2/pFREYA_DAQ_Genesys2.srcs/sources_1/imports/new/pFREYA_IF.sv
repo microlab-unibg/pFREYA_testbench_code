@@ -580,7 +580,7 @@ module pFREYA_IF(
 //===================== END FAST CONTROL =============================
 
 //=================== AUTO READ COUNTER ==============================
-// Conta da 'abilita_contatore' (primo fronte adc_start) fino al delay
+// Conta da 'abilita_contatore' fino al delay
 // impostato dalla GUI. Quando raggiunge il target, genera un impulso
 // auto_read_trigger che fa partire CMD_READ_DATA nella FSM.
 // Se auto_read_delay_div == 0, l'auto-read è disabilitato.
@@ -591,8 +591,9 @@ module pFREYA_IF(
             abilita_contatore <= 1'b0;
         end
         else begin
-            // Accensione abilita_contatore 
-            if (adc_start_flag == FAST_CTRL_DELAY && adc_start_cnt == adc_start_delay_div-1) begin
+            // Accensione abilita_contatore ad ogni fronte di salita di adc_start
+            if ((adc_start_flag == FAST_CTRL_DELAY && adc_start_cnt == adc_start_delay_div-1) ||
+                (adc_start_flag == FAST_CTRL_LOW && adc_start_cnt == adc_start_LOW_div-1)) begin
                 abilita_contatore <= 1'b1;
             end
             

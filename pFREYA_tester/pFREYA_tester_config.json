@@ -48,6 +48,7 @@
             "high": "4",
             "low": "9996"
         },
+        "auto_read_delay": "10",
         "ser_reset_n": {
             "delay": "262140",
             "high": "262140",
