@@ -696,10 +696,11 @@ def send_VAL(gui):
         adc_msb = s[0:7]
         adc_data = adc_msb[::-1] + adc_lsb[::-1]
 
-        sot = s[11]
-
-        print(f"ADC value: {adc_data} (decimal: {int(adc_data, 2)}), SOT: {sot}")
-        return adc_data, sot
+        #sot = s[11]
+        #print(f"ADC value: {adc_data} (decimal: {int(adc_data, 2)}), SOT: {sot}")
+        print(f"ADC value: {adc_data} (decimal: {int(adc_data, 2)})")
+        #return adc_data, sot
+        return adc_data
     except Exception:
         print(traceback.format_exc())
         return 1

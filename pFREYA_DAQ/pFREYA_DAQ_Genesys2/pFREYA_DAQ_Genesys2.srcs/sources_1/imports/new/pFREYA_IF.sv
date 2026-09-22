@@ -557,7 +557,7 @@ module pFREYA_IF(
             adc_start <= ~adc_start;
             adc_start_cnt <= '0;
             adc_start_flag <= FAST_CTRL_HIGH;
-            abilita_contatore <= 1'b1;
+
         end
         else if (adc_start_flag == FAST_CTRL_HIGH &&
                  adc_start_cnt == adc_start_HIGH_div-1) begin
@@ -588,22 +588,30 @@ module pFREYA_IF(
         if (reset) begin
             auto_read_cnt <= '0;
             auto_read_trigger <= 1'b0;
-        end
-        else if (abilita_contatore && auto_read_delay_div != '0) begin
-            if (auto_read_cnt == auto_read_delay_div - 1) begin
-                // Raggiunto il delay: genera impulso di 1 ciclo
-                auto_read_trigger <= 1'b1;
-                auto_read_cnt <= '0;
-                abilita_contatore <= 1'b0;  // reset per il prossimo ciclo adc_start
-            end
-            else begin
-                auto_read_cnt <= auto_read_cnt + 1'b1;
-                auto_read_trigger <= 1'b0;
-            end
+            abilita_contatore <= 1'b0;
         end
         else begin
-            auto_read_cnt <= '0;
-            auto_read_trigger <= 1'b0;
+            // Accensione abilita_contatore 
+            if (adc_start_flag == FAST_CTRL_DELAY && adc_start_cnt == adc_start_delay_div-1) begin
+                abilita_contatore <= 1'b1;
+            end
+            
+            if (abilita_contatore && auto_read_delay_div != '0) begin
+                if (auto_read_cnt == auto_read_delay_div - 1) begin
+                    // Raggiunto il delay: genera impulso di 1 ciclo
+                    auto_read_trigger <= 1'b1;
+                    auto_read_cnt <= '0;
+                    abilita_contatore <= 1'b0;  // spegnimento abilita_contatore
+                end
+                else begin
+                    auto_read_cnt <= auto_read_cnt + 1'b1;
+                    auto_read_trigger <= 1'b0;
+                end
+            end
+            else begin
+                auto_read_cnt <= '0;
+                auto_read_trigger <= 1'b0;
+            end
         end
     end
 //=================== END AUTO READ COUNTER ==========================
