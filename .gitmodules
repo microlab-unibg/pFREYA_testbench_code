@@ -1,5 +1,5 @@
-[submodule "pFREYA_instrument_comms/TeledyneLeCroyPy"]
-	path = pFREYA_instrument_comms/TeledyneLeCroyPy
+[submodule "pFREYA_analysis/TeledyneLeCroyPy"]
+	path = pFREYA_analysis/TeledyneLeCroyPy
 	url = https://github.com/pollostrazon/TeledyneLeCroyPy.git
 [submodule "pFREYA_tester/TeledyneLeCroyPy"]
 	path = pFREYA_tester/TeledyneLeCroyPy
