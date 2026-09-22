@@ -134,6 +134,12 @@ module pFREYA_IF(
     logic [FAST_CTRL_N-1:0] adc_start_HIGH_div= '0;
     logic [FAST_CTRL_N-1:0] adc_start_LOW_div= '0;
 
+    // Auto read: segnali per attivare automaticamente READ_DATA dopo ADC_START
+    logic abilita_contatore = 1'b0;                    // si attiva al primo fronte di adc_start
+    logic auto_read_trigger = 1'b0;                    // impulso che fa scattare CMD_READ_DATA
+    logic [FAST_CTRL_N-1:0] auto_read_delay_div = '0;  // valore delay impostato dalla GUI (in FP)
+    logic [FAST_CTRL_N-1:0] auto_read_cnt = '0;        // contatore per il delay
+
     logic [FAST_CTRL_N-1:0] error_cnt = -1;
     logic [FAST_CTRL_N-1:0] error_timeout_cnt = -1; // toggle every 0.125s
     logic [FAST_CTRL_N-1:0] error_timeout = 18'd10;//18'd50; // toggle every 0.125s
@@ -551,6 +557,7 @@ module pFREYA_IF(
             adc_start <= ~adc_start;
             adc_start_cnt <= '0;
             adc_start_flag <= FAST_CTRL_HIGH;
+            abilita_contatore <= 1'b1;
         end
         else if (adc_start_flag == FAST_CTRL_HIGH &&
                  adc_start_cnt == adc_start_HIGH_div-1) begin
@@ -571,6 +578,35 @@ module pFREYA_IF(
     end
 
 //===================== END FAST CONTROL =============================
+
+//=================== AUTO READ COUNTER ==============================
+// Conta da 'abilita_contatore' (primo fronte adc_start) fino al delay
+// impostato dalla GUI. Quando raggiunge il target, genera un impulso
+// auto_read_trigger che fa partire CMD_READ_DATA nella FSM.
+// Se auto_read_delay_div == 0, l'auto-read è disabilitato.
+    always_ff @(posedge ck, posedge reset) begin: auto_read_counter
+        if (reset) begin
+            auto_read_cnt <= '0;
+            auto_read_trigger <= 1'b0;
+        end
+        else if (abilita_contatore && auto_read_delay_div != '0) begin
+            if (auto_read_cnt == auto_read_delay_div - 1) begin
+                // Raggiunto il delay: genera impulso di 1 ciclo
+                auto_read_trigger <= 1'b1;
+                auto_read_cnt <= '0;
+                abilita_contatore <= 1'b0;  // reset per il prossimo ciclo adc_start
+            end
+            else begin
+                auto_read_cnt <= auto_read_cnt + 1'b1;
+                auto_read_trigger <= 1'b0;
+            end
+        end
+        else begin
+            auto_read_cnt <= '0;
+            auto_read_trigger <= 1'b0;
+        end
+    end
+//=================== END AUTO READ COUNTER ==========================
 
     // state machine control
     always_comb begin : state_machine_ctrl
@@ -631,6 +667,10 @@ module pFREYA_IF(
                         default:
                             next <= CMD_ERR;
                     endcase
+                end
+                else if (auto_read_trigger) begin
+                    // AUTO: stesso effetto di READ_DATA_CMD da UART
+                    next <= CMD_READ_DATA;
                 end
                 else
                     // if no comms or command is available recheck
@@ -753,6 +793,7 @@ module pFREYA_IF(
             sh_phi1d_inf_delay_div <= '0;
             sh_phi1d_sup_delay_div <= '0;
             adc_start_delay_div <= '0;
+            auto_read_delay_div <= '0;
             
             csa_reset_n_HIGH_div <= '0;
             sh_phi1d_inf_HIGH_div <= '0;
@@ -827,6 +868,7 @@ module pFREYA_IF(
                     sh_phi1d_inf_delay_div <= '0;
                     sh_phi1d_sup_delay_div <= '0;
                     adc_start_delay_div <= '0;
+                    auto_read_delay_div <= '0;
                     
                     csa_reset_n_HIGH_div <= '0;
                     sh_phi1d_inf_HIGH_div <= '0;
@@ -923,6 +965,10 @@ module pFREYA_IF(
                                 dac_packet_available = 1'b0;
                         endcase
                     end
+                    else if (auto_read_trigger) begin
+                        // AUTO: stesso setup di READ_DATA_CMD
+                        ser_reset_request = 1'b1;
+                    end
                     else begin
                         cmd <= cmd;
                         signal <= signal;
@@ -973,6 +1019,8 @@ module pFREYA_IF(
                                             sh_phi1d_sup_delay_div[data_packet_index_receive +: DATA_UART_DATA_POS+1] <= uart_data[DATA_START_POS:DATA_END_POS];
                                         `ADC_START_CODE:
                                             adc_start_delay_div[data_packet_index_receive +: DATA_UART_DATA_POS+1] <= uart_data[DATA_START_POS:DATA_END_POS];
+                                        `AUTO_READ_DELAY_CODE:
+                                            auto_read_delay_div[data_packet_index_receive +: DATA_UART_DATA_POS+1] <= uart_data[DATA_START_POS:DATA_END_POS];
                                     endcase
                                     if (uart_data[DATA_UART_DATA_POS+1] == LAST_UART_PACKET) begin
                                         data_packet_index_receive <= '0;

@@ -9,10 +9,7 @@
         "dac_sck": "100"
     },
     "DAC": {
-        "source": "1",
-        "divider": "0",
-        "gain": "0",
-        "level": "420"
+        "\n                         relativi al dac vecchio\n                        \"source\": self.dac[\"source\"].get(),\n                        \"divider\": self.dac[\"divider\"].get(),\n                        \"gain\": self.dac[\"gain\"].get(),\n                        level": ""
     },
     "INJ": {
         "current_level": "-1.5",
@@ -47,9 +44,9 @@
             "low": "960"
         },
         "adc_start": {
-            "delay": "604",
-            "high": "2",
-            "low": "9980"
+            "delay": "404",
+            "high": "4",
+            "low": "9996"
         },
         "ser_reset_n": {
             "delay": "262140",

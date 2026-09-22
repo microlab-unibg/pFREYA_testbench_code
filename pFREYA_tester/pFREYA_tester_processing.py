@@ -625,6 +625,14 @@ def send_ADC_START(gui):
         for data in create_data(convert_strvar_bin(gui.adc_start['low'],UARTdef.DATA_PACKET_LENGTH)):
             send_UART('', data)
             print('Data sent: ',data)
+
+        # Invio delay auto-read (se 0 nessun delay, se impostato utilizzo valore nella GUI)
+        cmd = create_cmd(UARTdef.SET_DELAY_CMD, UARTdef.AUTO_READ_DELAY_CODE)
+        send_UART(cmd,'')
+        print('CMD sent: ',cmd)
+        for data in create_data(convert_strvar_bin(gui.auto_read_delay,UARTdef.DATA_PACKET_LENGTH)):
+            send_UART('', data)
+            print('Data sent: ',data)
     except Exception:
         print(traceback.format_exc())
         return 1
@@ -664,6 +672,33 @@ def send_READ_DATA(gui):
         sot = s[11]
 
         print(adc_data, sot)
+        return adc_data, sot
+    except Exception:
+        print(traceback.format_exc())
+        return 1
+    
+    return 0
+
+def send_VAL(gui):
+    """
+    VAL: clicco e legge il dato memorizzato in read_data
+    """
+    try:
+        cmd = create_cmd(UARTdef.SEND_SEND_DATA_CMD, UARTdef.UNUSED_CODE)
+        res = sendread_UART(cmd, 2)
+        print('CMD sent: ', cmd)
+
+        s = format(int.from_bytes(res), '016b')
+        print(s[0:8], s[8:16])
+        # its |UART(7)|0(1)||0(3)|UART(4)|1(1)|
+
+        adc_lsb = s[12:15]
+        adc_msb = s[0:7]
+        adc_data = adc_msb[::-1] + adc_lsb[::-1]
+
+        sot = s[11]
+
+        print(f"ADC value: {adc_data} (decimal: {int(adc_data, 2)}), SOT: {sot}")
         return adc_data, sot
     except Exception:
         print(traceback.format_exc())

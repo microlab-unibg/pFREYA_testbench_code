@@ -1,5 +1,5 @@
 # UART parameters
-COM_PORT = 'COM7' # COM7 pc uni
+COM_PORT = 'COM5' # COM7 pc uni
 BAUD_RATE = 115200
 
 # general
@@ -120,6 +120,11 @@ CSA_RESET_N_CODE       = '000'
 SH_INF_CODE            = '001'
 SH_SUP_CODE            = '010'
 ADC_START_CODE         = '011'
+
+# Auto read delay (for auto READ_DATA after ADC_START)
+
+AUTO_READ_DELAY_CODE   = '101'
+
 # Slow control map
 SER_RESET_N_CODE       = '100'
 SER_READ_CODE          = '101'

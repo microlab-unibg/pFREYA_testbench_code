@@ -264,6 +264,10 @@ class pFREYA_GUI():
         self.adc_start["low"]= \
             StringVar(value=json_config.get("asic_ctrl","").get("adc_start","").get("low",""))
 
+        # Auto read delay (per READ_DATA automatico dopo ADC_START)
+        self.auto_read_delay = \
+            StringVar(value=json_config.get("asic_ctrl","").get("auto_read_delay","0"))
+
         # ASIC serialiser control
         self.ser_reset_n = {}
         self.ser_reset_n["delay"] = \
@@ -350,6 +354,7 @@ class pFREYA_GUI():
                             "high": self.adc_start["high"].get(),
                             "low":  self.adc_start["low"].get()
                         },
+                        "auto_read_delay": self.auto_read_delay.get(),
                         "ser_reset_n": {
                             "delay":  self.ser_reset_n["delay"].get(),
                             "high": self.ser_reset_n["high"].get(),
@@ -1076,6 +1081,18 @@ ttk.Button(asic_lframe, text="Send READ_DATA", command=lambda: pYtp.send_READ_DA
 col_idx += 3
 
 ttk.Button(asic_lframe, text="Auto", command=lambda: run_adc_plot()).grid(column=col_idx, columnspan=3, row=row_idx, pady=[0,0], sticky=EW)
+row_idx += 1
+
+# Auto Read delay + pulsante VAL
+col_idx = 1
+ttk.Label(asic_lframe, text="Auto Read", width=15).grid(column=0, columnspan=3, row=row_idx, sticky=W)
+ttk.Label(asic_lframe, text="Delay").grid(column=col_idx, row=row_idx, sticky=E)
+current_entry = ttk.Entry(asic_lframe, textvariable=gui.auto_read_delay, width=UARTdef.WIDTH_ENTRY)
+current_entry.bind("<FocusOut>", lambda x: check_fpga_clocks(gui.auto_read_delay))
+current_entry.grid(column=col_idx+1, row=row_idx, padx=(1.3,0))
+ttk.Label(asic_lframe, text="FP").grid(column=col_idx+2, row=row_idx, padx=[0,20])
+col_idx += 3
+ttk.Button(asic_lframe, text="VAL", command=lambda: pYtp.send_VAL(gui)).grid(column=col_idx, columnspan=3, row=row_idx, pady=[0,0], sticky=EW)
 row_idx += 1
 
 ttk.Button(asic_lframe, text="Send ASIC control", command=lambda: pYtp.send_asic_ctrl(gui)).grid(column=4, columnspan=5, row=row_idx, pady=[10,0], sticky=SE)

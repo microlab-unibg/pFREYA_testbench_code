@@ -155,6 +155,8 @@
     `define SH_SUP_CODE            3'b010
     `define ADC_START_CODE         3'b011
     `define INJ_START              3'b100
+    // Auto read delay (for auto READ_DATA after ADC_START)
+    `define AUTO_READ_DELAY_CODE   3'b101
     // Slow control map
     `define SER_RESET_N_CODE       3'b100
     `define SER_READ_CODE          3'b101
