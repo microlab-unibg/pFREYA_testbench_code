@@ -175,6 +175,7 @@ module pFREYA_IF(
     logic [PACKET_INDEX_N-1:0] ser_data_send_idx = '0;
 
     reg [SER_DATA_REG_LENGTH-1:0] ser_data = '0;
+    reg [SER_DATA_REG_LENGTH-1:0] ser_data_latched = '0;   // valore memorizzato fino a prossimo dato
 
     logic [PACKET_INDEX_N-1:0] dac_packet_index_send= '0;
     logic [PACKET_INDEX_N-1:0] dac_packet_index_receive= '0;
@@ -1502,6 +1503,15 @@ module pFREYA_IF(
         end
     end
 
+    // congela ser_data quando il dato è arrivato completo
+    // resta invariato per tutta la durata dell'impulso successivo, finché il prossimo shift non si completa a sua volta
+    always_ff @(posedge ck, posedge reset) begin: ser_data_latch
+        if (reset)
+            ser_data_latched <= '0;
+        else if (ser_data_rcv)
+            ser_data_latched <= ser_data;
+    end
+
     always_ff @(posedge ck, posedge reset) begin: pc_ser_send_data
         if (reset) begin
             ser_data_sent <= 1'b0;
@@ -1537,13 +1547,13 @@ module pFREYA_IF(
                 pc_uart_valid <= 1'b1;
                 if (ser_data_send_idx + UART_PACKET_SIZE - 2 >= SER_DATA_REG_LENGTH) begin
                     // last packet
-                    pc_uart_data <= 8'b0000_0000 | {ser_data[ser_data_send_idx +: SER_DATA_REG_LENGTH - UART_PACKET_SIZE+1], LAST_UART_PACKET};
+                    pc_uart_data <= 8'b0000_0000 | {ser_data_latched[ser_data_send_idx +: SER_DATA_REG_LENGTH - UART_PACKET_SIZE+1], LAST_UART_PACKET};
                     ser_data_send_idx <= '0;
                     last_sent <= 1'b1;
                 end
                 else begin
                     // not last packet
-                    pc_uart_data <= {ser_data[ser_data_send_idx +: UART_PACKET_SIZE-1], NOTLAST_UART_PACKET};
+                    pc_uart_data <= {ser_data_latched[ser_data_send_idx +: UART_PACKET_SIZE-1], NOTLAST_UART_PACKET};
                     ser_data_send_idx <= ser_data_send_idx + UART_PACKET_SIZE - 1;
                     last_sent <= 1'b0;
                 end
