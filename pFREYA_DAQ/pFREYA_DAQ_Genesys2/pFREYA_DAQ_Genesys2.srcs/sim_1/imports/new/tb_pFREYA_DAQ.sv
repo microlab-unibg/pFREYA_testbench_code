@@ -2,28 +2,28 @@
 //////////////////////////////////////////////////////////////////////////////////
 // Company: Microlab - Università degli Studi di Bergamo
 // Engineer: Paolo Lazzaroni
-// 
+//
 // Create Date: 09/26/2023 06:04:56 PM
-// Design Name: 
+// Design Name:
 // Module Name: tb_pFREYA_DAQ
-// Project Name: 
-// Target Devices: 
-// Tool Versions: 
-// Description: 
-// 
-// Dependencies: 
-// 
+// Project Name:
+// Target Devices:
+// Tool Versions:
+// Description:
+//
+// Dependencies:
+//
 // Revision:
 // Revision 0.01 - File Created
 // Additional Comments:
-// 
+//
 //////////////////////////////////////////////////////////////////////////////////
 `include "../../../sources_1/imports/new/pFREYA_defs.sv"
 
 module tb_pFREYA_DAQ;
     // ASIC params
     //parameter GENERAL_CK_PERIOD = 50; // 200 MHz
-    
+
     // UART params
     // Testbench uses a 10 MHz clock
     // Want to interface to 115200 baud UART
@@ -34,7 +34,7 @@ module tb_pFREYA_DAQ;
 
     // sys clk
     parameter SYS_CK_PERIOD = 33.33333333; // 300 MHz
-    
+
 
 //===========DAQ======================================
     // ASIC signals
@@ -140,7 +140,7 @@ module tb_pFREYA_DAQ;
     );
 
 //=========== TASKS ==================================
-// Takes in input byte and serializes it 
+// Takes in input byte and serializes it
     task uart_write_byte;
         input [UART_PACKET_SIZE-1:0] data;
         integer i;
@@ -149,14 +149,14 @@ module tb_pFREYA_DAQ;
             rx_ser <= 1'b0;
             #(UART_BIT_PERIOD);
             #10000;
-            
+
             // Send Data Byte
             for (i=0; i<8; i=i+1)
             begin
                 rx_ser <= data[i];
                 #(UART_BIT_PERIOD);
             end
-            
+
             // Send Stop Bit
             rx_ser <= 1'b1;
             #(UART_BIT_PERIOD);
@@ -181,7 +181,7 @@ module tb_pFREYA_DAQ;
                 uart_write_byte(uart_to_send);
                 #200000;
             end
-            
+
             // Send last packet (19th, with 4 valid bits)
             uart_to_send[SLOW_CTRL_UART_DATA_POS:DATA_END_POS] <= slow_pkt[i*(SLOW_CTRL_UART_DATA_POS+1) +: SLOW_CTRL_UART_DATA_POS+1]; // last 4 bits + two 0's
             uart_to_send[SLOW_CTRL_UART_DATA_POS+1] <= LAST_UART_PACKET; // second bit
@@ -208,7 +208,7 @@ module tb_pFREYA_DAQ;
                 uart_write_byte(uart_to_send);
                 #200000;
             end
-            
+
             // Send last packet (3rd)
             uart_to_send[DAC_UART_DATA_LAST_POS:DATA_END_POS] <= data[i*(DAC_UART_DATA_POS+1) +: DAC_UART_DATA_LAST_POS+1]; // last 4 bits
             uart_to_send[DAC_UART_DATA_POS+1] <= LAST_UART_PACKET; // second bit
@@ -219,7 +219,7 @@ module tb_pFREYA_DAQ;
         end
     endtask // uart_slow_ctrl_send
 //=========== END TASKS ===============================
-    
+
     // setup initial values of all signals
     initial begin
         // tb UART
@@ -351,8 +351,8 @@ module tb_pFREYA_DAQ;
 //         #10000 uart_write_byte(uart_to_send);
 //         #200000 uart_to_send <= {DATA_PACKET,LAST_UART_PACKET,6'd0};
 //         #10000 uart_write_byte(uart_to_send);
-// 
-// 
+//
+//
 //         #200000 uart_to_send <= {CMD_PACKET,`SET_PIXEL_CMD,`PIXEL_ROW_CODE};
 //         #10000 uart_write_byte(uart_to_send);
 //         #200000 uart_to_send <= {DATA_PACKET,NOTLAST_UART_PACKET,6'd1};
@@ -361,7 +361,7 @@ module tb_pFREYA_DAQ;
 //         #10000 uart_write_byte(uart_to_send);
 //         #200000 uart_to_send <= {DATA_PACKET,LAST_UART_PACKET,6'd0};
 //         #10000 uart_write_byte(uart_to_send);
-//         
+//
 //         #200000 uart_to_send <= {CMD_PACKET,`SET_PIXEL_CMD,`PIXEL_COL_CODE};
 //         #10000 uart_write_byte(uart_to_send);
 //         #200000 uart_to_send <= {DATA_PACKET,NOTLAST_UART_PACKET,6'd4};
@@ -370,7 +370,7 @@ module tb_pFREYA_DAQ;
 //         #10000 uart_write_byte(uart_to_send);
 //         #200000 uart_to_send <= {DATA_PACKET,LAST_UART_PACKET,6'd0};
 //         #10000 uart_write_byte(uart_to_send);
-//         
+//
 //         // sel pixel
 //         // signal is not used
 //         #200000 uart_to_send <= {CMD_PACKET,`SEND_PIXEL_SEL_CMD,`UNUSED_CODE};
@@ -378,7 +378,7 @@ module tb_pFREYA_DAQ;
 // //============ END PIXEL SELECTION ============================================
 
 // //============ SERIALISER ============================================
-// // make sure you sel pixel 
+// // make sure you sel pixel
 
         // // testing adc
         // #200000 uart_to_send <= {CMD_PACKET,`SET_CK_CMD,`ADC_CK_CODE};
@@ -390,7 +390,7 @@ module tb_pFREYA_DAQ;
         // #10000 uart_write_byte(uart_to_send);
         // #200000 uart_to_send <= {DATA_PACKET,LAST_UART_PACKET,6'd0};
         // #10000 uart_write_byte(uart_to_send);
-        
+
         // // testing adc_start
         // #180000 uart_to_send <= {CMD_PACKET,`SET_DELAY_CMD,`ADC_START_CODE};
         // #10000 uart_write_byte(uart_to_send);
@@ -436,7 +436,7 @@ module tb_pFREYA_DAQ;
 //         #10000 uart_write_byte(uart_to_send);
 //         // serialise data on ser_out
 //         // done above sync with ser_ck
-// 
+//
 //         // try a second time
 //         #100000;
 //         #200000 uart_to_send <= {CMD_PACKET,`SET_CK_CMD,`SER_CK_CODE};
@@ -463,7 +463,7 @@ module tb_pFREYA_DAQ;
 //         // // set slow ctrl word
 //         // #200000 slow_pkt_rnd <= $urandom(42069); // 42 is the seed and the packet is repeated for each pixel;
 //         // #10000 uart_slow_ctrl_send(slow_pkt_rnd);
-        
+
 //         // // send a command to set slow ctrl div
 //         // #200000 uart_to_send <= {CMD_PACKET,`SET_CK_CMD,`SLOW_CTRL_CK_CODE};
 //         // #10000 uart_write_byte(uart_to_send);
@@ -472,7 +472,7 @@ module tb_pFREYA_DAQ;
 //         // #10000 uart_write_byte(uart_to_send);
 //         // #200000 uart_to_send <= {DATA_PACKET,LAST_UART_PACKET,6'd0};
 //         // #10000 uart_write_byte(uart_to_send);
-        
+
 //         // // send a command to send slow ctrl
 //         // #200000 uart_to_send <= {CMD_PACKET,`SEND_SLOW_CTRL_CMD,`UNUSED_CODE};
 //         // #10000 uart_write_byte(uart_to_send);
@@ -484,7 +484,7 @@ module tb_pFREYA_DAQ;
 //         // // set slow ctrl word
 //         // #200000 slow_pkt_rnd <= $urandom(42069); // 42 is the seed and the packet is repeated for each pixel;
 //         // #10000 uart_slow_ctrl_send(slow_pkt_rnd);
-        
+
 //         // // send a command to set slow ctrl div
 //         // #200000 uart_to_send <= {CMD_PACKET,`SET_CK_CMD,`SLOW_CTRL_CK_CODE};
 //         // #10000 uart_write_byte(uart_to_send);
@@ -493,27 +493,27 @@ module tb_pFREYA_DAQ;
 //         // #10000 uart_write_byte(uart_to_send);
 //         // #200000 uart_to_send <= {DATA_PACKET,LAST_UART_PACKET,6'd0};
 //         // #10000 uart_write_byte(uart_to_send);
-        
+
 //         // // send a command to send slow ctrl
 //         // #200000 uart_to_send <= {CMD_PACKET,`SEND_SLOW_CTRL_CMD,`UNUSED_CODE};
 //         // #10000 uart_write_byte(uart_to_send);
 // //============ END SLOW CTRL ==================================================
 
 // test auto read delay
-        #200000 uart_to_send <= {CMD_PACKET,`SET_SLOW_CTRL_CMD,`UNUSED_CODE};
-        #10000 uart_write_byte(uart_to_send);
-        #200000 slow_pkt_rnd <= $urandom(42069); 
-        #10000 uart_slow_ctrl_send(slow_pkt_rnd);
-        
-        #200000 uart_to_send <= {CMD_PACKET,`SET_CK_CMD,`SLOW_CTRL_CK_CODE};
-        #10000 uart_write_byte(uart_to_send);
-        #200000 uart_to_send <= {DATA_PACKET,NOTLAST_UART_PACKET,6'd2};
-        #10000 uart_write_byte(uart_to_send);
-        #200000 uart_to_send <= {DATA_PACKET,LAST_UART_PACKET,6'd0};
-        #10000 uart_write_byte(uart_to_send);
-        
-        #200000 uart_to_send <= {CMD_PACKET,`SEND_SLOW_CTRL_CMD,`UNUSED_CODE};
-        #10000 uart_write_byte(uart_to_send);
+        // #200000 uart_to_send <= {CMD_PACKET,`SET_SLOW_CTRL_CMD,`UNUSED_CODE};
+        // #10000 uart_write_byte(uart_to_send);
+        // #200000 slow_pkt_rnd <= $urandom(42069);
+        // #10000 uart_slow_ctrl_send(slow_pkt_rnd);
+
+        // #200000 uart_to_send <= {CMD_PACKET,`SET_CK_CMD,`SLOW_CTRL_CK_CODE};
+        // #10000 uart_write_byte(uart_to_send);
+        // #200000 uart_to_send <= {DATA_PACKET,NOTLAST_UART_PACKET,6'd2};
+        // #10000 uart_write_byte(uart_to_send);
+        // #200000 uart_to_send <= {DATA_PACKET,LAST_UART_PACKET,6'd0};
+        // #10000 uart_write_byte(uart_to_send);
+
+        // #200000 uart_to_send <= {CMD_PACKET,`SEND_SLOW_CTRL_CMD,`UNUSED_CODE};
+        // #10000 uart_write_byte(uart_to_send);
 
         #180000 uart_to_send <= {CMD_PACKET,`SET_CK_CMD,`SER_CK_CODE};
         #10000 uart_write_byte(uart_to_send);
@@ -571,7 +571,7 @@ module tb_pFREYA_DAQ;
         // // set slow ctrl word
         // #200000 slow_pkt_rnd <= $urandom(42069); // 42 is the seed and the packet is repeated for each pixel;
         // #10000 uart_slow_ctrl_send(slow_pkt_rnd);
-        
+
         // // send a command to set slow ctrl div
         // #200000 uart_to_send <= {CMD_PACKET,`SET_CK_CMD,`SLOW_CTRL_CK_CODE};
         // #10000 uart_write_byte(uart_to_send);
@@ -580,7 +580,7 @@ module tb_pFREYA_DAQ;
         // #10000 uart_write_byte(uart_to_send);
         // #200000 uart_to_send <= {DATA_PACKET,LAST_UART_PACKET,6'd0};
         // #10000 uart_write_byte(uart_to_send);
-        
+
         // // send a command to send slow ctrl
         // #200000 uart_to_send <= {CMD_PACKET,`SEND_SLOW_CTRL_CMD,`UNUSED_CODE};
         // #10000 uart_write_byte(uart_to_send);
@@ -697,7 +697,7 @@ module tb_pFREYA_DAQ;
         // // set slow ctrl word
         // #200000 slow_pkt_rnd <= $urandom(42069); // 42 is the seed and the packet is repeated for each pixel;
         // #10000 uart_slow_ctrl_send(slow_pkt_rnd);
-        
+
         // send a command to set slow ctrl div
         // #200000 uart_to_send <= {CMD_PACKET,`SET_CK_CMD,`SLOW_CTRL_CK_CODE};
         // #10000 uart_write_byte(uart_to_send);
@@ -706,7 +706,7 @@ module tb_pFREYA_DAQ;
         // #10000 uart_write_byte(uart_to_send);
         // #200000 uart_to_send <= {DATA_PACKET,LAST_UART_PACKET,6'd0};
         // #10000 uart_write_byte(uart_to_send);
-        
+
         // // send a command to send slow ctrl
         // #200000 uart_to_send <= {CMD_PACKET,`SEND_SLOW_CTRL_CMD,`UNUSED_CODE};
         // #10000 uart_write_byte(uart_to_send);
@@ -723,7 +723,7 @@ module tb_pFREYA_DAQ;
 //         // // DAC full packet is |CMD_PADDING(4)|CMD(4)|DATA(16)|
 //         // // in this example 0000_0100_0000_0001_0000_0001
 //         // #200000 uart_DAC_send({4'b1000,4'b1000,4'b1000,4'b1000,4'b1000,4'b1000});
-        
+
 //         // // send a command to set slow ctrl div
 //         // #200000 uart_to_send <= {CMD_PACKET,`SET_CK_CMD,`DAC_SCK_CODE};
 //         // #10000 cmd_available <= 1'b1;
@@ -734,7 +734,7 @@ module tb_pFREYA_DAQ;
 //         // #10000 cmd_available <= 1'b0;
 //         //        data_available <= 1'b1;
 //         //        uart_write_byte(uart_to_send);
-        
+
 //         // // send a command to send slow ctrl
 //         // #200000 uart_to_send <= {CMD_PACKET,`SEND_DAC_CMD,`UNUSED_CODE};
 //         // #10000 cmd_available <= 1'b1;
@@ -743,78 +743,103 @@ module tb_pFREYA_DAQ;
 // // ============ END DAC SETUP ==================================================
 
 //============ DAC SETUP (MAX5443 - 16 bit) ====================================
-        // Step 0: Set DAC clock divider so dac_ck can toggle 
-        #200000 uart_to_send <= {CMD_PACKET,`SET_CK_CMD,`DAC_SCK_CODE};
-        #10000 uart_write_byte(uart_to_send);
-        #200000 uart_to_send <= {DATA_PACKET,NOTLAST_UART_PACKET,6'd5};
-        #10000 uart_write_byte(uart_to_send);
-        #200000 uart_to_send <= {DATA_PACKET,NOTLAST_UART_PACKET,6'd0};
-        #10000 uart_write_byte(uart_to_send);
-        #200000 uart_to_send <= {DATA_PACKET,LAST_UART_PACKET,6'd0};
-        #10000 uart_write_byte(uart_to_send);
+        // Step 0: Set DAC clock divider so dac_ck can toggle
+        // #200000 uart_to_send <= {CMD_PACKET,`SET_CK_CMD,`DAC_SCK_CODE};
+        // #10000 uart_write_byte(uart_to_send);
+        // #200000 uart_to_send <= {DATA_PACKET,NOTLAST_UART_PACKET,6'd5};
+        // #10000 uart_write_byte(uart_to_send);
+        // #200000 uart_to_send <= {DATA_PACKET,NOTLAST_UART_PACKET,6'd0};
+        // #10000 uart_write_byte(uart_to_send);
+        // #200000 uart_to_send <= {DATA_PACKET,LAST_UART_PACKET,6'd0};
+        // #10000 uart_write_byte(uart_to_send);
 
-        // ---- Trasmissione CS1 ----
-        // Simula: utente preme "CS1" nella GUI Auto
-        // Python esegue send_uart_dac_auto(data, cs2=False)
+        // // ---- Trasmissione CS1 ----
+        // // Simula: utente preme "CS1" nella GUI Auto
+        // // Python esegue send_uart_dac_auto(data, cs2=False)
 
-        // 1a. SET_DAC_CMD: carica il dato 16-bit nel registro dac_packet
-        //     DAC test value: 16'hA5A5 = 1010_0101_1010_0101
-        #200000 uart_to_send <= {CMD_PACKET,`SET_DAC_CMD,`UNUSED_CODE};
-        #10000 uart_write_byte(uart_to_send);
-        #200000 uart_DAC_send(16'hA5A5);
+        // // 1a. SET_DAC_CMD: carica il dato 16-bit nel registro dac_packet
+        // //     DAC test value: 16'hA5A5 = 1010_0101_1010_0101
+        // #200000 uart_to_send <= {CMD_PACKET,`SET_DAC_CMD,`UNUSED_CODE};
+        // #10000 uart_write_byte(uart_to_send);
+        // #200000 uart_DAC_send(16'hA5A5);
 
-        // 1b. SEND_DAC_CMD: abbassa dac_cs (CS1) e serializza sul bus SPI
-        #200000 uart_to_send <= {CMD_PACKET,`SEND_DAC_CMD,`UNUSED_CODE};
-        #10000 uart_write_byte(uart_to_send);
+        // // 1b. SEND_DAC_CMD: abbassa dac_cs (CS1) e serializza sul bus SPI
+        // #200000 uart_to_send <= {CMD_PACKET,`SEND_DAC_CMD,`UNUSED_CODE};
+        // #10000 uart_write_byte(uart_to_send);
 
-        // Attendi il completamento della transazione SPI CS1
-        // Le linee SCLK e DIN sono condivise (OR), quindi CS1 deve
-        // terminare prima di avviare CS2
-        #5000000;
+        // // Attendi il completamento della transazione SPI CS1
+        // // Le linee SCLK e DIN sono condivise (OR), quindi CS1 deve
+        // // terminare prima di avviare CS2
+        // #5000000;
 
-        // ---- Trasmissione CS2 ----
-        // Simula: utente preme "CS2" nella GUI Auto (stesso dato)
-        // Python esegue send_uart_dac_auto(data, cs2=True)
+        // // ---- Trasmissione CS2 ----
+        // // Simula: utente preme "CS2" nella GUI Auto (stesso dato)
+        // // Python esegue send_uart_dac_auto(data, cs2=True)
 
-        // 2a. SET_DAC_CMD: ricarica lo stesso dato 16-bit
-        //     Necessario perche' dac_packet_available viene azzerato
-        //     dall'handshake della trasmissione CS1 precedente
-        #200000 uart_to_send <= {CMD_PACKET,`SET_DAC_CMD,`UNUSED_CODE};
-        #10000 uart_write_byte(uart_to_send);
-        #200000 uart_DAC_send(16'hA5A5);
+        // // 2a. SET_DAC_CMD: ricarica lo stesso dato 16-bit
+        // //     Necessario perche' dac_packet_available viene azzerato
+        // //     dall'handshake della trasmissione CS1 precedente
+        // #200000 uart_to_send <= {CMD_PACKET,`SET_DAC_CMD,`UNUSED_CODE};
+        // #10000 uart_write_byte(uart_to_send);
+        // #200000 uart_DAC_send(16'hA5A5);
 
-        // 2b. SEND_DAC_CS2_CMD: abbassa dac_cs2 (CS2) e serializza sul bus SPI
-        #200000 uart_to_send <= {CMD_PACKET,`SEND_DAC_CS2_CMD,`UNUSED_CODE};
-        #10000 uart_write_byte(uart_to_send);
+        // // 2b. SEND_DAC_CS2_CMD: abbassa dac_cs2 (CS2) e serializza sul bus SPI
+        // #200000 uart_to_send <= {CMD_PACKET,`SEND_DAC_CS2_CMD,`UNUSED_CODE};
+        // #10000 uart_write_byte(uart_to_send);
 //============ END DAC SETUP ===================================================
 
 // //============ SEND DATA TO PC ======================================================
 //         // set packet // done in begin
 //         // send data to PC
-//         #200000 uart_to_send <= {CMD_PACKET,`SEND_DATA_CMD,`UNUSED_CODE};
-//         #10000 cmd_available <= 1'b1;
-//               data_available <= 1'b0;
-//               uart_write_byte(uart_to_send);
-// 
-//         #2000000;
-//         // send data to PC a second time just to check
-//         #200000 uart_to_send <= {CMD_PACKET,`SEND_DATA_CMD,`UNUSED_CODE};
-//         #10000 cmd_available <= 1'b1;
-//               data_available <= 1'b0;
-//               uart_write_byte(uart_to_send);
-// 
-//         #2000000;
-//         // wrong code
-//         #200000 uart_to_send <= {CMD_PACKET,4'b1100,`UNUSED_CODE};
-//         #10000 cmd_available <= 1'b1;
-//               data_available <= 1'b0;
-//               uart_write_byte(uart_to_send);
-//         #200000;
-//         #200000 uart_to_send <= {CMD_PACKET,4'b1100,`UNUSED_CODE};
-//         #10000 cmd_available <= 1'b1;
-//               data_available <= 1'b0;
-//               uart_write_byte(uart_to_send);
-//         #200000;
+        #200000 uart_to_send <= {CMD_PACKET,`SEND_DATA_CMD,`UNUSED_CODE};
+        #10000 cmd_available <= 1'b1;
+              data_available <= 1'b0;
+              uart_write_byte(uart_to_send);
+
+        #2000000;
+        // send data to PC a second time just to check
+        #200000 uart_to_send <= {CMD_PACKET,`SEND_DATA_CMD,`UNUSED_CODE};
+        #10000 cmd_available <= 1'b1;
+              data_available <= 1'b0;
+              uart_write_byte(uart_to_send);
+
+        #2000000;
+        // wrong code
+        #200000 uart_to_send <= {CMD_PACKET,4'b1100,`UNUSED_CODE};
+        #10000 cmd_available <= 1'b1;
+              data_available <= 1'b0;
+              uart_write_byte(uart_to_send);
+        #200000;
+        #200000 uart_to_send <= {CMD_PACKET,4'b1100,`UNUSED_CODE};
+        #10000 cmd_available <= 1'b1;
+              data_available <= 1'b0;
+              uart_write_byte(uart_to_send);
+        #200000;
+
+        #200000 uart_to_send <= {CMD_PACKET,`SEND_DATA_CMD,`UNUSED_CODE};
+        #10000 cmd_available <= 1'b1;
+              data_available <= 1'b0;
+              uart_write_byte(uart_to_send);
+
+        #2000000;
+        // send data to PC a second time just to check
+        #200000 uart_to_send <= {CMD_PACKET,`SEND_DATA_CMD,`UNUSED_CODE};
+        #10000 cmd_available <= 1'b1;
+              data_available <= 1'b0;
+              uart_write_byte(uart_to_send);
+
+        #2000000;
+        // wrong code
+        #200000 uart_to_send <= {CMD_PACKET,4'b1100,`UNUSED_CODE};
+        #10000 cmd_available <= 1'b1;
+              data_available <= 1'b0;
+              uart_write_byte(uart_to_send);
+        #200000;
+        #200000 uart_to_send <= {CMD_PACKET,4'b1100,`UNUSED_CODE};
+        #10000 cmd_available <= 1'b1;
+              data_available <= 1'b0;
+              uart_write_byte(uart_to_send);
+        #200000;
         // FPGA will be sending data
 // ============ END SEND DATA TO PC ==================================================
 
@@ -825,7 +850,7 @@ module tb_pFREYA_DAQ;
         //       uart_write_byte(uart_to_send);
 
 
-        
+
         #5000000 $stop;
     end
 endmodule
