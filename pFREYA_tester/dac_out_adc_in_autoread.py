@@ -30,8 +30,8 @@ import UART_definitions as UARTdef
 import pFREYA_tester_processing as pYtp
 
 # Directory di output
-OUTPUT_DIR = r'C:/Users/giorg/Desktop/tesi/pFREYA_testbench_code/data'
-
+#OUTPUT_DIR = r'C:/Users/giorg/Desktop/tesi/pFREYA_testbench_code/data'
+OUTPUT_DIR = f'G:/Shared drives/FALCON/measures/new/adc'
 
 class TesterConfig:
     def __init__(self, root, dac_sck_period='100'):
