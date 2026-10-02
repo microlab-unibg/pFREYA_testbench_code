@@ -517,7 +517,7 @@ module tb_pFREYA_DAQ;
 
         #180000 uart_to_send <= {CMD_PACKET,`SET_CK_CMD,`SER_CK_CODE};
         #10000 uart_write_byte(uart_to_send);
-        #500000 uart_to_send <= {DATA_PACKET,NOTLAST_UART_PACKET,6'd2};
+        #500000 uart_to_send <= {DATA_PACKET,NOTLAST_UART_PACKET,6'd100};
         #10000 uart_write_byte(uart_to_send);
         #500000 uart_to_send <= {DATA_PACKET,NOTLAST_UART_PACKET,6'd0};
         #10000 uart_write_byte(uart_to_send);
@@ -526,7 +526,7 @@ module tb_pFREYA_DAQ;
 
         #180000 uart_to_send <= {CMD_PACKET,`SET_DELAY_CMD,`ADC_START_CODE};
         #10000 uart_write_byte(uart_to_send);
-        #500000 uart_to_send <= {DATA_PACKET,NOTLAST_UART_PACKET,6'd2};
+        #500000 uart_to_send <= {DATA_PACKET,NOTLAST_UART_PACKET,6'd100};
         #10000 uart_write_byte(uart_to_send);
         #500000 uart_to_send <= {DATA_PACKET,NOTLAST_UART_PACKET,6'd0};
         #10000 uart_write_byte(uart_to_send);
@@ -535,7 +535,7 @@ module tb_pFREYA_DAQ;
 
         #200000 uart_to_send <= {CMD_PACKET,`SET_HIGH_CMD,`ADC_START_CODE};
         #10000 uart_write_byte(uart_to_send);
-        #500000 uart_to_send <= {DATA_PACKET,NOTLAST_UART_PACKET,6'd2};
+        #500000 uart_to_send <= {DATA_PACKET,NOTLAST_UART_PACKET,6'd4};
         #10000 uart_write_byte(uart_to_send);
         #500000 uart_to_send <= {DATA_PACKET,NOTLAST_UART_PACKET,6'd0};
         #10000 uart_write_byte(uart_to_send);
@@ -544,16 +544,16 @@ module tb_pFREYA_DAQ;
 
         #200000 uart_to_send <= {CMD_PACKET,`SET_LOW_CMD,`ADC_START_CODE};
         #10000 uart_write_byte(uart_to_send);
-        #500000 uart_to_send <= {DATA_PACKET,NOTLAST_UART_PACKET,6'd2};
+        #500000 uart_to_send <= {DATA_PACKET,NOTLAST_UART_PACKET,6'd128};
         #10000 uart_write_byte(uart_to_send);
-        #500000 uart_to_send <= {DATA_PACKET,NOTLAST_UART_PACKET,6'd0};
+        #500000 uart_to_send <= {DATA_PACKET,NOTLAST_UART_PACKET,6'd100};
         #10000 uart_write_byte(uart_to_send);
         #500000 uart_to_send <= {DATA_PACKET,LAST_UART_PACKET,6'd0};
         #10000 uart_write_byte(uart_to_send);
 
         #180000 uart_to_send <= {CMD_PACKET,`SET_DELAY_CMD,`AUTO_READ_DELAY_CODE};
         #10000 uart_write_byte(uart_to_send);
-        #500000 uart_to_send <= {DATA_PACKET,NOTLAST_UART_PACKET,6'd2};
+        #500000 uart_to_send <= {DATA_PACKET,NOTLAST_UART_PACKET,6'd100};
         #10000 uart_write_byte(uart_to_send);
         #500000 uart_to_send <= {DATA_PACKET,NOTLAST_UART_PACKET,6'd0};
         #10000 uart_write_byte(uart_to_send);

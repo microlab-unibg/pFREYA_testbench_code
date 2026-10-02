@@ -5,11 +5,12 @@
         "sel_ck": "4000",
         "adc_ck": "20",
         "inj_stb": "1",
-        "ser_ck": "400",
+        "ser_ck": "100",
         "dac_sck": "100"
     },
     "DAC": {
-        "\n                         relativi al dac vecchio\n                        \"source\": self.dac[\"source\"].get(),\n                        \"divider\": self.dac[\"divider\"].get(),\n                        \"gain\": self.dac[\"gain\"].get(),\n                        level": ""
+        "\n                         relativi al dac vecchio\n                        \"source\": self.dac[\"source\"].get(),\n                        \"divider\": self.dac[\"divider\"].get(),\n                        \"gain\": self.dac[\"gain\"].get(),\n                        level_cs1": "0",
+        "level_cs2": "20000"
     },
     "INJ": {
         "current_level": "-1.5",
@@ -48,7 +49,7 @@
             "high": "4",
             "low": "9996"
         },
-        "auto_read_delay": "10",
+        "auto_read_delay": "1000",
         "ser_reset_n": {
             "delay": "262140",
             "high": "262140",

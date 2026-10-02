@@ -12,15 +12,15 @@
       </db_ref>
    </db_ref_list>
    <zoom_setting>
-      <ZoomStartTime time="0.523573653 ms"></ZoomStartTime>
-      <ZoomEndTime time="6.093573654 ms"></ZoomEndTime>
-      <Cursor1Time time="3.533256510 ms"></Cursor1Time>
+      <ZoomStartTime time="4,180.216360 us"></ZoomStartTime>
+      <ZoomEndTime time="4,185.886361 us"></ZoomEndTime>
+      <Cursor1Time time="4,183.716360 us"></Cursor1Time>
    </zoom_setting>
    <column_width_setting>
       <NameColumnWidth column_width="141"></NameColumnWidth>
-      <ValueColumnWidth column_width="130"></ValueColumnWidth>
+      <ValueColumnWidth column_width="120"></ValueColumnWidth>
    </column_width_setting>
-   <WVObjectSize size="7" />
+   <WVObjectSize size="14" />
    <wvobject fp_name="/tb_pFREYA_DAQ/pFREYA_DAQ_inst/spi_data" type="array">
       <obj_property name="ElementShortName">spi_data[15:0]</obj_property>
       <obj_property name="ObjectShortName">spi_data[15:0]</obj_property>
@@ -48,5 +48,33 @@
    <wvobject fp_name="/tb_pFREYA_DAQ/pFREYA_DAQ_inst/dac_clr" type="logic">
       <obj_property name="ElementShortName">dac_clr</obj_property>
       <obj_property name="ObjectShortName">dac_clr</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_pFREYA_DAQ/ser_out" type="logic">
+      <obj_property name="ElementShortName">ser_out</obj_property>
+      <obj_property name="ObjectShortName">ser_out</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_pFREYA_DAQ/ser_read" type="logic">
+      <obj_property name="ElementShortName">ser_read</obj_property>
+      <obj_property name="ObjectShortName">ser_read</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_pFREYA_DAQ/ser_reset_n" type="logic">
+      <obj_property name="ElementShortName">ser_reset_n</obj_property>
+      <obj_property name="ObjectShortName">ser_reset_n</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_pFREYA_DAQ/ser_ck" type="logic">
+      <obj_property name="ElementShortName">ser_ck</obj_property>
+      <obj_property name="ObjectShortName">ser_ck</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_pFREYA_DAQ/adc_start" type="logic">
+      <obj_property name="ElementShortName">adc_start</obj_property>
+      <obj_property name="ObjectShortName">adc_start</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_pFREYA_DAQ/pFREYA_DAQ_inst/pFREYA_IF_inst/state" type="array">
+      <obj_property name="ElementShortName">state[10:0]</obj_property>
+      <obj_property name="ObjectShortName">state[10:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_pFREYA_DAQ/pFREYA_DAQ_inst/pFREYA_IF_inst/next" type="array">
+      <obj_property name="ElementShortName">next[10:0]</obj_property>
+      <obj_property name="ObjectShortName">next[10:0]</obj_property>
    </wvobject>
 </wave_config>

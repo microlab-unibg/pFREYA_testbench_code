@@ -140,18 +140,6 @@ def send_uart_dac_auto_persistent(ser, dac_packet_completo, cs2=False):
 
 def send_READ_DATA_persistent(ser, gui):
     """Come send_READ_DATA, ma usa una porta seriale persistente.
-
-    Parameters
-    ----------
-    ser : serial.Serial
-        Porta seriale già aperta.
-    gui : pFREYA_GUI
-        The structure containing all the data related to the tester.
-
-    Returns
-    ----------
-    tuple or int
-        (adc_data, SOT) if everything was ok, 1 otherwise.
     """
     try:
         cmd = create_cmd(UARTdef.SEND_READ_DATA_CMD, UARTdef.UNUSED_CODE)
@@ -175,6 +163,30 @@ def send_READ_DATA_persistent(ser, gui):
         sot = s[11]
 
         print(adc_data, sot)
+        return adc_data, sot
+    except Exception:
+        print(traceback.format_exc())
+        return 1
+
+def send_VAL_persistent(ser):
+    """
+    Come send_VAL, ma usa una porta seriale persistente.
+    Legge il dato memorizzato nell'FPGA (post auto-read) senza forzare una nuova lettura.
+    """
+    try:
+        cmd = create_cmd(UARTdef.SEND_SEND_DATA_CMD, UARTdef.UNUSED_CODE)
+        res = sendread_UART_persistent(ser, cmd, 2)
+        print('CMD sent: ', cmd)
+
+        s = format(int.from_bytes(res), '016b')
+        print(s[0:8], s[8:16])
+
+        adc_lsb = s[12:15]
+        adc_msb = s[0:7]
+        adc_data = adc_msb[::-1] + adc_lsb[::-1]
+
+        sot = s[11]
+        print(f"ADC value: {adc_data} (decimal: {int(adc_data, 2)})")
         return adc_data, sot
     except Exception:
         print(traceback.format_exc())
@@ -214,6 +226,14 @@ def send_ADC_START_persistent(ser, gui):
         send_UART_persistent(ser, cmd, '')
         print('CMD sent: ', cmd)
         for data in create_data(convert_strvar_bin(gui.adc_start['low'], UARTdef.DATA_PACKET_LENGTH)):
+            send_UART_persistent(ser, '', data)
+            print('Data sent: ', data)
+
+        # Invio delay auto-read (se 0 nessun delay, se impostato utilizzo valore nella GUI)
+        cmd = create_cmd(UARTdef.SET_DELAY_CMD, UARTdef.AUTO_READ_DELAY_CODE)
+        send_UART_persistent(ser, cmd, '')
+        print('CMD sent: ', cmd)
+        for data in create_data(convert_strvar_bin(gui.auto_read_delay, UARTdef.DATA_PACKET_LENGTH)):
             send_UART_persistent(ser, '', data)
             print('Data sent: ', data)
     except Exception:
@@ -591,6 +611,38 @@ def send_SH_PHI1D_SUP(gui):
     
     return 0
 
+def send_SER_READ(gui):
+    """Function to set SER_READ fast control in the FPGA
+
+    """
+    try:
+        cmd = create_cmd(UARTdef.SET_DELAY_CMD, UARTdef.SER_READ_CODE)
+        send_UART(cmd,'')
+        print('CMD sent: ',cmd)
+        for data in create_data(convert_strvar_bin(gui.ser_read['delay'],UARTdef.DATA_PACKET_LENGTH)):
+            send_UART('', data)
+            print('Data sent: ',data)
+
+        cmd = create_cmd(UARTdef.SET_HIGH_CMD, UARTdef.SER_READ_CODE)
+        send_UART(cmd,'')
+        print('CMD sent: ',cmd)
+        for data in create_data(convert_strvar_bin(gui.ser_read['high'],UARTdef.DATA_PACKET_LENGTH)):
+            send_UART('', data)
+            print('Data sent: ',data)
+
+        cmd = create_cmd(UARTdef.SET_LOW_CMD, UARTdef.SER_READ_CODE)
+        send_UART(cmd,'')
+        print('CMD sent: ',cmd)
+        for data in create_data(convert_strvar_bin(gui.ser_read['low'],UARTdef.DATA_PACKET_LENGTH)):
+            send_UART('', data)
+            print('Data sent: ',data)
+
+    except Exception:
+        print(traceback.format_exc())
+        return 1
+    
+    return 0
+
 def send_ADC_START(gui):
     """Function to set ADC_START fast control in the FPGA
 
@@ -641,16 +693,6 @@ def send_ADC_START(gui):
 
 def send_READ_DATA(gui):
     """Function to fetch data from ASIC
-
-    Parameters
-    ----------
-    gui : pFREYA_GUI
-        The structure containing all the data related to the tester.
-    
-    Returns
-    ----------
-    int
-        adc_data, SOT if everything was ok, 1 otherwise.
     """
     try:
         cmd = create_cmd(UARTdef.SEND_READ_DATA_CMD, UARTdef.UNUSED_CODE)
@@ -679,33 +721,23 @@ def send_READ_DATA(gui):
     
     return 0
 
-def send_VAL(gui):
-    """
-    VAL: clicco e legge il dato memorizzato in read_data
-    """
-    try:
-        cmd = create_cmd(UARTdef.SEND_SEND_DATA_CMD, UARTdef.UNUSED_CODE)
-        res = sendread_UART(cmd, 2)
-        print('CMD sent: ', cmd)
-
-        s = format(int.from_bytes(res), '016b')
-        print(s[0:8], s[8:16])
-        # its |UART(7)|0(1)||0(3)|UART(4)|1(1)|
-
-        adc_lsb = s[12:15]
-        adc_msb = s[0:7]
-        adc_data = adc_msb[::-1] + adc_lsb[::-1]
-
-        #sot = s[11]
-        #print(f"ADC value: {adc_data} (decimal: {int(adc_data, 2)}), SOT: {sot}")
-        print(f"ADC value: {adc_data} (decimal: {int(adc_data, 2)})")
-        #return adc_data, sot
-        return adc_data
-    except Exception:
-        print(traceback.format_exc())
-        return 1
-    
-    return 0
+def send_VAL(gui, retries=5):
+    cmd = create_cmd(UARTdef.SEND_SEND_DATA_CMD, UARTdef.UNUSED_CODE)
+    for _ in range(retries):
+        ser = serial.Serial(UARTdef.COM_PORT, UARTdef.BAUD_RATE, timeout=0.5)
+        ser.reset_input_buffer()
+        ser.write(bitstring_to_bytes(cmd))
+        res = ser.read(2)
+        ser.close()
+        # frame valido: 2 byte, bit0 primo byte = 0, bit0 secondo byte = 1
+        if len(res) == 2 and (res[0] & 1) == 0 and (res[1] & 1) == 1:
+            s = format(int.from_bytes(res, 'big'), '016b')
+            adc_data = s[0:7][::-1] + s[12:15][::-1]
+            sot = s[11]
+            print(f"Serialiser value: {adc_data} (decimal: {int(adc_data, 2)})")
+            return adc_data, sot
+    print("send_VAL: nessuna risposta valida")
+    return None
 
 def send_clock_single(gui, clock):
     """Function to set a clock in the FPGA
@@ -790,6 +822,8 @@ def send_asic_ctrl(gui):
     send_SH_PHI1D_SUP(gui)
     time.sleep(1)
     send_ADC_START(gui)
+    time.sleep(1)
+    send_SER_READ(gui)
     time.sleep(1)
 
 def send_pixel(gui):
@@ -901,7 +935,7 @@ def create_dac_packet(gui, type):
                           UARTdef.DAC_DATA_GAIN_PADDING + convert_strvar_bin(gui.dac['gain'],1)
     elif (type == UARTdef.DAC_CMD_DATA):
         dac_packet_data = UARTdef.DAC_CMD_PADDING + UARTdef.DAC_CMD_DATA + \
-                          convert_strvar_bin(gui.dac['level'],12) + UARTdef.DAC_DATA_REGISTER_PADDING
+                          convert_strvar_bin(gui.dac['level_cs1'],12) + UARTdef.DAC_DATA_REGISTER_PADDING
     else:
         raise RuntimeError('Not a known DAC command or not implemented.')
 
@@ -1211,7 +1245,7 @@ def send_DAC(gui):
 '''
 def send_DAC(gui, cs2=False):
     try:
-        level = int(gui.dac['level'].get())
+        level = int(gui.dac['level_cs2'].get()) if cs2 else int(gui.dac['level_cs1'].get())
         dac_packet_data = create_dac_packet_auto(level)
         cs_label = 'CS2' if cs2 else 'CS1'
         print(f'DAC packet ({cs_label}): {dac_packet_data} → {level}/65535 * VREF')

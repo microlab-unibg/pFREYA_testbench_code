@@ -69,7 +69,6 @@ module pFREYA_IF(
         CMD_SEND_SLOW,
         CMD_SET_LONG,
         CMD_SET,
-        CMD_READ_DATA,
         CMD_SEND_DATA,
         CMD_SYNC_TIME_BASE,
         RESET
@@ -136,9 +135,20 @@ module pFREYA_IF(
 
     // Auto read: segnali per attivare automaticamente READ_DATA dopo ADC_START
     logic abilita_contatore = 1'b0;                    // si attiva al primo fronte di adc_start
-    logic auto_read_trigger = 1'b0;                    // impulso che fa scattare CMD_READ_DATA
+    logic auto_read_trigger = 1'b0;                    // resta alto finché il sequencer di lettura non lo accetta
     logic [FAST_CTRL_N-1:0] auto_read_delay_div = '0;  // valore delay impostato dalla GUI (in FP)
     logic [FAST_CTRL_N-1:0] auto_read_cnt = '0;        // contatore per il delay
+
+    // Sequencer di lettura del serializzatore (sostituisce lo stato CMD_READ_DATA della FSM)
+    // Parte su auto_read_trigger o su READ_DATA_CMD da UART, senza bloccare la FSM comandi
+    typedef enum logic [1:0] {
+        RD_IDLE,    // in attesa di una richiesta di lettura
+        RD_CLEAR,   // un colpo di ser_reset_request per azzerare ser_data/flag
+        RD_RUN      // shift + lettura dei bit dal serializzatore
+    } rd_state_t;
+    rd_state_t rd_state = RD_IDLE;
+    logic uart_read_cmd;                // impulso: READ_DATA_CMD ricevuto dalla FSM
+    logic uart_read_pending = 1'b0;     // READ_DATA_CMD in attesa (se arriva durante una lettura)
 
     logic [FAST_CTRL_N-1:0] error_cnt = -1;
     logic [FAST_CTRL_N-1:0] error_timeout_cnt = -1; // toggle every 0.125s
@@ -582,8 +592,8 @@ module pFREYA_IF(
 
 //=================== AUTO READ COUNTER ==============================
 // Conta da 'abilita_contatore' fino al delay
-// impostato dalla GUI. Quando raggiunge il target, genera un impulso
-// auto_read_trigger che fa partire CMD_READ_DATA nella FSM.
+// impostato dalla GUI. Quando raggiunge il target, alza auto_read_trigger
+// che resta alto finché il sequencer di lettura non lo accetta (RD_CLEAR).
 // Se auto_read_delay_div == 0, l'auto-read è disabilitato.
     always_ff @(posedge ck, posedge reset) begin: auto_read_counter
         if (reset) begin
@@ -597,26 +607,109 @@ module pFREYA_IF(
                 (adc_start_flag == FAST_CTRL_LOW && adc_start_cnt == adc_start_LOW_div-1)) begin
                 abilita_contatore <= 1'b1;
             end
-            
+
+            // Il sequencer ha consumato il trigger: lo abbasso
+            if (rd_state == RD_CLEAR) begin
+                auto_read_trigger <= 1'b0;
+            end
+
             if (abilita_contatore && auto_read_delay_div != '0) begin
                 if (auto_read_cnt == auto_read_delay_div - 1) begin
-                    // Raggiunto il delay: genera impulso di 1 ciclo
-                    auto_read_trigger <= 1'b1;
+                    // Raggiunto il delay: alza il trigger  solo se non c'è
+                    // una lettura in corso, altrimenti lo scarta.
+                    if (rd_state == RD_IDLE)
+                        auto_read_trigger <= 1'b1;
                     auto_read_cnt <= '0;
-                    abilita_contatore <= 1'b0;  // spegnimento abilita_contatore
+                    abilita_contatore <= 1'b0;
                 end
                 else begin
                     auto_read_cnt <= auto_read_cnt + 1'b1;
-                    auto_read_trigger <= 1'b0;
                 end
             end
             else begin
                 auto_read_cnt <= '0;
-                auto_read_trigger <= 1'b0;
             end
         end
     end
 //=================== END AUTO READ COUNTER ==========================
+
+//=================== SERIALISER READOUT  ===================
+// Gestisce ser_reset_n / ser_read / ser_ck_mask in sostituzione allo stato
+// CMD_READ_DATA così la lettura avviene in maniera automatica dove.
+// SEND_DATA  può essere servito in qualsiasi momento e restituisce
+// l'ultimo dato completo (ser_data_latched).
+    // stessa condizione con cui la FSM decodifica un comando in CMD_EVAL
+    assign uart_read_cmd = (state == CMD_EVAL) && !uart_valid && cmd_available &&
+                           (uart_data[CMD_START_POS:CMD_END_POS] == `READ_DATA_CMD);
+
+    always_ff @(posedge ck, posedge reset) begin: ser_readout_sequenza
+        if (reset) begin
+            rd_state <= RD_IDLE;
+            uart_read_pending <= 1'b0;
+            ser_reset_request <= 1'b0;
+            ser_read <= 1'b0;
+            ser_ck_mask <= 1'b0;
+            ser_reset_n <= 1'b0;
+        end
+        else if (state == RESET) begin
+            // RESET_FPGA_CMD: abort di eventuali letture in corso
+            rd_state <= RD_IDLE;
+            uart_read_pending <= 1'b0;
+            ser_reset_request <= 1'b0;
+            ser_read <= 1'b0;
+            ser_ck_mask <= 1'b0;
+            ser_reset_n <= 1'b0;
+        end
+        else begin
+            case (rd_state)
+                RD_IDLE: begin
+                    ser_read <= 1'b0;
+                    ser_ck_mask <= 1'b0;
+                    ser_reset_n <= 1'b0;
+                    if (auto_read_trigger || uart_read_pending) begin
+                        ser_reset_request <= 1'b1;
+                        uart_read_pending <= 1'b0;
+                        rd_state <= RD_CLEAR;
+                    end
+                end
+                RD_CLEAR: begin
+                    // pixel_ser_read_data vede ser_reset_request e azzera i flag
+                    ser_reset_request <= 1'b0;
+                    rd_state <= RD_RUN;
+                end
+                RD_RUN: begin
+                    if (!ser_shift_done && !ser_data_rcv) begin
+                        // read is low, one ser ck hit
+                        ser_read <= 1'b0;
+                        ser_ck_mask <= 1'b1;
+                        ser_reset_n <= 1'b1;
+                    end
+                    else if (ser_shift_done && !ser_data_rcv) begin
+                        // read is high, send data
+                        ser_read <= 1'b1;
+                        ser_ck_mask <= 1'b1;
+                        ser_reset_n <= 1'b1;
+                    end
+                    else begin
+                        // dato completo
+                        ser_read <= 1'b0;
+                        ser_ck_mask <= 1'b0;
+                        ser_reset_n <= 1'b0;
+                        rd_state <= RD_IDLE;
+                    end
+                end
+                default:
+                    rd_state <= RD_IDLE;
+            endcase
+
+            // richiesta UART memorizzata anche se arriva durante una lettura
+            if (uart_read_cmd)
+                uart_read_pending <= 1'b1;
+        end
+    end
+//=================== END SERIALISER READOUT SEQUENZA ===============
+
+
 
     // state machine control
     always_comb begin : state_machine_ctrl
@@ -625,7 +718,7 @@ module pFREYA_IF(
                 next <= CMD_EVAL;
             CMD_EVAL:
                 if (!uart_valid && cmd_available) begin
-                    // Fix: uso direttamente uart_data invece di cmd. cmd si aggiorna in un blocco sequenziale
+                    //  uso direttamente uart_data invece di cmd. cmd si aggiorna in un blocco sequenziale
                     // quindi ha 1 colpo di clock di ritardo e mi faceva saltare lo stato SEND_DAC_CMD!
                     case (uart_data[CMD_START_POS:CMD_END_POS])
                         // if the command is a known one
@@ -660,10 +753,9 @@ module pFREYA_IF(
                         // next send sel pixel
                         `SEND_PIXEL_SEL_CMD:
                             next <= CMD_SEL_PIX;
-                        // next ask for data out of asic
+                        // ask for data out of asic: gestito da ser_readout_sequenza
                         `READ_DATA_CMD:
-                            // two step here, shift data and then read data
-                            next <= CMD_READ_DATA;
+                            next <= CMD_EVAL;
                         // next send data to pc
                         `SEND_DATA_CMD:
                             next <= CMD_SEND_DATA;
@@ -677,10 +769,6 @@ module pFREYA_IF(
                         default:
                             next <= CMD_ERR;
                     endcase
-                end
-                else if (auto_read_trigger) begin
-                    // AUTO: stesso effetto di READ_DATA_CMD da UART
-                    next <= CMD_READ_DATA;
                 end
                 else
                     // if no comms or command is available recheck
@@ -731,15 +819,8 @@ module pFREYA_IF(
                     next <= CMD_EVAL;
                 else
                     next <= CMD_SEL_PIX;
-            CMD_READ_DATA:
-                if (ser_shift_done && ser_data_rcv)
-                    next <= CMD_EVAL;
-                else if (!ser_shift_done && ser_data_rcv)
-                    next <= CMD_ERR;
-                else
-                    next <= CMD_READ_DATA;
             CMD_SEND_DATA:
-                if (ser_data_sent)
+                if (!send_data_reset_request && ser_data_sent)
                     next <= CMD_EVAL;
                 else
                     next <= CMD_SEND_DATA;
@@ -833,7 +914,7 @@ module pFREYA_IF(
             //dac_packet_sent <= 1'b0;
             //sel_ckcol_sent <= 1'b0;
             //sel_ckrow_sent <= 1'b0;
-            ser_ck_mask = 1'b0;
+            // ser_ck_mask, ser_reset_n, ser_read: gestiti da ser_readout_sequenza
             send_mask = 1'b0;
 
             //slow_ctrl_packet_index_send <= '0;
@@ -848,8 +929,6 @@ module pFREYA_IF(
 
             inj_start <= '0;
 
-            ser_reset_n <= 1'b0;
-            ser_read <= 1'b0;
 
             //slow_ctrl_in <= '0;
             //dac_sdin <= '0;
@@ -910,7 +989,7 @@ module pFREYA_IF(
                     //dac_packet_sent <= 1'b0;
                     //sel_ckcol_sent <= 1'b0;
                     //sel_ckrow_sent <= 1'b0;
-                    ser_ck_mask = 1'b0;
+                    // ser_ck_mask, ser_reset_n, ser_read: gestiti da ser_readout_sequenza
                     send_mask = 1'b0;
 
                     //slow_ctrl_packet_index_send <= '0;
@@ -925,8 +1004,6 @@ module pFREYA_IF(
 
                     inj_start <= '0;
 
-                    ser_reset_n <= 1'b0;
-                    ser_read <= 1'b0;   
 
                     //slow_ctrl_in <= '0;
                     //dac_sdin <= '0;
@@ -967,17 +1044,12 @@ module pFREYA_IF(
 
                                 data_packet_available = 1'b0;
                             end
-                            `READ_DATA_CMD:
-                                ser_reset_request = 1'b1;
+                            // READ_DATA_CMD: gestito da ser_readout_sequenza
                             `SEND_DATA_CMD:
                                 send_data_reset_request = 1'b1;
                             `SET_DAC_CMD:
                                 dac_packet_available = 1'b0;
                         endcase
-                    end
-                    else if (auto_read_trigger) begin
-                        // AUTO: stesso setup di READ_DATA_CMD
-                        ser_reset_request = 1'b1;
                     end
                     else begin
                         cmd <= cmd;
@@ -1183,26 +1255,6 @@ module pFREYA_IF(
                     else begin
                         sel_ck_mask <= 1'b1;
                         sel_init_n <= 1'b1;
-                    end
-                end
-                CMD_READ_DATA: begin
-                    ser_reset_request <= 1'b0;
-                    if (!ser_shift_done && !ser_data_rcv) begin
-                        // read is low, one ser ck hit
-                        ser_read <= 1'b0;
-                        ser_ck_mask <= 1'b1;
-                        ser_reset_n <= 1'b1;
-                    end
-                    else if (ser_shift_done && !ser_data_rcv) begin
-                        // read is high, send data
-                        ser_read <= 1'b1;
-                        ser_ck_mask <= 1'b1;
-                        ser_reset_n <= 1'b1;
-                    end
-                    else begin
-                        ser_read <= 1'b0;
-                        ser_ck_mask <= 1'b0;
-                        ser_reset_n <= 1'b0;
                     end
                 end
                 CMD_SEND_DATA: begin
@@ -1505,10 +1557,12 @@ module pFREYA_IF(
 
     // congela ser_data quando il dato è arrivato completo
     // resta invariato per tutta la durata dell'impulso successivo, finché il prossimo shift non si completa a sua volta
+    // non si aggiorna durante SEND_DATA (send_mask) per non mescolare due frame nei pacchetti UART:
+    // ser_data_rcv resta alto, quindi il dato nuovo viene preso appena finisce l'invio
     always_ff @(posedge ck, posedge reset) begin: ser_data_latch
         if (reset)
             ser_data_latched <= '0;
-        else if (ser_data_rcv)
+        else if (ser_data_rcv && !send_mask)
             ser_data_latched <= ser_data;
     end
 

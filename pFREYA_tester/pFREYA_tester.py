@@ -212,8 +212,8 @@ class pFREYA_GUI():
         '''
         
         #nuovo
-        self.dac["level"] = StringVar(value=json_config.get("DAC","").get("level",""))
-                                      
+        self.dac["level_cs1"] = StringVar(value=json_config.get("DAC","").get("level_cs1","0"))
+        self.dac["level_cs2"] = StringVar(value=json_config.get("DAC","").get("level_cs2","0"))
         # INJ config
         self.current_level = StringVar(value=json_config.get("INJ","").get("current_level",""))
         self.adc_p = StringVar(value=json_config.get("INJ","").get("adc_p",""))
@@ -315,7 +315,8 @@ class pFREYA_GUI():
                         "divider": self.dac["divider"].get(),
                         "gain": self.dac["gain"].get(),
                         '''
-                        "level": self.dac["level"].get()
+                        "level_cs1": self.dac["level_cs1"].get(),
+                        "level_cs2": self.dac["level_cs2"].get()
                     },
                     "INJ": {
                         "current_level": self.current_level.get(),
@@ -573,7 +574,7 @@ def run_script_dac(cs2=False):
 
     print(f"\n--Send DAC level ({cs_label})--")
     try:
-        level = int(gui.dac['level'].get())
+        level = int(gui.dac['level_cs2'].get()) if cs2 else int(gui.dac['level_cs1'].get())
         dac_packet_data = pYtp.create_dac_packet_auto(level)
         print(f'DAC packet: {dac_packet_data} → {level}/65535 * VREF')
         pYtp.send_uart_dac_auto(dac_packet_data, cs2=cs2)
@@ -701,51 +702,79 @@ class gui_dac_auto(Toplevel):
         info_frame = ttk.Labelframe(self, text="DAC settings", padding=10)
         info_frame.pack(pady=10, padx=10, fill=X)
 
-        ttk.Label(info_frame, text="Current level:").grid(
+        ttk.Label(info_frame, text="Current level CS1:").grid(
             column=0, row=0, sticky=E, padx=5)
-        ttk.Label(info_frame, textvariable=gui.dac["level"]).grid(
+        ttk.Label(info_frame, textvariable=gui.dac["level_cs1"]).grid(
             column=1, row=0, sticky=W, padx=5)
         ttk.Label(info_frame, text="/ 65535").grid(
             column=2, row=0, sticky=W)
 
-        ttk.Label(info_frame, text="VREF [V]:").grid(
-            column=0, row=1, sticky=E, padx=5, pady=(4,0))
-        ttk.Label(info_frame, text="2.500").grid(
-            column=1, row=1, sticky=W, padx=5, pady=(4,0))
+        ttk.Label(info_frame, text="Current level CS2:").grid(
+            column=0, row=1, sticky=E, padx=5)
+        ttk.Label(info_frame, textvariable=gui.dac["level_cs2"]).grid(
+            column=1, row=1, sticky=W, padx=5)
+        ttk.Label(info_frame, text="/ 65535").grid(
+            column=2, row=1, sticky=W)
 
-        ttk.Label(info_frame, text="VOUT_ideale =").grid(
+        ttk.Label(info_frame, text="VREF [V]:").grid(
             column=0, row=2, sticky=E, padx=5, pady=(4,0))
-        self.vout_var = StringVar(value="—")
-        ttk.Label(info_frame, textvariable=self.vout_var,
-                  foreground="blue").grid(column=1, row=2, sticky=W, padx=5, pady=(4,0))
-        ttk.Label(info_frame, text="V   (level / 65535 × VREF)",
-                  foreground="gray").grid(column=2, row=2, sticky=W, pady=(4,0))
+        ttk.Label(info_frame, text="2.500").grid(
+            column=1, row=2, sticky=W, padx=5, pady=(4,0))
+
+        ttk.Label(info_frame, text="VOUT_ideale CS1 =").grid(
+            column=0, row=3, sticky=E, padx=5, pady=(4,0))
+        self.vout_var1 = StringVar(value="—")
+        ttk.Label(info_frame, textvariable=self.vout_var1,
+                  foreground="blue").grid(column=1, row=3, sticky=W, padx=5, pady=(4,0))
+        ttk.Label(info_frame, text="V",
+                  foreground="gray").grid(column=2, row=3, sticky=W, pady=(4,0))
+
+        ttk.Label(info_frame, text="VOUT_ideale CS2 =").grid(
+            column=0, row=4, sticky=E, padx=5, pady=(4,0))
+        self.vout_var2 = StringVar(value="—")
+        ttk.Label(info_frame, textvariable=self.vout_var2,
+                  foreground="blue").grid(column=1, row=4, sticky=W, padx=5, pady=(4,0))
+        ttk.Label(info_frame, text="V",
+                  foreground="gray").grid(column=2, row=4, sticky=W, pady=(4,0))
 
         def run_dac_plot():
             script_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "dac_plot.py")
             subprocess.Popen([sys.executable, script_path])
 
-        def update_vout(*_):
+        def update_vout1(*_):
             try:
-                level = int(gui.dac["level"].get())
+                level = int(gui.dac["level_cs1"].get())
                 vref = 2.5
                 vout = level / 65535.0 * vref
-                self.vout_var.set(f"{vout:.4f}")
+                self.vout_var1.set(f"{vout:.4f}")
             except (ValueError, ZeroDivisionError):
-                self.vout_var.set("—")
+                self.vout_var1.set("—")
 
-        update_vout()  # calcolo iniziale
-        gui.dac["level"].trace_add("write", update_vout)
+        def update_vout2(*_):
+            try:
+                level = int(gui.dac["level_cs2"].get())
+                vref = 2.5
+                vout = level / 65535.0 * vref
+                self.vout_var2.set(f"{vout:.4f}")
+            except (ValueError, ZeroDivisionError):
+                self.vout_var2.set("—")
+
+        update_vout1()  # calcolo iniziale
+        update_vout2()
+        gui.dac["level_cs1"].trace_add("write", update_vout1)
+        gui.dac["level_cs2"].trace_add("write", update_vout2)
 
         
-        dac_level_entry.configure(state="readonly")
+        dac_level_entry1.configure(state="readonly")
+        dac_level_entry2.configure(state="readonly")
         self.protocol("WM_DELETE_WINDOW", self._on_close)
 
         self.mainloop()
 
     def _on_close(self):
         """Riabilita l'entry del livello DAC quando la finestra Auto viene chiusa."""
-        dac_level_entry.configure(state="normal")
+        dac_level_entry1.configure(state="normal")
+        dac_level_entry2.configure(state="normal")
         self.destroy()
 
 def open_dac_auto():
@@ -905,16 +934,28 @@ ttk.Button(sc_lframe, text="Auto", command=open_child).grid(column=0, columnspan
 dac_lframe = ttk.Labelframe(main_frame, text="DAC configuration", padding=10)
 dac_lframe.grid(column=3, row=0, padx=5, pady=30, sticky=NSEW)
 row_idx = 0
-ttk.Label(dac_lframe, text="DAC level (0–65535):").grid(column=0, row=row_idx, sticky=E)
-dac_level_entry = ttk.Entry(dac_lframe, textvariable=gui.dac["level"], width=6)
-dac_level_entry.bind("<FocusOut>", lambda x: check_dac_level(gui.dac["level"]))
-dac_level_entry.grid(column=1, row=row_idx, padx=5)
+
+ttk.Label(dac_lframe, text="DAC 1 (CS1):").grid(column=0, row=row_idx, sticky=E)
+dac_level_entry1 = ttk.Entry(dac_lframe, textvariable=gui.dac["level_cs1"], width=6)
+dac_level_entry1.bind("<FocusOut>", lambda x: check_dac_level(gui.dac["level_cs1"]))
+dac_level_entry1.grid(column=1, row=row_idx, padx=5)
+ttk.Button(dac_lframe, text="Send CS1",
+           command=lambda: run_script_dac(cs2=False)).grid(
+    column=2, row=row_idx, pady=[2,2], sticky=W)
 row_idx += 1
+
+ttk.Label(dac_lframe, text="DAC 2 (CS2):").grid(column=0, row=row_idx, sticky=E)
+dac_level_entry2 = ttk.Entry(dac_lframe, textvariable=gui.dac["level_cs2"], width=6)
+dac_level_entry2.bind("<FocusOut>", lambda x: check_dac_level(gui.dac["level_cs2"]))
+dac_level_entry2.grid(column=1, row=row_idx, padx=5)
+ttk.Button(dac_lframe, text="Send CS2",
+           command=lambda: run_script_dac(cs2=True)).grid(
+    column=2, row=row_idx, pady=[2,2], sticky=W)
+row_idx += 1
+
 ttk.Button(dac_lframe, text="Auto", command=open_dac_auto).grid(
-    column=0, row=row_idx, pady=[10,0], sticky=SE)
-ttk.Button(dac_lframe, text="Send DAC",
-           command=lambda: pYtp.send_DAC(gui)).grid(
-    column=1, row=row_idx, pady=[10,0], sticky=SE)
+    column=0, columnspan=3, row=row_idx, pady=[10,0])
+
 
 
 
@@ -1093,6 +1134,14 @@ current_entry.grid(column=col_idx+1, row=row_idx, padx=(1.3,0))
 ttk.Label(asic_lframe, text="FP").grid(column=col_idx+2, row=row_idx, padx=[0,20])
 col_idx += 3
 ttk.Button(asic_lframe, text="VAL", command=lambda: pYtp.send_VAL(gui)).grid(column=col_idx, columnspan=3, row=row_idx, pady=[0,0], sticky=EW)
+col_idx += 3
+
+def run_autoread_gui():
+    script_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "dac_out_adc_in_autoread.py")
+    delay_val = gui.auto_read_delay.get()
+    subprocess.Popen([sys.executable, script_path, "--delay", delay_val])
+
+ttk.Button(asic_lframe, text="Auto", command=run_autoread_gui).grid(column=col_idx, columnspan=3, row=row_idx, pady=[0,0], sticky=EW)
 row_idx += 1
 
 ttk.Button(asic_lframe, text="Send ASIC control", command=lambda: pYtp.send_asic_ctrl(gui)).grid(column=4, columnspan=5, row=row_idx, pady=[10,0], sticky=SE)
