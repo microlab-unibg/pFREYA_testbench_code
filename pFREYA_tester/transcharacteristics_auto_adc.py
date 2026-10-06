@@ -1,11 +1,7 @@
 #!/usr/bin/python
 """
-Transcaratteristica letta con l'ADC (VAL) per ogni livello dello shaper, a parita' di
-configurazione del CSA (CSA_MODE). Asse y: codice in uscita all'ADC (10 bit, Vref 2.5 V).
-
-Clock, timing e pixel sono fissi (FIXED_*, come nella GUI principale). Per ogni livello
-dello shaper in SHAPER_MODES:
-  1. slow control della configurazione (iniezione sul pixel FIXED_SLOW_CTRL)
+Clock, timing e pixel sono fissi. Per ogni livello dello shaper in SHAPER_MODES:
+  1. slow control della configurazione
   2. selezione pixel, CSA_RESET_N, SH_PHI1D_INF/SUP, ADC_START, sync_time_bases
   3. sweep sui 20 livelli di config.current_lev; per ogni livello N_SAMPLES codici ADC
      letti con send_VAL e riportati su linspace(0, 256, 20) fotoni equivalenti
