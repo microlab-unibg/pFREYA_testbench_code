@@ -174,8 +174,9 @@ def plot_cfg(ax, bits, data, table=False):
                     ['Slope [LSB/ph]', f'{ln.slope:.2f}'],
                     ['Slope [mV/ph]', f'{ln.slope * ADC_LSB_MV:.2f}'],
                     ['INL [%]', f'{inl:.1f}']]
+            # tabella fuori dagli assi, a destra sotto la legenda
             tab = ax.table(cellText=rows, colLabels=['fit', ''], colWidths=[.3, .14],
-                           loc='lower right', cellLoc='right')
+                           bbox=[1.02, 0, 0.5, 0.6], cellLoc='right')
             tab.auto_set_font_size(False)
             tab.set_fontsize(8)
     # legenda fuori dagli assi, a destra, per non coprire i dati
@@ -316,7 +317,7 @@ def save_cfg(base, timestamp, bits, rows, data):
         writer.writerows(rows)
     print(f'Risultati salvati in: {path}.csv')
 
-    fig = plt.Figure(figsize=(7, 5))
+    fig = plt.Figure(figsize=(10, 5))
     plot_cfg(fig.add_subplot(111), bits, data, table=True)
     fig.tight_layout()
     fig.savefig(path + '.pdf', dpi=300, bbox_inches='tight')
