@@ -29,20 +29,20 @@ import pFREYA_tester_processing as pYtp
 import config
 from dac_out_adc_in_autoread import TesterConfig, init_fpga, select_pixel
 
-OUTPUT_DIR = r'C:/Users/giorg/Desktop/tesi/pFREYA_testbench_code/data/shap'
+#OUTPUT_DIR = r'C:/Users/giorg/Desktop/tesi/pFREYA_testbench_code/data/shap'
+OUTPUT_DIR = r'G:/Shared drives/FALCON/measures/new/transcharacteristics/adc'
 
 FIXED_CLOCKS = {'slow_ck': '4000', 'sel_ck': '4000', 'adc_ck': '20',
                 'inj_stb': '1', 'ser_ck': '100', 'dac_sck': '100'}
 FIXED_SLOW_CTRL = {'csa_mode_n': '01', 'inj_en_n': '1', 'ch_en': '1',
-                   'inj_mode_n': '1', 'pixel_to_inj': '5'}
-FIXED_PIXEL = {'pixel_row': '5', 'pixel_col': '0'}
+                   'inj_mode_n': '1', 'pixel_to_inj': '6'}
+FIXED_PIXEL = {'pixel_row': '6', 'pixel_col': '0'}
 FIXED_TIMING = {   # FP: delay, high, low
     'csa_reset_n':  ('104', '60', '9940'),
     'sh_phi1d_inf': ('1204', '8956', '1044'),
     'sh_phi1d_sup': ('1170', '9040', '960'),
     'adc_start':    ('404', '4', '9996'),
 }
-
 FIXED_AUTO_READ_DELAY = '400'
 
 CSA_MODE = [int(b) for b in FIXED_SLOW_CTRL['csa_mode_n']]
@@ -226,7 +226,7 @@ class GUI(ttk.Frame):
         self.data = {}
         ps = None
         timestamp = datetime.strftime(datetime.now(), '%d%m%y_%H%M%S')
-        base = os.path.join(OUTPUT_DIR, f'transchar_adc_px{pixel}_{timestamp}')
+        base = os.path.join(OUTPUT_DIR, f'transcharacteristics_adc_px{pixel}_{timestamp}')
         try:
             ps = open_power_supply()
             init_fpga(cfg)

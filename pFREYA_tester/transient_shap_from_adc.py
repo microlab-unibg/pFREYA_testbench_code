@@ -28,7 +28,8 @@ import pFREYA_tester_processing as pYtp
 import config
 from dac_out_adc_in_autoread import TesterConfig, init_fpga, select_pixel
 
-OUTPUT_DIR = r'C:/Users/giorg/Desktop/tesi/pFREYA_testbench_code/data/shap'
+#OUTPUT_DIR = r'C:/Users/giorg/Desktop/tesi/pFREYA_testbench_code/data/shap'
+OUTPUT_DIR = r'G:/Shared drives/FALCON/measures/new/transient/adc'
 
 FIXED_CLOCKS = {'slow_ck': '4000', 'sel_ck': '4000', 'adc_ck': '20',
                 'inj_stb': '1', 'ser_ck': '100', 'dac_sck': '100'}
