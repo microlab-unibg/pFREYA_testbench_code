@@ -1,11 +1,11 @@
 #!/usr/bin/python
 """
-Ricostruzione temporale dello shaper tramite sfasamento SH_PHI1D_SUP rispetto a SH_PHI1D_INF.
+Ricostruzione temporale dello shaper tramite sfasamento tra SH_PHI1D_INF e SH_PHI1D_SUP.
 Clock, timing, pixel e corrente iniettata sono fissi. Per ogni livello dello shaper in SHAPER_MODES:
   1. slow control della configurazione
   2. selezione pixel, CSA_RESET_N, SH_PHI1D_INF/SUP, ADC_START, sync_time_bases
-  3. sweep del solo delay di SH_PHI1D_SUP (high/low e SH_PHI1D_INF invariati); ad ogni passo
-     send_SH_PHI1D_SUP + sync_time_bases e N_SAMPLES codici ADC letti con send_VAL
+  3. sweep del solo delay del segnale scelto con SWEEP (high/low e l'altro S&H invariati); ad ogni
+     passo send del segnale + sync_time_bases e N_SAMPLES codici ADC letti con send_VAL
 """
 
 import os
@@ -57,15 +57,21 @@ CONFIG_BITS_LIST = [[*CSA_MODE, 1, *shap, 1, 1] for shap in SHAPER_MODES]
 N_STEPS = 20                                  # livelli di corrente
 PHOTON_SPAN = np.linspace(0, 256, N_STEPS)    # asse fotoni equivalenti dei grafici
 INJ_STEP = 10          
-N_SAMPLES = 5           # letture VAL per posizione di SH_PHI1D_SUP
+N_SAMPLES = 5           # letture VAL per posizione dello sweep
 
-# Sweep del delay di SH_PHI1D_SUP. L'hold e' il fronte di discesa (fine della fase HIGH):
-# con FIXED_TIMING, INF tiene a 1204+8956 = 10160 e ADC_START sale a 404+10000 = 10404.
+# Segnale sweepato: 'inf' -> SH_PHI1D_SUP fisso e sweep di SH_PHI1D_INF; 'sup' -> il contrario
+SWEEP = 'inf'
+SWEPT, HELD = ('sh_phi1d_inf', 'sh_phi1d_sup') if SWEEP == 'inf' else ('sh_phi1d_sup', 'sh_phi1d_inf')
+
+# L'hold e' il fronte di discesa (delay + high). Il segnale fisso tiene a HOLD_START, quello
+# sweepato da HOLD_START a HOLD_STOP; ADC_START sale a 404+10000 = 10404.
 TICK_NS = 5
-SUP_DELAY_START = 1120  # 1120+9040 = 10160 -> sfasamento 0 rispetto a SH_PHI1D_INF
-SUP_DELAY_STOP = 1340   # 1340+9040 = 10380 -> sfasamento 220 tick = 1.1 us
-SUP_DELAY_STEP = 4      # 20 ns
-SUP_DELAYS = range(SUP_DELAY_START, SUP_DELAY_STOP + 1, SUP_DELAY_STEP)
+HOLD_START = 10160      
+HOLD_STOP = 10380       
+HOLD_STEP = 4           
+HELD_DELAY = HOLD_START - int(FIXED_TIMING[HELD][1])     # 'inf': SUP 1120, 'sup': INF 1204
+SWEEP_DELAYS = range(HOLD_START - int(FIXED_TIMING[SWEPT][1]),
+                     HOLD_STOP - int(FIXED_TIMING[SWEPT][1]) + 1, HOLD_STEP)
 ADC_START_MARGIN = 20   
 STEP_SETTLE_S = 0.1     
 ADC_BITS = 10
@@ -154,9 +160,9 @@ def hold_tick(name, delay):
     return int(delay) + int(FIXED_TIMING[name][1])
 
 
-def shift_tick(sup_delay):
-    """Sfasamento dell'hold di SH_PHI1D_SUP rispetto a quello di SH_PHI1D_INF (fisso) [tick]."""
-    return hold_tick('sh_phi1d_sup', sup_delay) - hold_tick('sh_phi1d_inf', FIXED_TIMING['sh_phi1d_inf'][0])
+def shift_tick(delay):
+    """Sfasamento dell'hold del segnale sweepato rispetto a quello del segnale fisso [tick]."""
+    return hold_tick(SWEPT, delay) - hold_tick(HELD, HELD_DELAY)
 
 
 def check_sweep():
@@ -167,14 +173,15 @@ def check_sweep():
     period = periods['adc_start']
     adc_tick = int(FIXED_TIMING['adc_start'][0]) + period     # ADC_START che converte i campioni tenuti
     read_tick = int(FIXED_TIMING['adc_start'][0]) + int(FIXED_AUTO_READ_DELAY)
-    for d in SUP_DELAYS:
+    for name, d in [(HELD, HELD_DELAY)] + [(SWEPT, d) for d in SWEEP_DELAYS]:
+        label = name.upper()
         if not 1 <= d < 2**18:          # delay 0 blocca il segnale a 0, registri a 18 bit
-            raise ValueError(f'delay SH_PHI1D_SUP {d} fuori da [1, 2^18)')
-        if hold_tick('sh_phi1d_sup', d) + ADC_START_MARGIN > adc_tick:
-            raise ValueError(f'delay SH_PHI1D_SUP {d}: hold a {hold_tick("sh_phi1d_sup", d)} tick, '
+            raise ValueError(f'delay {label} {d} fuori da [1, 2^18)')
+        if hold_tick(name, d) + ADC_START_MARGIN > adc_tick:
+            raise ValueError(f'delay {label} {d}: hold a {hold_tick(name, d)} tick, '
                              f'troppo vicino ad ADC_START ({adc_tick} tick)')
-        if d <= read_tick:              # SUP deve restare in hold fino all'auto-read
-            raise ValueError(f'delay SH_PHI1D_SUP {d}: torna in track prima dell\'auto-read ({read_tick} tick)')
+        if d <= read_tick:              # l'S&H deve restare in hold fino all'auto-read
+            raise ValueError(f'delay {label} {d}: torna in track prima dell\'auto-read ({read_tick} tick)')
 
 
 def find_peak(data):
@@ -191,8 +198,8 @@ def plot_cfg(ax, bits, data, table=False):
     ax.set_ylabel('ADC output code')
     ax.set_title(f'CSA {get_energy_level(bits)} keV, shaper tp {get_shap_bits(bits)} ns')
     ax.tick_params(direction='in', top=True, right=True)
-    # asse x in us: sfasamento dell'hold di SH_PHI1D_SUP rispetto a SH_PHI1D_INF
-    x_lim = [shift_tick(d) * TICK_NS / 1e3 for d in (SUP_DELAYS[0], SUP_DELAYS[-1])]
+    # asse x in us: sfasamento dell'hold del segnale sweepato rispetto a quello fisso
+    x_lim = [shift_tick(d) * TICK_NS / 1e3 for d in (SWEEP_DELAYS[0], SWEEP_DELAYS[-1])]
     ax.set_xlim(x_lim[0] - 0.02, x_lim[1] + 0.02)
     if not data['x']:
         ax.set_ylim(0, ADC_MAX_CODE + 1)
@@ -213,7 +220,7 @@ class GUI(ttk.Frame):
     def __init__(self, parent, *args, **kwargs):
         ttk.Frame.__init__(self, parent, *args, **kwargs)
         self.parent = parent
-        self.parent.title('Transiente shaper da ADC (sfasamento SH_PHI1D_SUP)')
+        self.parent.title(f'Transiente shaper da ADC (sweep {SWEPT.upper()}, {HELD.upper()} fisso)')
         self.running = False
         self.cfg = TesterConfig(self.parent)
         apply_fixed_config(self.cfg)
@@ -251,11 +258,16 @@ class GUI(ttk.Frame):
         self.data = {}
         ps = None
         timestamp = datetime.strftime(datetime.now(), '%d%m%y_%H%M%S')
-        base = os.path.join(OUTPUT_DIR, f'transient_adc_px{pixel}_{timestamp}')
+        base = os.path.join(OUTPUT_DIR, f'transient_adc_{SWEEP}sweep_px{pixel}_{timestamp}')
+        send_swept = getattr(pYtp, f'send_{SWEPT.upper()}')
         try:
             check_sweep()
             ps = open_power_supply()
             init_fpga(cfg)
+            cfg_held = getattr(cfg, HELD)
+            cfg_swept = getattr(cfg, SWEPT)
+            cfg_held['delay'].set(str(HELD_DELAY))
+            cfg_swept['delay'].set(str(SWEEP_DELAYS[0]))
 
             for bits in CONFIG_BITS_LIST:
                 if not self.running:
@@ -280,17 +292,17 @@ class GUI(ttk.Frame):
                 data = self.data[name] = {'x': [], 'y': [], 'err': []}
                 rows = []
                 try:
-                    for i, sup_delay in enumerate(SUP_DELAYS):
+                    for i, delay in enumerate(SWEEP_DELAYS):
                         if not self.running:
                             print('Interrotto dall\'utente.')
                             break
-                        # solo il delay di SUP cambia; il sync lo applica e riallinea INF con i suoi parametri fissi
-                        cfg.sh_phi1d_sup['delay'].set(str(sup_delay))
-                        if pYtp.send_SH_PHI1D_SUP(cfg):
-                            raise RuntimeError(f'invio SH_PHI1D_SUP fallito (delay {sup_delay})')
+                        # cambia solo il delay del segnale sweepato; il sync lo applica e riallinea l'altro S&H
+                        cfg_swept['delay'].set(str(delay))
+                        if send_swept(cfg):
+                            raise RuntimeError(f'invio {SWEPT.upper()} fallito (delay {delay})')
                         pYtp.send_sync_time_bases()
                         time.sleep(STEP_SETTLE_S)
-                        shift = shift_tick(sup_delay)
+                        shift = shift_tick(delay)
                         codes = []
                         for _ in range(N_SAMPLES):
                             time.sleep(0.05)
@@ -303,16 +315,16 @@ class GUI(ttk.Frame):
                             'energy_keV': get_energy_level(bits), 'peaking_time_ns': get_shap_bits(bits),
                             'step': i, 'current_A': level,
                             'iinj_int_C': iinj_int[INJ_STEP], 'eq_photons': eq_ph[INJ_STEP],
-                            'sup_delay_tick': sup_delay,
-                            'sup_hold_tick': hold_tick('sh_phi1d_sup', sup_delay),
-                            'inf_hold_tick': hold_tick('sh_phi1d_inf', FIXED_TIMING['sh_phi1d_inf'][0]),
+                            'swept_signal': SWEPT, 'swept_delay_tick': delay,
+                            'swept_hold_tick': hold_tick(SWEPT, delay),
+                            'held_hold_tick': hold_tick(HELD, HELD_DELAY),
                             'shift_tick': shift, 'shift_ns': shift * TICK_NS,
                             'n_valid': len(codes),
                             'adc_code_mean': np.mean(codes) if codes else float('nan'),
                             'adc_code_std': np.std(codes) if codes else float('nan'),
                             'adc_codes': ' '.join(map(str, codes)),
                         })
-                        print(f'  [{i+1}/{len(SUP_DELAYS)}] SUP delay={sup_delay} shift={shift * TICK_NS} ns '
+                        print(f'  [{i+1}/{len(SWEEP_DELAYS)}] {SWEEP.upper()} delay={delay} shift={shift * TICK_NS} ns '
                               + (f'codice ADC = {np.mean(codes):.1f}' if codes else 'codice ADC = ERRORE'))
                         if codes:
                             data['x'].append(shift * TICK_NS)
@@ -321,7 +333,8 @@ class GUI(ttk.Frame):
                         self.parent.after(0, self.update_plot)
                 finally:
                     data['done'] = True
-                    cfg.sh_phi1d_sup['delay'].set(FIXED_TIMING['sh_phi1d_sup'][0])
+                    # posizioni iniziali per la prossima configurazione
+                    cfg_swept['delay'].set(str(SWEEP_DELAYS[0]))
                     self.parent.after(0, self.update_plot)
                     if rows:
                         save_cfg(base, timestamp, bits, rows, data)
@@ -348,8 +361,9 @@ def save_cfg(base, timestamp, bits, rows, data):
                 f'({get_energy_level(bits)} keV, tp {get_shap_bits(bits)} ns)\n')
         f.write(f'# Pixel: {FIXED_PIXEL}, pixel iniettato: {FIXED_SLOW_CTRL["pixel_to_inj"]}\n')
         f.write(f'# Timing (delay, high, low) [FP]: {FIXED_TIMING}, auto read delay: {FIXED_AUTO_READ_DELAY}\n')
-        f.write(f'# Sweep delay SH_PHI1D_SUP [tick {TICK_NS} ns]: start {SUP_DELAY_START}, stop {SUP_DELAY_STOP}, '
-                f'step {SUP_DELAY_STEP}; campioni VAL per posizione: {N_SAMPLES}\n')
+        f.write(f'# {HELD.upper()} fisso (delay {HELD_DELAY}, hold {hold_tick(HELD, HELD_DELAY)}); '
+                f'sweep delay {SWEPT.upper()} [tick {TICK_NS} ns]: start {SWEEP_DELAYS[0]}, '
+                f'stop {SWEEP_DELAYS[-1]}, step {HOLD_STEP}; campioni VAL per posizione: {N_SAMPLES}\n')
         f.write(f'# Corrente iniettata: step {INJ_STEP}/{N_STEPS}, {rows[0]["current_A"]} A\n')
         peak = find_peak(data)
         if peak is not None:
