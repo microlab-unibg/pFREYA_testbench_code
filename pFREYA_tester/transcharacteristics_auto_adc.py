@@ -178,7 +178,8 @@ def plot_cfg(ax, bits, data, table=False):
                            loc='lower right', cellLoc='right')
             tab.auto_set_font_size(False)
             tab.set_fontsize(8)
-    ax.legend(loc='upper left', frameon=False)
+    # legenda fuori dagli assi, a destra, per non coprire i dati
+    ax.legend(loc='upper left', bbox_to_anchor=(1.01, 1), borderaxespad=0, frameon=False)
 
 
 class GUI(ttk.Frame):
@@ -318,7 +319,7 @@ def save_cfg(base, timestamp, bits, rows, data):
     fig = plt.Figure(figsize=(7, 5))
     plot_cfg(fig.add_subplot(111), bits, data, table=True)
     fig.tight_layout()
-    fig.savefig(path + '.pdf', dpi=300)
+    fig.savefig(path + '.pdf', dpi=300, bbox_inches='tight')
     print(f'Grafico salvato in: {path}.pdf')
 
 
