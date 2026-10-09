@@ -163,6 +163,9 @@ def plot_cfg(ax, bits, data, table=False):
     x, y = np.asarray(data['x']), np.asarray(data['y'])
     ax.plot(x, y, 's', color='tab:olive', markersize=5, label='ADC output')
     fit = linear_fit(x, y) if data.get('done') else None
+
+    decreasing = (fit[0].slope < 0) if fit is not None else (len(y) > 1 and y[-1] < y[0])
+    legend_loc, table_loc = ('upper right', 'lower left') if decreasing else ('upper left', 'lower right')
     if fit is not None:
         ln, adj_r2, inl = fit
         xf = np.array([0, ax.get_xlim()[1]])
@@ -174,13 +177,11 @@ def plot_cfg(ax, bits, data, table=False):
                     ['Slope [LSB/ph]', f'{ln.slope:.2f}'],
                     ['Slope [mV/ph]', f'{ln.slope * ADC_LSB_MV:.2f}'],
                     ['INL [%]', f'{inl:.1f}']]
-            # tabella fuori dagli assi, a destra sotto la legenda
             tab = ax.table(cellText=rows, colLabels=['fit', ''], colWidths=[.3, .14],
-                           bbox=[1.02, 0, 0.5, 0.6], cellLoc='right')
+                           loc=table_loc, cellLoc='right')
             tab.auto_set_font_size(False)
             tab.set_fontsize(8)
-    # legenda fuori dagli assi, a destra, per non coprire i dati
-    ax.legend(loc='upper left', bbox_to_anchor=(1.01, 1), borderaxespad=0, frameon=False)
+    ax.legend(loc=legend_loc, frameon=False)
 
 
 class GUI(ttk.Frame):
@@ -317,7 +318,7 @@ def save_cfg(base, timestamp, bits, rows, data):
         writer.writerows(rows)
     print(f'Risultati salvati in: {path}.csv')
 
-    fig = plt.Figure(figsize=(10, 5))
+    fig = plt.Figure(figsize=(7, 5))
     plot_cfg(fig.add_subplot(111), bits, data, table=True)
     fig.tight_layout()
     fig.savefig(path + '.pdf', dpi=300, bbox_inches='tight')
