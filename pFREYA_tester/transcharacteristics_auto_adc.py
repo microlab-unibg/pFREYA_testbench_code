@@ -161,7 +161,9 @@ def plot_cfg(ax, bits, data, table=False):
     if not data['x']:
         return
     x, y = np.asarray(data['x']), np.asarray(data['y'])
-    ax.plot(x, y, 's', color='tab:olive', markersize=5, label='ADC output')
+    yerr = np.asarray(data.get('yerr', np.zeros_like(y)))
+    ax.errorbar(x, y, yerr=yerr, fmt='s', color='tab:olive', markersize=5,
+                ecolor='tab:gray', elinewidth=1, capsize=3, label='ADC output (mean ± std)')
     fit = linear_fit(x, y) if data.get('done') else None
 
     decreasing = (fit[0].slope < 0) if fit is not None else (len(y) > 1 and y[-1] < y[0])
@@ -250,7 +252,7 @@ class GUI(ttk.Frame):
                 ps.write(f':SOUR:CURR:LEV {current_lev[0]}')
                 time.sleep(FIRST_SETTLE_S)
 
-                data = self.data[name] = {'x': [], 'y': []}
+                data = self.data[name] = {'x': [], 'y': [], 'yerr': []}
                 rows = []
                 try:
                     for i, level in enumerate(current_lev):
@@ -277,10 +279,11 @@ class GUI(ttk.Frame):
                             'adc_codes': ' '.join(map(str, codes)),
                         })
                         print(f'  [{i+1}/{N_STEPS}] I={level:.3e} A ph={PHOTON_SPAN[i]:.1f} '
-                              + (f'codice ADC = {np.mean(codes):.1f}' if codes else 'codice ADC = ERRORE'))
+                              + (f'codice ADC = {np.mean(codes):.1f} ± {np.std(codes):.1f}' if codes else 'codice ADC = ERRORE'))
                         if codes:
                             data['x'].append(PHOTON_SPAN[i])
                             data['y'].append(float(np.mean(codes)))
+                            data['yerr'].append(float(np.std(codes)))
                         self.parent.after(0, self.update_plot)
                 finally:
                     data['done'] = True
