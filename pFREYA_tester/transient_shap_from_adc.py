@@ -28,10 +28,10 @@ FIXED_CLOCKS = {'slow_ck': '4000', 'sel_ck': '4000', 'adc_ck': '20',
 FIXED_SLOW_CTRL = {'csa_mode_n': '01', 'inj_en_n': '1', 'ch_en': '1',
                    'inj_mode_n': '1', 'pixel_to_inj': '5'}
 FIXED_PIXEL = {'pixel_row': '5', 'pixel_col': '0'}
-FIXED_TIMING = {   # delay, high, low
+FIXED_TIMING = {   # FP: delay, high, low
     'csa_reset_n':  ('104', '60', '9940'),
     'sh_phi1d_inf': ('1204', '8956', '1044'),
-    'sh_phi1d_sup': ('1120', '9040', '960'),
+    'sh_phi1d_sup': ('1170', '9040', '960'),
     'adc_start':    ('404', '4', '9996'),
 }
 FIXED_AUTO_READ_DELAY = '400'
@@ -49,9 +49,9 @@ N_STEPS = 8
 PHOTON_SPAN = np.linspace(0, 256, N_STEPS)
 N_SAMPLES = 5
 
-# SUP fisso, sweep del delay di INF (1 tick = 5 ns)
-TICK_NS = 5
-INF_DELAYS = range(1204, 1425, 4)
+# INF fisso, delay SUP [FP] da coincidente con INF (1120) fino al valore della transcaratteristica (1170)
+FP_NS = 10
+SUP_DELAYS = range(1120, 1171, 2)
 
 FIRST_SETTLE_S = 5
 SETTLE_S = 2
@@ -126,12 +126,10 @@ def open_power_supply():
     return ps
 
 
-def hold_tick(name, delay):
-    return int(delay) + int(FIXED_TIMING[name][1])
-
-
-def shift_ns(inf_delay):
-    return (hold_tick('sh_phi1d_inf', inf_delay) - hold_tick('sh_phi1d_sup', FIXED_TIMING['sh_phi1d_sup'][0])) * TICK_NS
+def shift_fp(sup_delay):
+    inf_delay, inf_high, _ = FIXED_TIMING['sh_phi1d_inf']
+    sup_high = FIXED_TIMING['sh_phi1d_sup'][1]
+    return (int(sup_delay) + int(sup_high)) - (int(inf_delay) + int(inf_high))
 
 
 def plot_cfg(ax, bits, curves):
@@ -139,7 +137,7 @@ def plot_cfg(ax, bits, curves):
     ax.set_ylabel('ADC output code')
     ax.tick_params(right=True, top=True, direction='in')
     ax.text(.01, .01, f'$t_p$ = {get_shap_bits(bits)} ns', ha='left', va='bottom', transform=ax.transAxes)
-    ax.set_xlim(shift_ns(INF_DELAYS[0]) / 1e3, shift_ns(INF_DELAYS[-1]) / 1e3)
+    ax.set_xlim(shift_fp(SUP_DELAYS[0]) * FP_NS / 1e3, shift_fp(SUP_DELAYS[-1]) * FP_NS / 1e3)
     colours = list(mcolors.TABLEAU_COLORS.keys())
     for step, data in sorted(curves.items()):
         ax.plot(np.asarray(data['x']) / 1e3, data['y'], '-', linewidth=1,
@@ -201,7 +199,7 @@ class GUI(ttk.Frame):
                 config.config(channel='shap', lemo='none', n_steps=N_STEPS, cfg_bits=bits, cfg_inst=False)
                 current_lev = config.current_lev
 
-                cfg.sh_phi1d_inf['delay'].set(str(INF_DELAYS[0]))
+                cfg.sh_phi1d_sup['delay'].set(str(SUP_DELAYS[0]))
                 pYtp.send_slow_ctrl_auto(bits, pixel)
                 select_pixel(cfg)
                 pYtp.send_CSA_RESET_N(cfg)
@@ -220,11 +218,11 @@ class GUI(ttk.Frame):
                     time.sleep(FIRST_SETTLE_S if step == 0 else SETTLE_S)
                     data = curves[step] = {'x': [], 'y': []}
 
-                    for delay in INF_DELAYS:
+                    for delay in SUP_DELAYS:
                         if not self.running:
                             break
-                        cfg.sh_phi1d_inf['delay'].set(str(delay))
-                        pYtp.send_SH_PHI1D_INF(cfg)
+                        cfg.sh_phi1d_sup['delay'].set(str(delay))
+                        pYtp.send_SH_PHI1D_SUP(cfg)
                         pYtp.send_sync_time_bases()
                         time.sleep(0.1)
                         codes = []
@@ -234,16 +232,16 @@ class GUI(ttk.Frame):
                             if result is not None:
                                 codes.append(int(result[0], 2))
                         if not codes:
-                            print(f'  INF delay={delay}: errore lettura')
+                            print(f'  SUP delay={delay}: errore lettura')
                             continue
 
-                        t = shift_ns(delay)
+                        shift = shift_fp(delay)
                         code = float(np.mean(codes))
                         rows.append({'current_step': step, 'current_A': level, 'photons': int(PHOTON_SPAN[step]),
-                                     'inf_delay': delay, 'time_ns': t, 'adc_code': code,
-                                     'adc_codes': ' '.join(map(str, codes))})
-                        print(f'  INF delay={delay} t={t} ns codice ADC = {code:.1f}')
-                        data['x'].append(t)
+                                     'sup_delay_fp': delay, 'shift_fp': shift, 'time_ns': shift * FP_NS,
+                                     'adc_code': code, 'adc_codes': ' '.join(map(str, codes))})
+                        print(f'  SUP delay={delay} FP, shift={shift} FP codice ADC = {code:.1f}')
+                        data['x'].append(shift * FP_NS)
                         data['y'].append(code)
                         self.parent.after(0, self.update_plot)
 
