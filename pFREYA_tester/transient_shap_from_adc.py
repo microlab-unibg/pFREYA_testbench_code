@@ -49,9 +49,9 @@ N_STEPS = 8
 PHOTON_SPAN = np.linspace(0, 256, N_STEPS)
 N_SAMPLES = 5
 
-# INF fisso, delay SUP [FP] da coincidente con INF (1120) fino al valore della transcaratteristica (1170)
+# INF fisso, delay SUP [FP] da coincidente con INF (1120) per 1.5 us; hold di SUP max 1270+9040 < ADC_START 10404
 FP_NS = 10
-SUP_DELAYS = range(1120, 1171, 2)
+SUP_DELAYS = range(1120, 1271, 10)
 
 FIRST_SETTLE_S = 5
 SETTLE_S = 2
