@@ -39,30 +39,31 @@ FIXED_SLOW_CTRL = {'csa_mode_n': '01', 'inj_en_n': '1', 'ch_en': '1',
 FIXED_PIXEL = {'pixel_row': '6', 'pixel_col': '0'}
 FIXED_TIMING = {   # FP: delay, high, low
     'csa_reset_n':  ('104', '60', '9940'),
-    'sh_phi1d_inf': ('1204', '8956', '1044'),
-    'sh_phi1d_sup': ('1170', '9040', '960'),
+    'sh_phi1d_inf': ('1209', '8956', '1044'),
+    'sh_phi1d_sup': ('1223', '9040', '960'),
     'adc_start':    ('404', '4', '9996'),
 }
 FIXED_AUTO_READ_DELAY = '400'
 
 CSA_MODE = [int(b) for b in FIXED_SLOW_CTRL['csa_mode_n']]
 SHAPER_MODES = [         
-    [0, 0],                # tp 240 ns
-    [0, 1],                # tp 330 ns
+ #   [0, 0],                # tp 240 ns
+  #  [0, 1],                # tp 330 ns
     [1, 0],                # tp 420 ns
-    [1, 1],                # tp 510 ns
+   # [1, 1],                # tp 510 ns
 ]
 CONFIG_BITS_LIST = [[*CSA_MODE, 1, *shap, 1, 1] for shap in SHAPER_MODES]
 
 N_STEPS = 20                                  # livelli di corrente 
 PHOTON_SPAN = np.linspace(0, 256, N_STEPS)    # asse fotoni equivalenti dei grafici
-N_SAMPLES = 5           # letture VAL per livello di corrente
+N_SAMPLES = 10           # letture VAL per livello di corrente
 ADC_BITS = 10
 ADC_VREF = 2.5                                # V
 ADC_MAX_CODE = 2**ADC_BITS - 1
 ADC_LSB_MV = ADC_VREF / 2**ADC_BITS * 1e3     # 2.44 mV/LSB
-FIRST_SETTLE_S = 5      # attesa al primo livello di ogni configurazione
-SETTLE_S = 2            # attesa dopo ogni cambio di corrente (s)
+FIRST_SETTLE_S = 1      # attesa al primo livello di ogni configurazione
+SETTLE_S = 1            # attesa dopo ogni cambio di corrente (s)
+
 
 
 def cfg_name(bits):
@@ -163,7 +164,7 @@ def plot_cfg(ax, bits, data, table=False):
     x, y = np.asarray(data['x']), np.asarray(data['y'])
     yerr = np.asarray(data.get('yerr', np.zeros_like(y)))
     ax.errorbar(x, y, yerr=yerr, fmt='s', color='tab:olive', markersize=5,
-                ecolor='tab:gray', elinewidth=1, capsize=3, label='ADC output (mean ± std)')
+                ecolor='tab:gray', elinewidth=1, capsize=3, label='ADC output ')
     fit = linear_fit(x, y) if data.get('done') else None
 
     decreasing = (fit[0].slope < 0) if fit is not None else (len(y) > 1 and y[-1] < y[0])
@@ -176,7 +177,6 @@ def plot_cfg(ax, bits, data, table=False):
             rows = [['Mode [keV]', f'{get_energy_level(bits)}'],
                     ['Peaking time [ns]', f'{get_shap_bits(bits)}'],
                     ['R-Square', f'{adj_r2:.3f}'],
-                    ['Slope [LSB/ph]', f'{ln.slope:.2f}'],
                     ['Slope [mV/ph]', f'{ln.slope * ADC_LSB_MV:.2f}'],
                     ['INL [%]', f'{inl:.1f}']]
             tab = ax.table(cellText=rows, colLabels=['fit', ''], colWidths=[.3, .14],
@@ -256,6 +256,8 @@ class GUI(ttk.Frame):
                 rows = []
                 try:
                     for i, level in enumerate(current_lev):
+                        #if i==0:
+                         #   continue
                         if not self.running:
                             print('Interrotto dall\'utente.')
                             break
@@ -282,6 +284,7 @@ class GUI(ttk.Frame):
                               + (f'codice ADC = {np.mean(codes):.1f} ± {np.std(codes):.1f}' if codes else 'codice ADC = ERRORE'))
                         if codes:
                             data['x'].append(PHOTON_SPAN[i])
+                            #data['x'].append(eq_ph[i])
                             data['y'].append(float(np.mean(codes)))
                             data['yerr'].append(float(np.std(codes)))
                         self.parent.after(0, self.update_plot)

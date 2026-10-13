@@ -35,12 +35,12 @@
             "low": "9940"
         },
         "sh_phi1d_inf": {
-            "delay": "1204",
+            "delay": "1209",
             "high": "8956",
             "low": "1044"
         },
         "sh_phi1d_sup": {
-            "delay": "1170",
+            "delay": "1233",
             "high": "9040",
             "low": "960"
         },

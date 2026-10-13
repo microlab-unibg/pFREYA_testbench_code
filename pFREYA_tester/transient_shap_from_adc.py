@@ -26,22 +26,22 @@ OUTPUT_DIR = r'G:/Shared drives/FALCON/measures/new/transient/adc'
 FIXED_CLOCKS = {'slow_ck': '4000', 'sel_ck': '4000', 'adc_ck': '20',
                 'inj_stb': '1', 'ser_ck': '100', 'dac_sck': '100'}
 FIXED_SLOW_CTRL = {'csa_mode_n': '01', 'inj_en_n': '1', 'ch_en': '1',
-                   'inj_mode_n': '1', 'pixel_to_inj': '5'}
-FIXED_PIXEL = {'pixel_row': '5', 'pixel_col': '0'}
+                   'inj_mode_n': '1', 'pixel_to_inj': '6'}
+FIXED_PIXEL = {'pixel_row': '6', 'pixel_col': '0'}
 FIXED_TIMING = {   # FP: delay, high, low
     'csa_reset_n':  ('104', '60', '9940'),
-    'sh_phi1d_inf': ('1204', '8956', '1044'),
-    'sh_phi1d_sup': ('1170', '9040', '960'),
+    'sh_phi1d_inf': ('1030', '8956', '1044'),
+    'sh_phi1d_sup': ('1040', '9040', '960'),
     'adc_start':    ('404', '4', '9996'),
 }
 FIXED_AUTO_READ_DELAY = '400'
 
 CSA_MODE = [int(b) for b in FIXED_SLOW_CTRL['csa_mode_n']]
 SHAPER_MODES = [
-    [0, 0],     # 240 ns
-    [0, 1],     # 330 ns
+#[0, 0],     # 240 ns
+ #   [0, 1],     # 330 ns
     [1, 0],     # 420 ns
-    [1, 1],     # 510 ns
+  #  [1, 1],     # 510 ns
 ]
 CONFIG_BITS_LIST = [[*CSA_MODE, 1, *shap, 1, 1] for shap in SHAPER_MODES]
 
@@ -50,11 +50,11 @@ PHOTON_SPAN = np.linspace(0, 256, N_STEPS)
 N_SAMPLES = 5
 
 # INF fisso, delay SUP [FP] da coincidente con INF (1120) per 1.5 us; hold di SUP max 1270+9040 < ADC_START 10404
-FP_NS = 10
-SUP_DELAYS = range(1120, 1271, 10)
+FP_NS = 5
+SUP_DELAYS = range(1040, 1381, 10)
 
-FIRST_SETTLE_S = 5
-SETTLE_S = 2
+FIRST_SETTLE_S = 1
+SETTLE_S = 1
 
 PS_ADDRESSES = ('GPIB0::23::INSTR', 'GPIB1::23::INSTR')
 PS_IDLE_LEVEL = -0.09e-6
