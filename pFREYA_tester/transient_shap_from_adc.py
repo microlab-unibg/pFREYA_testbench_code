@@ -51,10 +51,10 @@ N_SAMPLES = 5
 
 # INF fisso, delay SUP [FP] da coincidente con INF (1120) per 1.5 us; hold di SUP max 1270+9040 < ADC_START 10404
 FP_NS = 5
-SUP_DELAYS = range(1040, 1381, 10)
+SUP_DELAYS = range(1040, 1384, 1)
 
-FIRST_SETTLE_S = 1
-SETTLE_S = 1
+FIRST_SETTLE_S = 0.1
+SETTLE_S = 0.1
 
 PS_ADDRESSES = ('GPIB0::23::INSTR', 'GPIB1::23::INSTR')
 PS_IDLE_LEVEL = -0.09e-6
