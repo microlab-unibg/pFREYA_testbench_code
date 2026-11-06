@@ -40,7 +40,7 @@ FIXED_PIXEL = {'pixel_row': '7', 'pixel_col': '0'}
 FIXED_TIMING = {   # FP: delay, high, low
     'csa_reset_n':  ('104', '60', '9940'),
     'sh_phi1d_inf': ('1209', '8956', '1044'),
-    'sh_phi1d_sup': ('1223', '9040', '960'),
+    'sh_phi1d_sup': ('1225', '9040', '960'),
     'adc_start':    ('404', '4', '9996'),
 }
 FIXED_AUTO_READ_DELAY = '400'
@@ -256,7 +256,7 @@ class GUI(ttk.Frame):
                 rows = []
                 try:
                     for i, level in enumerate(current_lev):
-                        if i!=10:
+                        if i!=3:
                             continue
                         if not self.running:
                             print('Interrotto dall\'utente.')

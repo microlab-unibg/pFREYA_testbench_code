@@ -734,7 +734,7 @@ def send_VAL(gui, retries=5):
             s = format(int.from_bytes(res, 'big'), '016b')
             adc_data = s[0:7][::-1] + s[12:15][::-1]
             sot = s[11]
-            print(f"Serialiser value: {adc_data} (decimal: {int(adc_data, 2)})")
+            print(f"Serialiser value: {sot} {adc_data} (decimal: {int(adc_data, 2)})")
             return adc_data, sot
     print("send_VAL: nessuna risposta valida")
     return None
