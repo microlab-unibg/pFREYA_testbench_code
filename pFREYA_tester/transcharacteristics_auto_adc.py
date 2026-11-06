@@ -35,22 +35,22 @@ OUTPUT_DIR = r'G:/Shared drives/FALCON/measures/new/transcharacteristics/adc'
 FIXED_CLOCKS = {'slow_ck': '4000', 'sel_ck': '4000', 'adc_ck': '20',
                 'inj_stb': '1', 'ser_ck': '100', 'dac_sck': '100'}
 FIXED_SLOW_CTRL = {'csa_mode_n': '01', 'inj_en_n': '1', 'ch_en': '1',
-                   'inj_mode_n': '1', 'pixel_to_inj': '6'}
-FIXED_PIXEL = {'pixel_row': '6', 'pixel_col': '0'}
+                   'inj_mode_n': '1', 'pixel_to_inj': '7'}
+FIXED_PIXEL = {'pixel_row': '7', 'pixel_col': '0'}
 FIXED_TIMING = {   # FP: delay, high, low
     'csa_reset_n':  ('104', '60', '9940'),
-    'sh_phi1d_inf': ('1209', '8956', '1044'),
-    'sh_phi1d_sup': ('1223', '9040', '960'),
+    'sh_phi1d_inf': ('1210', '8956', '1044'), #('1209', '8956', '1044'),
+    'sh_phi1d_sup': (['1184','1204','1225','1244'], '9040', '960'), #('1223', '9040', '960'),
     'adc_start':    ('404', '4', '9996'),
 }
 FIXED_AUTO_READ_DELAY = '400'
 
 CSA_MODE = [int(b) for b in FIXED_SLOW_CTRL['csa_mode_n']]
 SHAPER_MODES = [         
- #   [0, 0],                # tp 240 ns
-  #  [0, 1],                # tp 330 ns
+    [0, 0],                # tp 240 ns
+    [0, 1],                # tp 330 ns
     [1, 0],                # tp 420 ns
-   # [1, 1],                # tp 510 ns
+    [1, 1],                # tp 510 ns
 ]
 CONFIG_BITS_LIST = [[*CSA_MODE, 1, *shap, 1, 1] for shap in SHAPER_MODES]
 
@@ -61,7 +61,7 @@ ADC_BITS = 10
 ADC_VREF = 2.5                                # V
 ADC_MAX_CODE = 2**ADC_BITS - 1
 ADC_LSB_MV = ADC_VREF / 2**ADC_BITS * 1e3     # 2.44 mV/LSB
-FIRST_SETTLE_S = 1      # attesa al primo livello di ogni configurazione
+FIRST_SETTLE_S = 10      # attesa al primo livello di ogni configurazione
 SETTLE_S = 1            # attesa dopo ogni cambio di corrente (s)
 
 
@@ -99,14 +99,18 @@ def get_shap_bits(cfg_bits):
 PS_ADDRESSES = ('GPIB0::23::INSTR', 'GPIB1::23::INSTR')
 PS_IDLE_LEVEL = -0.09e-6
 
-def apply_fixed_config(cfg):
+def apply_fixed_config(cfg,shap_mode):
     for name, value in FIXED_CLOCKS.items():
         getattr(cfg, name).set(value)
     for name, value in {**FIXED_SLOW_CTRL, **FIXED_PIXEL}.items():
         getattr(cfg, name).set(value)
     for name, (delay, high, low) in FIXED_TIMING.items():
         sig = getattr(cfg, name)
-        sig['delay'].set(delay)
+        if name == "sh_phi1d_sup":
+            print(delay,shap_mode,delay[shap_mode],high)
+            sig['delay'].set(delay[shap_mode])
+        else:
+            sig['delay'].set(delay)
         sig['high'].set(high)
         sig['low'].set(low)
     cfg.auto_read_delay.set(FIXED_AUTO_READ_DELAY)
@@ -193,7 +197,7 @@ class GUI(ttk.Frame):
         self.parent.title('Transcaratteristica ADC per livello dello shaper')
         self.running = False
         self.cfg = TesterConfig(self.parent)
-        apply_fixed_config(self.cfg)
+        apply_fixed_config(self.cfg,0)
 
         ttk.Button(self.parent, text='Start', command=self.launch).grid(row=0, column=0, padx=5, pady=5)
 
@@ -240,6 +244,8 @@ class GUI(ttk.Frame):
                 print(f'\n=== cfg {name}: {get_energy_level(bits)} keV, tp {get_shap_bits(bits)} ns ===')
                 config.config(channel='shap', lemo='none', n_steps=N_STEPS, cfg_bits=bits, cfg_inst=False)
                 current_lev, eq_ph, iinj_int = config.current_lev, config.eq_ph, config.iinj_int
+
+                apply_fixed_config(self.cfg,bits[3]*2+bits[4])
 
                 pYtp.send_slow_ctrl_auto(bits, pixel)
                 select_pixel(cfg)
